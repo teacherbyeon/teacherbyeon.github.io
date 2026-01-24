@@ -204,6 +204,7 @@
     <div class="row">
       <button id="btnFullscreen" class="warn">화면 크게(전체)</button>
       <button id="btnExport" title="현재 상태를 JSON 파일로 저장">내보내기</button>
+      <button id="btnSaveAs" class="good" title="파일 이름과 저장 위치를 직접 선택해서 저장">다른 이름으로 저장</button>
       <button id="btnImport" title="저장한 JSON 파일 불러오기">불러오기</button>
       <input id="fileImport" type="file" accept="application/json" hidden />
     </div>
@@ -397,6 +398,7 @@
     btnLoadSample: $("#btnLoadSample"),
     btnFullscreen: $("#btnFullscreen"),
     btnExport: $("#btnExport"),
+    btnSaveAs: $("#btnSaveAs"),
     btnImport: $("#btnImport"),
     fileImport: $("#fileImport"),
 
@@ -667,6 +669,40 @@
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href), 500);
   }
+  
+
+  async function saveAsJSON(){
+    // 기존 exportJSON()은 유지하고, "저장 위치/이름 선택"만 추가로 제공
+    const jsonString = JSON.stringify({ ...state, settings: getSettings() }, null, 2);
+
+    // File System Access API 지원 브라우저(크롬/엣지 등)에서는 저장창으로 이름+경로 선택 가능
+    if ("showSaveFilePicker" in window){
+      try{
+        const handle = await window.showSaveFilePicker({
+          suggestedName: "random_picker_state.json",
+          types: [{
+            description: "JSON 파일",
+            accept: { "application/json": [".json"] }
+          }]
+        });
+
+        const writable = await handle.createWritable();
+        await writable.write(new Blob([jsonString], { type: "application/json" }));
+        await writable.close();
+
+        el.bigResult.textContent = "저장 완료! (다른 이름으로 저장)";
+        return;
+      }catch(err){
+        // 사용자가 취소한 경우도 에러로 들어오므로, 조용히 무시하거나 안내만
+        el.bigResult.textContent = "저장이 취소되었습니다.";
+        return;
+      }
+    }
+
+    // 지원 안 되면 기존 다운로드 저장 방식으로 fallback (기존 기능 유지)
+    exportJSON();
+  }
+
 
   function importJSON(file){
     const reader = new FileReader();
@@ -737,6 +773,7 @@
   });
 
   el.btnExport.addEventListener("click", exportJSON);
+  el.btnSaveAs.addEventListener("click", saveAsJSON);
   el.btnImport.addEventListener("click", () => el.fileImport.click());
   el.fileImport.addEventListener("change", (e) => {
     const f = e.target.files?.[0];
