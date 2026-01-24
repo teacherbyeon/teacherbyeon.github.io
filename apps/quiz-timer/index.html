@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>퀴즈 타이머</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="status">
+      <span id="modeBadge" class="badge">퀴즈 타이머</span>
+      <span id="stateText" class="muted">준비</span>
+    </div>
+
+    <div class="top-actions">
+      <button id="btnFullscreen" class="btn ghost" title="전체 화면">전체화면</button>
+      <button id="btnPanel" class="btn ghost" aria-expanded="false" aria-controls="panel" title="교사용 패널">⚙︎</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="timerArea" aria-live="polite">
+      <div id="timeText" class="timeText">03:00</div>
+      <div class="subline">
+        <span id="hintText" class="hint muted"></span>
+      </div>
+    </section>
+
+    <section class="promptArea">
+      <div class="promptCard">
+        <div class="promptLabel muted">지시문</div>
+        <div id="promptText" class="promptText">문제를 풀어보세요.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 교사용 패널(오버레이 드로어) -->
+
+  <div id="scrim" class="scrim" hidden></div>
+
+
+  <aside id="panel" class="panel" aria-hidden="true">
+    <div class="panelHeader">
+      <div class="panelTitle">교사용 패널</div>
+      <button id="btnClosePanel" class="btn ghost">닫기</button>
+    </div>
+
+    <div class="panelBody">
+      <div class="row">
+        <button id="btnStartPause" class="btn primary">시작</button>
+        <button id="btnReset" class="btn danger" title="길게 눌러 리셋">리셋(길게)</button>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">시간 조절</div>
+        <div class="grid">
+          <button class="btn" data-add="10">+10초</button>
+          <button class="btn" data-add="30">+30초</button>
+          <button class="btn" data-add="60">+1분</button>
+          <button class="btn" data-add="-10">-10초</button>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span class="fieldLabel">기본 시간(초)</span>
+            <input id="baseSeconds" type="number" min="5" step="5" value="180" />
+          </label>
+          <button id="btnApplyBase" class="btn">적용</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">지시문 / 힌트</div>
+        <label class="field">
+          <span class="fieldLabel">지시문</span>
+          <textarea id="promptInput" rows="3" placeholder="예: 2분 안에 풀이를 완성하세요."></textarea>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span class="fieldLabel">힌트(선택)</span>
+            <input id="hintInput" type="text" placeholder="예: 마지막 항부터 정리해보자" />
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="btnApplyText" class="btn">반영</button>
+          <button id="btnToggleHint" class="btn ghost">힌트 표시/숨김</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">알림</div>
+        <div class="row">
+          <label class="toggle">
+            <input id="optBeepEnd" type="checkbox" checked />
+            <span>종료 시 소리</span>
+          </label>
+          <label class="toggle">
+            <input id="optBeep10" type="checkbox" />
+            <span>10초 전 소리</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">단축키</div>
+        <div class="keys muted">
+          <div><b>Space</b>: 시작/일시정지</div>
+          <div><b>R</b>: 리셋(길게 대신 빠르게)</div>
+          <div><b>↑/↓</b>: +10초 / -10초</div>
+          <div><b>F</b>: 전체화면</div>
+          <div><b>Esc</b>: 패널 닫기</div>
+        </div>
+      </div>
+
+      <div class="section foot muted">
+        설정은 이 브라우저에 저장됩니다(localStorage).
+      </div>
+    </div>
+  </aside>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
