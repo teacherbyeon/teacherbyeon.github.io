@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>수업용 랜덤 뽑기</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --panel2:#0f1730;
+      --text:#e7ecff;
+      --muted:#a8b2d1;
+      --accent:#7c5cff;
+      --good:#37d67a;
+      --warn:#ffcc66;
+      --bad:#ff5c7a;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background: radial-gradient(1200px 700px at 20% 10%, rgba(124,92,255,.35), transparent 60%),
+                         radial-gradient(900px 600px at 90% 30%, rgba(55,214,122,.18), transparent 60%),
+                         radial-gradient(900px 600px at 40% 90%, rgba(255,92,122,.12), transparent 55%),
+                         var(--bg);
+      color:var(--text); font-family:var(--sans);
+    }
+    header{
+      padding:20px 18px 10px;
+      max-width:1100px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    header h1{
+      margin:0; font-size:18px; letter-spacing:.2px;
+      display:flex; align-items:center; gap:10px;
+    }
+    header h1 span.badge{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--border); padding:4px 10px; border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+    main{
+      max-width:1100px; margin:0 auto; padding:12px 18px 40px;
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:14px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: rgba(255,255,255,.03);
+      border-bottom:1px solid var(--border);
+    }
+    .card .hd h2{margin:0; font-size:14px; color:var(--muted); font-weight:650;}
+    .card .bd{padding:14px;}
+    textarea{
+      width:100%;
+      min-height:150px;
+      resize:vertical;
+      background: var(--panel2);
+      color: var(--text);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      outline:none;
+      line-height:1.4;
+      font-family: var(--mono);
+      font-size:13px;
+    }
+    textarea:focus{border-color: rgba(124,92,255,.6); box-shadow: 0 0 0 3px rgba(124,92,255,.18);}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .row > *{flex: 0 0 auto;}
+    .grow{flex:1 1 auto;}
+    label{
+      font-size:12px; color:var(--muted);
+      display:flex; align-items:center; gap:8px;
+      user-select:none;
+    }
+    input[type="number"]{
+      width:84px;
+      background: var(--panel2);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:12px;
+      outline:none;
+    }
+    input[type="checkbox"]{transform: translateY(1px);}
+    button{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s transform ease, .15s background ease, .15s border-color ease;
+      font-weight:650;
+    }
+    button:hover{background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22);}
+    button:active{transform: translateY(1px);}
+    button.primary{
+      background: rgba(124,92,255,.25);
+      border-color: rgba(124,92,255,.55);
+    }
+    button.primary:hover{background: rgba(124,92,255,.32);}
+    button.good{
+      background: rgba(55,214,122,.18);
+      border-color: rgba(55,214,122,.45);
+    }
+    button.bad{
+      background: rgba(255,92,122,.18);
+      border-color: rgba(255,92,122,.45);
+    }
+    button.warn{
+      background: rgba(255,204,102,.16);
+      border-color: rgba(255,204,102,.45);
+      color:#fff;
+    }
+    .pill{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--border);
+      padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.03);
+    }
+    .result{
+      display:flex; flex-direction:column; gap:12px;
+      align-items:stretch;
+    }
+    .bigbox{
+      border-radius:18px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(124,92,255,.18), rgba(255,255,255,.03));
+      padding:16px;
+    }
+    .big{
+      font-size:46px;
+      font-weight:850;
+      letter-spacing:.3px;
+      text-align:center;
+      padding:18px 10px;
+      border-radius:16px;
+      background: rgba(0,0,0,.18);
+      border:1px dashed rgba(255,255,255,.18);
+      user-select:none;
+      word-break:break-word;
+      min-height:110px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .sub{
+      margin-top:10px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .list{
+      background: rgba(0,0,0,.14);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      max-height: 260px;
+      overflow:auto;
+    }
+    .list h3{
+      margin:0 0 10px; font-size:13px; color:var(--muted);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    ol{margin:0; padding-left:22px;}
+    li{margin:6px 0; color:var(--text);}
+    .hint{font-size:12px; color:var(--muted); line-height:1.5;}
+    .split{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .mini{
+      font-size:12px; color:var(--muted);
+    }
+    .footer{
+      max-width:1100px; margin:0 auto; padding:10px 18px 26px;
+      color:var(--muted); font-size:12px;
+    }
+
+    /* Fullscreen presentation */
+    body.fullscreen main{grid-template-columns: 1fr;}
+    body.fullscreen .hide-on-full{display:none !important;}
+    body.fullscreen .big{font-size: clamp(52px, 7vw, 120px); min-height: 46vh;}
+    body.fullscreen header{max-width:1100px;}
+    body.fullscreen .bigbox{padding:18px;}
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>
+      🎲 수업용 랜덤 뽑기
+      <span class="badge">단일 HTML · 로컬 저장</span>
+    </h1>
+    <div class="row">
+      <button id="btnFullscreen" class="warn">화면 크게(전체)</button>
+      <button id="btnExport" title="저장 위치/파일명 선택 후 저장(지원 브라우저)">저장</button>
+      <button id="btnSaveAs" title="항상 새 이름으로 저장">다른 이름으로 저장</button>
+      <button id="btnImport" title="저장한 JSON 파일 불러오기">불러오기</button>
+      <input id="fileImport" type="file" accept="application/json" hidden />
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Setup -->
+    <section class="card hide-on-full">
+      <div class="hd">
+        <h2>목록 설정</h2>
+        <span class="pill" id="statCounts">대기 0 · 제외 0 · 기록 0</span>
+      </div>
+      <div class="bd">
+        <div class="hint">
+          아래에 이름/번호를 한 줄에 하나씩 입력하세요. <br/>
+          쉼표(,)나 탭으로 붙여넣어도 자동으로 줄바꿈 처리됩니다.
+        </div>
+        <div style="height:10px"></div>
+        <textarea id="taList" placeholder="예)&#10;1번 김철수&#10;2번 이영희&#10;3번 박민수"></textarea>
+
+        <div style="height:12px"></div>
+        <div class="row">
+          <button id="btnApply" class="primary">목록 적용</button>
+          <button id="btnShuffle">섞기</button>
+          <button id="btnResetAll" class="bad">전체 초기화</button>
+          <span class="grow"></span>
+          <button id="btnLoadSample" title="샘플 목록 넣기">샘플</button>
+        </div>
+
+        <div style="height:14px"></div>
+        <div class="split">
+          <div class="card" style="box-shadow:none; background:rgba(0,0,0,.12);">
+            <div class="hd" style="background:transparent;">
+              <h2 style="margin:0;">뽑기 옵션</h2>
+            </div>
+            <div class="bd" style="padding-top:6px;">
+              <div class="row">
+                <label>한 번에
+                  <input id="numPick" type="number" min="1" value="1" />
+                  명
+                </label>
+              </div>
+              <div style="height:8px"></div>
+              <label>
+                <input id="chkNoRepeat" type="checkbox" checked />
+                중복 없이(뽑힌 사람은 자동 제외)
+              </label>
+              <div style="height:8px"></div>
+              <label>
+                <input id="chkDrum" type="checkbox" checked />
+                뽑을 때 “룰렛 느낌” 애니메이션
+              </label>
+              <div style="height:8px"></div>
+              <label>
+                <input id="chkSound" type="checkbox" checked />
+                소리 켜기(룰렛/확정)
+              </label>
+            </div>
+          </div>
+
+          <div class="card" style="box-shadow:none; background:rgba(0,0,0,.12);">
+            <div class="hd" style="background:transparent;">
+              <h2 style="margin:0;">빠른 작업</h2>
+            </div>
+            <div class="bd" style="padding-top:6px;">
+              <div class="row">
+                <button id="btnClearExcluded">제외 비우기</button>
+                <button id="btnUndo">되돌리기</button>
+              </div>
+              <div style="height:8px"></div>
+              <div class="mini">※ “되돌리기”는 직전 뽑기 1회를 취소합니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="hint">
+          단축키: <span class="pill">Space</span> 뽑기 · <span class="pill">F</span> 전체화면 · <span class="pill">U</span> 되돌리기
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Result -->
+    <section class="card">
+      <div class="hd">
+        <h2>뽑기 결과</h2>
+        <span class="pill" id="statRemain">남은 인원 0</span>
+      </div>
+      <div class="bd result">
+        <div class="bigbox">
+          <div id="bigResult" class="big">목록을 입력하고 “목록 적용”을 누르세요</div>
+          <div class="sub">
+            <div>최근 뽑기: <span id="lastPicked" style="color:var(--text)">-</span></div>
+            <div>중복없음: <span id="statNoRepeat" style="color:var(--text)">ON</span></div>
+          </div>
+          <div style="height:12px"></div>
+          <div class="row">
+            <button id="btnPick" class="primary" style="padding:12px 14px;">🎯 뽑기 (Space)</button>
+            <button id="btnRePick">다시 뽑기</button>
+            <span class="grow"></span>
+            <span class="pill" id="statMode">대기풀에서 뽑기</span>
+          </div>
+        </div>
+
+        <div class="split hide-on-full">
+          <div class="list">
+            <h3>
+              <span>기록(히스토리)</span>
+              <span class="pill" id="histCount">0</span>
+            </h3>
+            <ol id="hist"></ol>
+          </div>
+
+          <div class="list">
+            <h3>
+              <span>제외 목록</span>
+              <span class="pill" id="exCount">0</span>
+            </h3>
+            <ol id="excluded"></ol>
+          </div>
+        </div>
+
+        <div class="hint hide-on-full">
+          * 로컬 저장: 자동으로 브라우저에 저장됩니다(같은 컴퓨터/브라우저에서 유지). <br/>
+          * 파일로 저장: Chrome/Edge에서는 “저장/덮어쓰기”, 그 외 브라우저는 다운로드로 저장됩니다.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer hide-on-full">
+    필요 기능(예: 팀별 뽑기, 좌석번호 모드, 가중치, 두 번 연속 금지 등) 있으면 말해 주세요. 수업 상황에 맞게 커스터마이징 해드릴게요.
+  </div>
+
+<script>
+(() => {
+  const $ = (sel) => document.querySelector(sel);
+
+  const el = {
+    taList: $("#taList"),
+    numPick: $("#numPick"),
+    chkNoRepeat: $("#chkNoRepeat"),
+    chkDrum: $("#chkDrum"),
+    chkSound: $("#chkSound"),
+
+    bigResult: $("#bigResult"),
+    lastPicked: $("#lastPicked"),
+    hist: $("#hist"),
+    excluded: $("#excluded"),
+
+    statCounts: $("#statCounts"),
+    statRemain: $("#statRemain"),
+    statNoRepeat: $("#statNoRepeat"),
+    statMode: $("#statMode"),
+    histCount: $("#histCount"),
+    exCount: $("#exCount"),
+
+    btnApply: $("#btnApply"),
+    btnShuffle: $("#btnShuffle"),
+    btnPick: $("#btnPick"),
+    btnRePick: $("#btnRePick"),
+    btnClearExcluded: $("#btnClearExcluded"),
+    btnUndo: $("#btnUndo"),
+    btnResetAll: $("#btnResetAll"),
+    btnLoadSample: $("#btnLoadSample"),
+    btnFullscreen: $("#btnFullscreen"),
+    btnExport: $("#btnExport"),
+    btnSaveAs: $("#btnSaveAs"),
+    btnImport: $("#btnImport"),
+    fileImport: $("#fileImport")
+  };
+
+  const STORAGE_KEY = "class_random_picker_v2";
+
+  /** state */
+  let state = {
+    pool: [],         // remaining candidates
+    excluded: [],     // already picked (if noRepeat)
+    history: [],      // array of {picked: [..], time: ISO}
+    lastPickSet: null // last history item
+  };
+
+  // ---------- Sound (WebAudio) ----------
+  let audioCtx = null;
+
+  function ensureAudio(){
+    if(!el.chkSound?.checked) return null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    if(!audioCtx) audioCtx = new AC();
+    if(audioCtx.state === "suspended"){
+      audioCtx.resume().catch(()=>{});
+    }
+    return audioCtx;
+  }
+
+  function playTick(){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+
+    const t = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(900, t);
+
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.08, t + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.04);
+  }
+
+  function playDing(){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+
+    const t = ctx.currentTime;
+
+    const o1 = ctx.createOscillator();
+    const o2 = ctx.createOscillator();
+    const g = ctx.createGain();
+
+    o1.type = "sine";
+    o2.type = "sine";
+    o1.frequency.setValueAtTime(988, t);
+    o2.frequency.setValueAtTime(659, t);
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+
+    o1.connect(g); o2.connect(g);
+    g.connect(ctx.destination);
+
+    o1.start(t); o2.start(t);
+    o1.stop(t + 0.62); o2.stop(t + 0.62);
+  }
+  // ---------- /Sound ----------
+
+  function normalizeInput(text){
+    return text
+      .replace(/\t/g, "\n")
+      .replace(/,/g, "\n")
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function saveLocal(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  function loadLocal(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      const obj = JSON.parse(raw);
+      if(!obj || typeof obj !== "object") return false;
+      state = {
+        pool: Array.isArray(obj.pool) ? obj.pool : [],
+        excluded: Array.isArray(obj.excluded) ? obj.excluded : [],
+        history: Array.isArray(obj.history) ? obj.history : [],
+        lastPickSet: obj.lastPickSet ?? null
+      };
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function render(){
+    el.statCounts.textContent = `대기 ${state.pool.length} · 제외 ${state.excluded.length} · 기록 ${state.history.length}`;
+    el.statRemain.textContent = `남은 인원 ${state.pool.length}`;
+    el.statNoRepeat.textContent = el.chkNoRepeat.checked ? "ON" : "OFF";
+    el.statMode.textContent = state.pool.length > 0 ? "대기풀에서 뽑기" : "대기풀이 비었습니다";
+
+    el.hist.innerHTML = "";
+    state.history.slice().reverse().forEach((h) => {
+      const li = document.createElement("li");
+      const t = new Date(h.time);
+      const stamp = isNaN(t.getTime()) ? "" : ` (${t.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})})`;
+      li.textContent = h.picked.join(", ") + stamp;
+      el.hist.appendChild(li);
+    });
+    el.histCount.textContent = state.history.length;
+
+    el.excluded.innerHTML = "";
+    state.excluded.slice().reverse().forEach((x) => {
+      const li = document.createElement("li");
+      li.textContent = x;
+      el.excluded.appendChild(li);
+    });
+    el.exCount.textContent = state.excluded.length;
+
+    saveLocal();
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  function applyListFromTextarea(){
+    const items = normalizeInput(el.taList.value);
+    state.pool = items.slice();
+    state.excluded = [];
+    state.history = [];
+    state.lastPickSet = null;
+
+    shuffle(state.pool);
+    el.bigResult.textContent = items.length ? "준비 완료! 🎯" : "목록이 비어 있어요";
+    el.lastPicked.textContent = "-";
+    render();
+  }
+
+  function drumAnimation(candidates, durationMs=1200, tickMs=45){
+    return new Promise((resolve) => {
+      const start = performance.now();
+      let last = "";
+      const timer = setInterval(() => {
+        const now = performance.now();
+        const idx = Math.floor(Math.random()*candidates.length);
+        const name = candidates[idx];
+        if(name && name !== last){
+          el.bigResult.textContent = name;
+          last = name;
+          playTick(); // 룰렛 '틱'
+        }
+        if(now - start >= durationMs){
+          clearInterval(timer);
+          playDing(); // 확정 '딩'
+          resolve();
+        }
+      }, tickMs);
+    });
+  }
+
+  function pickOnce(k){
+    const noRepeat = el.chkNoRepeat.checked;
+
+    if(state.pool.length === 0){
+      el.bigResult.textContent = "대기풀이 비었습니다. 목록을 다시 적용하거나 제외를 비우세요.";
+      return null;
+    }
+
+    const n = Math.max(1, Math.min(k, state.pool.length));
+    const picked = [];
+
+    for(let i=0;i<n;i++){
+      const idx = Math.floor(Math.random()*state.pool.length);
+      const name = state.pool.splice(idx,1)[0];
+      picked.push(name);
+
+      if(!noRepeat){
+        state.pool.push(name);
+      } else {
+        state.excluded.push(name);
+      }
+    }
+
+    shuffle(state.pool);
+
+    const entry = { picked, time: new Date().toISOString() };
+    state.history.push(entry);
+    state.lastPickSet = entry;
+
+    el.lastPicked.textContent = picked.join(", ");
+    el.bigResult.textContent = picked.join(" · ");
+    render();
+    return picked;
+  }
+
+  async function doPick(){
+    const k = parseInt(el.numPick.value, 10) || 1;
+
+    if(state.pool.length === 0){
+      el.bigResult.textContent = "대기풀이 비었습니다. (제외 비우기 / 목록 재적용)";
+      return;
+    }
+
+    // 사용자 제스처에서 오디오 컨텍스트 깨우기
+    ensureAudio();
+
+    if(el.chkDrum.checked){
+      const candidates = (state.pool.length ? state.pool : ["-"]);
+      await drumAnimation(candidates);
+    }
+    pickOnce(k);
+  }
+
+  function undo(){
+    if(state.history.length === 0){
+      el.bigResult.textContent = "되돌릴 기록이 없습니다.";
+      return;
+    }
+    const last = state.history.pop();
+    const noRepeat = el.chkNoRepeat.checked;
+
+    last.picked.forEach((name) => {
+      if(noRepeat){
+        const i = state.excluded.lastIndexOf(name);
+        if(i !== -1) state.excluded.splice(i,1);
+        state.pool.push(name);
+      } else {
+        state.pool.push(name);
+      }
+    });
+
+    shuffle(state.pool);
+    state.lastPickSet = state.history[state.history.length-1] ?? null;
+
+    el.bigResult.textContent = "직전 뽑기를 되돌렸습니다.";
+    el.lastPicked.textContent = state.lastPickSet ? state.lastPickSet.picked.join(", ") : "-";
+    render();
+  }
+
+  function clearExcluded(){
+    state.pool = state.pool.concat(state.excluded);
+    state.excluded = [];
+    shuffle(state.pool);
+    el.bigResult.textContent = "제외 목록을 비웠습니다.";
+    render();
+  }
+
+  function resetAll(){
+    state = { pool: [], excluded: [], history: [], lastPickSet: null };
+    el.taList.value = "";
+    el.bigResult.textContent = "목록을 입력하고 “목록 적용”을 누르세요";
+    el.lastPicked.textContent = "-";
+    render();
+  }
+
+  function loadSample(){
+    const sample = Array.from({length: 28}, (_,i) => `${String(i+1).padStart(2,"0")}번 학생`);
+    el.taList.value = sample.join("\n");
+  }
+
+  function setFullscreen(on){
+    document.body.classList.toggle("fullscreen", on);
+    el.btnFullscreen.textContent = on ? "전체화면 해제" : "화면 크게(전체)";
+    if(on){
+      if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen?.().catch(()=>{});
+      }
+    }else{
+      if(document.fullscreenElement){
+        document.exitFullscreen?.().catch(()=>{});
+      }
+    }
+  }
+
+  function getSettings(){
+    return {
+      numPick: el.numPick.value,
+      chkNoRepeat: el.chkNoRepeat.checked,
+      chkDrum: el.chkDrum.checked,
+      chkSound: el.chkSound.checked
+    };
+  }
+  function applySettings(s){
+    if("numPick" in s) el.numPick.value = s.numPick;
+    if("chkNoRepeat" in s) el.chkNoRepeat.checked = !!s.chkNoRepeat;
+    if("chkDrum" in s) el.chkDrum.checked = !!s.chkDrum;
+    if("chkSound" in s) el.chkSound.checked = !!s.chkSound;
+  }
+
+  // ---------- Save / Load (File System Access API + fallback) ----------
+  // 같은 파일로 덮어쓰기: fileHandle을 메모리에 유지(브라우저 보안상 새로고침하면 보통 초기화됨)
+  let fileHandle = null;
+
+  async function exportJSON(forceSaveAs=false){
+    const payload = JSON.stringify({ ...state, settings: getSettings() }, null, 2);
+
+    // 지원 브라우저: 저장 위치/파일명 선택 가능 + 덮어쓰기
+    if (window.showSaveFilePicker) {
+      try {
+        if (forceSaveAs || !fileHandle) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: "random_picker_state.json",
+            types: [{
+              description: "JSON 파일",
+              accept: { "application/json": [".json"] }
+            }]
+          });
+        }
+
+        const writable = await fileHandle.createWritable();
+        await writable.write(payload);
+        await writable.close();
+
+        el.bigResult.textContent = forceSaveAs
+          ? "다른 이름으로 저장 완료!"
+          : "저장 완료! (다음부터 ‘저장’은 덮어쓰기)";
+        return;
+      } catch (e) {
+        el.bigResult.textContent = "저장이 취소되었습니다.";
+        return;
+      }
+    }
+
+    // 미지원: 다운로드 방식
+    try{
+      const blob = new Blob([payload], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "random_picker_state.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+      el.bigResult.textContent = "다운로드로 저장했습니다. (브라우저 제한으로 경로/덮어쓰기 제어 불가)";
+    }catch(e){
+      el.bigResult.textContent = "저장 실패";
+    }
+  }
+
+  function importJSON(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const obj = JSON.parse(String(reader.result || ""));
+        if(!obj || typeof obj !== "object") throw new Error("Invalid");
+
+        state = {
+          pool: Array.isArray(obj.pool) ? obj.pool : [],
+          excluded: Array.isArray(obj.excluded) ? obj.excluded : [],
+          history: Array.isArray(obj.history) ? obj.history : [],
+          lastPickSet: obj.lastPickSet ?? null
+        };
+
+        if(obj.settings) applySettings(obj.settings);
+
+        el.bigResult.textContent = "불러오기 완료!";
+        el.lastPicked.textContent = state.lastPickSet ? state.lastPickSet.picked.join(", ") : "-";
+        render();
+      }catch(e){
+        el.bigResult.textContent = "불러오기 실패: JSON 파일이 올바르지 않습니다.";
+      }
+    };
+    reader.readAsText(file);
+  }
+  // ---------- /Save / Load ----------
+
+  // Wire events
+  el.btnApply.addEventListener("click", applyListFromTextarea);
+  el.btnShuffle.addEventListener("click", () => { shuffle(state.pool); el.bigResult.textContent="섞었습니다."; render(); });
+  el.btnPick.addEventListener("click", doPick);
+  el.btnRePick.addEventListener("click", doPick);
+  el.btnClearExcluded.addEventListener("click", clearExcluded);
+  el.btnUndo.addEventListener("click", undo);
+  el.btnResetAll.addEventListener("click", resetAll);
+  el.btnLoadSample.addEventListener("click", loadSample);
+
+  el.btnFullscreen.addEventListener("click", () => setFullscreen(!document.body.classList.contains("fullscreen")));
+  document.addEventListener("fullscreenchange", () => {
+    if(!document.fullscreenElement && document.body.classList.contains("fullscreen")){
+      document.body.classList.remove("fullscreen");
+      el.btnFullscreen.textContent = "화면 크게(전체)";
+    }
+  });
+
+  el.btnExport.addEventListener("click", () => exportJSON(false));
+  el.btnSaveAs.addEventListener("click", () => exportJSON(true));
+
+  el.btnImport.addEventListener("click", () => el.fileImport.click());
+  el.fileImport.addEventListener("change", (e) => {
+    const f = e.target.files?.[0];
+    if(f) importJSON(f);
+    e.target.value = "";
+  });
+
+  // Keyboard shortcuts
+  window.addEventListener("keydown", (e) => {
+    if(e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    if(e.code === "Space"){
+      e.preventDefault();
+      doPick();
+    } else if(e.key.toLowerCase() === "f"){
+      setFullscreen(!document.body.classList.contains("fullscreen"));
+    } else if(e.key.toLowerCase() === "u"){
+      undo();
+    }
+  });
+
+  // Initialize: load saved state (if any)
+  const ok = loadLocal();
+  if(ok){
+    const all = [...state.pool, ...state.excluded];
+    el.taList.value = all.join("\n");
+    el.bigResult.textContent = state.history.length
+      ? (state.history[state.history.length-1].picked.join(" · "))
+      : "불러온 상태입니다. 🎯";
+    el.lastPicked.textContent = state.lastPickSet ? state.lastPickSet.picked.join(", ") : "-";
+  }
+  render();
+})();
+</script>
+</body>
+</html>
