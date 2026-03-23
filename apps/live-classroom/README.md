@@ -57,6 +57,39 @@ questions / polls 선택지는 JSON 배열(`optionsJson`)로 저장합니다.
    - 학생: `http://localhost:5173/student`
    - 디스플레이: `http://localhost:5173/display`
 
+### Windows 설치 오류(질문 주신 `better-sqlite3/node-gyp`) 해결
+
+`npm install`에서 `better-sqlite3` 빌드 실패 + `Could not find any Visual Studio installation` 오류가 나면 아래 순서로 해결하세요.
+
+1. **프로젝트 최신 코드 받기**  
+   `better-sqlite3`를 Node 24 대응 버전으로 올렸습니다. 먼저 최신 커밋 기준으로 다시 설치하세요.
+
+2. **클린 재설치**
+   ```powershell
+   rd /s /q node_modules
+   del package-lock.json
+   npm cache verify
+   npm install
+   ```
+
+3. **그래도 실패하면 (prebuilt binary 미제공 시) C++ 빌드 도구 설치**
+   - Visual Studio 2022 Build Tools 설치
+   - 워크로드: **Desktop development with C++**
+   - 설치 후 새 PowerShell에서:
+   ```powershell
+   npm install
+   ```
+
+4. **가장 안정적인 권장 버전: Node 22 LTS**
+   - Node 24에서도 동작하도록 의존성은 올렸지만, 학교 PC 환경에 따라 Node 22 LTS가 더 안정적입니다.
+   - nvm-windows 사용 시:
+   ```powershell
+   nvm install 22.15.0
+   nvm use 22.15.0
+   node -v
+   npm install
+   ```
+
 ## 4) 같은 와이파이에서 접속
 
 1. 교사 PC IP 확인: `ipconfig`
