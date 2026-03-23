@@ -168,3 +168,28 @@ questionsRouter.post('/:id/respond', (req, res) => {
   emitSessionUpdate(question.sessionId);
   res.status(201).json({ ok: true, score: score.total });
 });
+
+questionsRouter.get('/:id/submission/:studentId', (req, res) => {
+  const questionId = Number(req.params.id);
+  const studentId = Number(req.params.studentId);
+  const row = db
+    .prepare(
+      `SELECT id, selectedOptionIndex, awardedScore, submittedAt
+       FROM responses
+       WHERE questionId = ? AND studentId = ?`
+    )
+    .get(questionId, studentId) as
+    | { id: number; selectedOptionIndex: number; awardedScore: number; submittedAt: string }
+    | undefined;
+
+  if (!row) {
+    return res.json({ submitted: false });
+  }
+
+  return res.json({
+    submitted: true,
+    selectedOptionIndex: row.selectedOptionIndex,
+    awardedScore: row.awardedScore,
+    submittedAt: row.submittedAt
+  });
+});
