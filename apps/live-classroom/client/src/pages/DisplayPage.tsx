@@ -1,29 +1,30 @@
 import { useEffect, useState } from 'react';
 import { socket } from '../api/socket';
-import type { SessionStatePayload } from '../types';
+import type { TeacherState } from '../types';
 
 export function DisplayPage() {
-  const [sessionId, setSessionId] = useState<number>(1);
-  const [state, setState] = useState<SessionStatePayload | null>(null);
+  const [sessionId, setSessionId] = useState(1);
+  const [state, setState] = useState<TeacherState | null>(null);
 
   useEffect(() => {
-    const onState = (payload: SessionStatePayload) => setState(payload);
-    socket.emit('session:joinRoom', { sessionId });
-    socket.on('session:stateUpdated', onState);
-    return () => socket.off('session:stateUpdated', onState);
+    const onState = (payload: TeacherState) => setState(payload);
+    socket.emit('session:joinRoom', { sessionId, role: 'teacher' });
+    socket.on('teacher:stateUpdated', onState);
+    return () => socket.off('teacher:stateUpdated', onState);
   }, [sessionId]);
 
   return (
     <main className="page display">
-      <h1>수업 현황 화면</h1>
-      <label>세션 ID <input type="number" value={sessionId} onChange={(e) => setSessionId(Number(e.target.value))} /></label>
-      <p>세션 상태: {state?.session.status ?? '-'}</p>
-      <p>제출 진행: {state?.progress.submittedStudents ?? 0} / {state?.progress.totalStudents ?? 0}</p>
+      <h1>라이브 스코어 보드</h1>
+      <input type="number" value={sessionId} onChange={(e) => setSessionId(Number(e.target.value))} />
+      <p>상태: {state?.session.status} / 문항 {state?.session.currentQuestionOrder}</p>
       <div className="card">
-        <h2>상위 점수</h2>
-        <ol>
-          {(state?.leaderboard ?? []).slice(0, 5).map((s) => <li key={s.id}>{s.displayName} - {s.totalScore}점</li>)}
-        </ol>
+        {(state?.leaderboard ?? []).map((s, idx) => (
+          <div key={s.id} className="race-row">
+            <span>{idx + 1}. {s.displayName}</span>
+            <div className="race-track"><div className="race-runner" style={{ width: `${Math.min(100, s.totalScore / 10)}%` }}>🐎 {s.totalScore}</div></div>
+          </div>
+        ))}
       </div>
     </main>
   );

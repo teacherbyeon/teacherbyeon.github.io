@@ -2,17 +2,10 @@ export interface Session {
   id: number;
   name: string;
   joinCode: string;
-  randomNicknameEnabled: number;
-  status: 'waiting' | 'active' | 'closed';
-  startedAt: string | null;
-  closedAt: string | null;
-}
-
-export interface Student {
-  id: number;
-  sessionId: number;
-  displayName: string;
-  identifier: string;
+  status: 'waiting' | 'active' | 'finished';
+  currentQuestionOrder: number;
+  questionState: 'waiting' | 'revealed' | 'closed';
+  questionDeadlineAt: string | null;
 }
 
 export interface Question {
@@ -23,16 +16,32 @@ export interface Question {
   optionsJson: string;
   correctOptionIndex: number;
   weight: number;
+  timeLimitSeconds: number;
   orderInSession: number;
 }
 
-export interface SessionStatePayload {
+export interface TeacherState {
   session: Session;
   questionSet: Question[];
+  currentQuestion: Question | null;
   progress: {
-    totalStudents: number;
-    submittedStudents: number;
-    notSubmitted: Array<{ id: number; displayName: string }>;
+    joinedStudents: number;
+    respondedCurrent: number;
+    notResponded: Array<{ id: number; displayName: string }>;
   };
+  leaderboard: Array<{ id: number; displayName: string; totalScore: number }>;
+}
+
+export interface StudentLiveState {
+  session: Session;
+  currentQuestion: null | {
+    id: number;
+    orderInSession: number;
+    prompt: string;
+    imagePath: string | null;
+    optionsJson: string;
+    timeLimitSeconds: number;
+  };
+  alreadyAnswered: boolean;
   leaderboard: Array<{ id: number; displayName: string; totalScore: number }>;
 }

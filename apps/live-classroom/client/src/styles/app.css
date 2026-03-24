@@ -1,10 +1,6 @@
-:root {
-  font-family: 'Pretendard', system-ui, sans-serif;
-  color: #1f2937;
-}
+:root { font-family: 'Pretendard', system-ui, sans-serif; color: #1f2937; }
 body { margin: 0; background: #f4f6fb; }
 .page { max-width: 980px; margin: 0 auto; padding: 16px; }
-.grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 14px; }
 input, textarea, button { width: 100%; box-sizing: border-box; margin: 6px 0; padding: 11px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; }
 textarea { min-height: 88px; }
@@ -12,12 +8,10 @@ button { background: #2563eb; color: white; border: none; font-weight: 700; }
 button:disabled { background: #94a3b8; }
 .row { display: flex; gap: 8px; }
 .item { border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
-.notice { background: #ecfeff; border: 1px solid #a5f3fc; padding: 8px 10px; border-radius: 8px; }
 .student { max-width: 720px; }
-.student .big-btn { font-size: 1.05rem; min-height: 52px; text-align: left; }
+.student .big-btn { font-size: 1.1rem; min-height: 56px; text-align: left; }
 .question-image { width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; background: #eef2ff; }
-@media (max-width: 768px) {
-  .page { padding: 12px; }
-  .row { flex-direction: column; }
-  .student .big-btn { font-size: 1.15rem; min-height: 58px; }
-}
+.race-row { margin-bottom: 10px; }
+.race-track { width: 100%; height: 30px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.race-runner { height: 100%; background: linear-gradient(90deg,#f97316,#ef4444); color: #fff; font-weight: 700; padding-left: 8px; display:flex; align-items:center; }
+@media (max-width: 768px) { .page { padding: 12px; } .row { flex-direction: column; } }

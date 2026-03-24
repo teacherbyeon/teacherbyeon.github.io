@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/http';
 import { socket } from '../api/socket';
-import type { Session, SessionStatePayload } from '../types';
+import type { Session, StudentLiveState } from '../types';
 
-function parseOptions(json: string): string[] {
-  try {
-    const v = JSON.parse(json);
-    return Array.isArray(v) ? v.map((x) => String(x)) : [];
-  } catch {
-    return [];
-  }
+function parseOptions(json: string) {
+  try { const p = JSON.parse(json); return Array.isArray(p) ? p.map(String) : []; } catch { return []; }
 }
 
 export function StudentPage() {
@@ -17,75 +12,52 @@ export function StudentPage() {
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [session, setSession] = useState<Session | null>(null);
-  const [state, setState] = useState<SessionStatePayload | null>(null);
   const [studentId, setStudentId] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [state, setState] = useState<StudentLiveState | null>(null);
   const [message, setMessage] = useState('');
+  const [localAnsweredQuestionId, setLocalAnsweredQuestionId] = useState<number | null>(null);
 
   useEffect(() => {
-    const onState = (payload: SessionStatePayload) => setState(payload);
-    socket.on('session:stateUpdated', onState);
-    return () => socket.off('session:stateUpdated', onState);
+    const onLive = (payload: StudentLiveState) => setState(payload);
+    socket.on('student:liveStateUpdated', onLive);
+    return () => socket.off('student:liveStateUpdated', onLive);
   }, []);
 
   const join = async () => {
-    const res = await fetch(`/api/sessions/code/${joinCode.toUpperCase()}`);
-    if (!res.ok) {
-      setMessage('입장 코드를 확인하세요.');
-      return;
-    }
-    const sessionData = (await res.json()) as Session;
-
-    const existingStudentId = Number(localStorage.getItem(`student:${sessionData.id}`)) || undefined;
-    const student = await api<any>(`/api/sessions/${sessionData.id}/students/join`, {
+    const r = await fetch(`/api/sessions/code/${joinCode.toUpperCase()}`);
+    if (!r.ok) return setMessage('입장 코드가 올바르지 않습니다.');
+    const s = (await r.json()) as Session;
+    const existingStudentId = Number(localStorage.getItem(`student:${s.id}`)) || undefined;
+    const student = await api<any>(`/api/sessions/${s.id}/students/join`, {
       method: 'POST',
       body: JSON.stringify({ name, identifier: identifier || name, existingStudentId })
     });
-
-    setSession(sessionData);
+    setSession(s);
     setStudentId(student.id);
-    localStorage.setItem(`student:${sessionData.id}`, String(student.id));
-    socket.emit('session:joinRoom', { sessionId: sessionData.id });
-
-    const answerState = await api<{ answers: Array<{ questionId: number; selectedOptionIndex: number }>; submitted: boolean }>(
-      `/api/sessions/${sessionData.id}/student/${student.id}/answers`
-    );
-    const mapped: Record<number, number> = {};
-    for (const a of answerState.answers) mapped[a.questionId] = a.selectedOptionIndex;
-    setAnswers(mapped);
-    setSubmitted(answerState.submitted);
+    localStorage.setItem(`student:${s.id}`, String(student.id));
+    socket.emit('session:joinRoom', { sessionId: s.id, role: 'student', studentId: student.id });
+    const live = await api<StudentLiveState>(`/api/sessions/${s.id}/live?studentId=${student.id}`);
+    setState(live);
   };
 
-  const saveAnswer = async (questionId: number, selectedOptionIndex: number) => {
-    if (!session || !studentId || submitted) return;
-    if (state?.session.status !== 'active') {
-      setMessage('현재 세션이 풀이 가능 상태가 아닙니다.');
-      return;
+  const remainingSeconds = useMemo(() => {
+    if (!state?.session.questionDeadlineAt) return 0;
+    return Math.max(0, Math.ceil((new Date(state.session.questionDeadlineAt).getTime() - Date.now()) / 1000));
+  }, [state]);
+
+  const submit = async (selectedOptionIndex: number) => {
+    if (!session || !studentId || !state?.currentQuestion) return;
+    try {
+      await api('/api/questions/respond', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId: session.id, studentId, selectedOptionIndex })
+      });
+      setLocalAnsweredQuestionId(state.currentQuestion.id);
+      setMessage('답안 제출 완료! 다음 문항을 기다려 주세요.');
+    } catch (e) {
+      setMessage('제출 실패(중복 제출 또는 시간 종료)');
     }
-
-    await api('/api/questions/answer', {
-      method: 'POST',
-      body: JSON.stringify({ sessionId: session.id, questionId, studentId, selectedOptionIndex })
-    });
-    setAnswers((prev) => ({ ...prev, [questionId]: selectedOptionIndex }));
   };
-
-  const submitAll = async () => {
-    if (!session || !studentId) return;
-    await api(`/api/sessions/${session.id}/submit`, {
-      method: 'POST',
-      body: JSON.stringify({ studentId })
-    });
-    setSubmitted(true);
-    setMessage('제출이 완료되었습니다.');
-  };
-
-  const readyCount = useMemo(() => {
-    const total = state?.questionSet.length ?? 0;
-    if (total === 0) return { done: 0, total: 0 };
-    return { done: Object.keys(answers).length, total };
-  }, [answers, state]);
 
   if (!session) {
     return (
@@ -94,47 +66,50 @@ export function StudentPage() {
         <input placeholder="입장 코드" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
         <input placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
         <input placeholder="번호(선택)" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
-        <button onClick={join}>입장하기</button>
+        <button onClick={join}>입장</button>
         <p>{message}</p>
       </main>
     );
   }
 
+  if (state?.session.status === 'finished') {
+    return (
+      <main className="page student">
+        <h1>세션 종료</h1>
+        <p>수업이 종료되었습니다.</p>
+        <ul>{(state.leaderboard ?? []).slice(0, 5).map((s, idx) => <li key={s.id}>{idx + 1}. {s.displayName} - {s.totalScore}점</li>)}</ul>
+      </main>
+    );
+  }
+
+  const waiting = !state?.currentQuestion || state.session.questionState !== 'revealed';
+  if (waiting) {
+    return (
+      <main className="page student">
+        <h1>대기 중</h1>
+        <p>선생님이 문제를 공개하면 자동으로 표시됩니다.</p>
+        <p>세션 상태: {state?.session.status}</p>
+      </main>
+    );
+  }
+
+  const q = state.currentQuestion;
+  const options = parseOptions(q.optionsJson);
+  const answered = state.alreadyAnswered || localAnsweredQuestionId === q.id;
+
   return (
     <main className="page student">
-      <h1>문제 풀이</h1>
-      <p>세션 상태: <b>{state?.session.status ?? session.status}</b></p>
-      <p>풀이 진행: {readyCount.done} / {readyCount.total}</p>
-      {message && <p>{message}</p>}
-
-      {state?.questionSet.map((q) => {
-        const options = parseOptions(q.optionsJson);
-        return (
-          <section key={q.id} className="card">
-            <h2>{q.orderInSession}. {q.prompt}</h2>
-            {q.imagePath && <img src={q.imagePath} className="question-image" />}
-            {options.map((opt, idx) => (
-              <button
-                key={idx}
-                className="big-btn"
-                disabled={submitted || state.session.status !== 'active'}
-                style={answers[q.id] === idx ? { background: '#16a34a' } : undefined}
-                onClick={() => saveAnswer(q.id, idx)}
-              >
-                {opt}
-              </button>
-            ))}
-          </section>
-        );
-      })}
-
-      {!submitted ? (
-        <button disabled={(state?.session.status !== 'active') || readyCount.done !== readyCount.total} onClick={submitAll}>
-          최종 제출
-        </button>
-      ) : (
-        <div className="card"><h2>제출 완료</h2><p>교사가 세션을 마감할 때까지 대기해주세요.</p></div>
-      )}
+      <h1>문항 {q.orderInSession}</h1>
+      <p>남은 시간: {remainingSeconds}초</p>
+      <section className="card">
+        <h2>{q.prompt}</h2>
+        {q.imagePath && <img src={q.imagePath} className="question-image" />}
+        {options.map((opt, idx) => (
+          <button key={idx} className="big-btn" disabled={answered || remainingSeconds <= 0} onClick={() => submit(idx)}>{opt}</button>
+        ))}
+        {answered && <p>✅ 제출 완료. 다음 문제를 기다려 주세요.</p>}
+      </section>
+      <p>{message}</p>
     </main>
   );
 }

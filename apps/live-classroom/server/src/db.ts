@@ -6,9 +6,7 @@ const root = path.resolve(process.cwd(), 'server');
 const dataDir = path.join(root, 'data');
 const uploadDir = path.join(root, 'uploads');
 const exportDir = path.join(root, 'exports');
-for (const dir of [dataDir, uploadDir, exportDir]) {
-  fs.mkdirSync(dir, { recursive: true });
-}
+for (const dir of [dataDir, uploadDir, exportDir]) fs.mkdirSync(dir, { recursive: true });
 
 const dbPath = path.join(dataDir, 'app.db');
 export const db = new Database(dbPath);
@@ -23,7 +21,10 @@ CREATE TABLE IF NOT EXISTS sessions (
   status TEXT NOT NULL DEFAULT 'waiting',
   randomNicknameEnabled INTEGER NOT NULL DEFAULT 0,
   startedAt TEXT,
-  closedAt TEXT,
+  finishedAt TEXT,
+  currentQuestionOrder INTEGER NOT NULL DEFAULT 0,
+  questionState TEXT NOT NULL DEFAULT 'waiting',
+  questionDeadlineAt TEXT,
   createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS questions (
   optionsJson TEXT NOT NULL,
   correctOptionIndex INTEGER NOT NULL,
   weight INTEGER NOT NULL DEFAULT 100,
+  timeLimitSeconds INTEGER NOT NULL DEFAULT 20,
   orderInSession INTEGER NOT NULL,
   createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -58,16 +60,8 @@ CREATE TABLE IF NOT EXISTS responses (
   selectedOptionIndex INTEGER NOT NULL,
   isCorrect INTEGER NOT NULL,
   awardedScore INTEGER NOT NULL,
-  updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(questionId, studentId)
-);
-
-CREATE TABLE IF NOT EXISTS submissions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sessionId INTEGER NOT NULL,
-  studentId INTEGER NOT NULL,
   submittedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(sessionId, studentId)
+  UNIQUE(questionId, studentId)
 );
 
 CREATE TABLE IF NOT EXISTS score_logs (
