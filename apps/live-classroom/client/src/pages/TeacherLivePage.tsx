@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../api/http';
 import { socket } from '../api/socket';
+import { LatexMixedText } from '../components/LatexMixedText';
 import type { TeacherState } from '../types';
 
 export function TeacherLivePage() {
@@ -52,7 +53,7 @@ export function TeacherLivePage() {
             <h2>현재 공개 문항</h2>
             {state.currentQuestion ? (
               <>
-                <p>{state.currentQuestion.prompt}</p>
+                <LatexMixedText text={state.currentQuestion.prompt} />
                 {state.currentQuestion.imagePath && <img src={state.currentQuestion.imagePath} className="question-image" />}
               </>
             ) : <p>아직 공개된 문항이 없습니다.</p>}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/http';
 import { socket } from '../api/socket';
+import { LatexMixedText } from '../components/LatexMixedText';
 import type { Session, StudentLiveState } from '../types';
 
 function parseOptions(json: string) {
@@ -102,10 +103,12 @@ export function StudentPage() {
       <h1>문항 {q.orderInSession}</h1>
       <p>남은 시간: {remainingSeconds}초</p>
       <section className="card">
-        <h2>{q.prompt}</h2>
+        <LatexMixedText text={q.prompt} />
         {q.imagePath && <img src={q.imagePath} className="question-image" />}
         {options.map((opt, idx) => (
-          <button key={idx} className="big-btn" disabled={answered || remainingSeconds <= 0} onClick={() => submit(idx)}>{opt}</button>
+          <button key={idx} className="big-btn" disabled={answered || remainingSeconds <= 0} onClick={() => submit(idx)}>
+            <b>{idx + 1}) </b><LatexMixedText text={opt} />
+          </button>
         ))}
         {answered && <p>✅ 제출 완료. 다음 문제를 기다려 주세요.</p>}
       </section>

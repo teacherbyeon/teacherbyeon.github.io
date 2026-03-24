@@ -6,6 +6,7 @@ import { TeacherLivePage } from './pages/TeacherLivePage';
 import { StudentPage } from './pages/StudentPage';
 import { DisplayPage } from './pages/DisplayPage';
 import './styles/app.css';
+import 'katex/dist/katex.min.css';
 
 function App() {
   return (

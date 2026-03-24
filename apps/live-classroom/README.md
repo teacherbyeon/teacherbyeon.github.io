@@ -15,6 +15,13 @@
 6. 교사가 다음 문항을 수동 공개
 7. 세션 종료 후 결과/CSV 확인
 
+## 저작 편의 기능
+- 문항/선택지는 텍스트 + LaTeX 혼합 입력 가능 (예: `$\\frac{1}{2}x^2$`)
+- 입력창 아래 LaTeX 미리보기 제공
+- 수식 버튼 패널 제공(분수/루트/제곱/시그마/적분 등)
+- 파일선택 대신 **클립보드 이미지 붙여넣기(Ctrl+V)** 로 문항 이미지 첨부 가능
+- 선택지는 화면에서 `1) 2) 3)` 인덱스로 표시
+
 ## 상태 모델
 - session.status: `waiting | active | finished`
 - session.questionState: `waiting | revealed | closed`
