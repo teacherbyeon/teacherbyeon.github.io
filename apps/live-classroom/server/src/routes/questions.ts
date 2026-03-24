@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
 import { db, paths } from '../db.js';
 import { emitAll } from '../sockets/socket.js';
 
@@ -13,8 +14,21 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 export const questionsRouter = Router();
 
+function savePastedDataUrl(dataUrl?: string): string | null {
+  if (!dataUrl || !dataUrl.startsWith('data:image/')) return null;
+  const matched = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!matched) return null;
+  const mime = matched[1];
+  const payload = matched[2];
+  const ext = mime.includes('png') ? '.png' : mime.includes('jpeg') || mime.includes('jpg') ? '.jpg' : '.img';
+  const fileName = `${Date.now()}-${randomUUID()}${ext}`;
+  const filePath = path.join(paths.uploadDir, fileName);
+  fs.writeFileSync(filePath, Buffer.from(payload, 'base64'));
+  return `/uploads/${fileName}`;
+}
+
 questionsRouter.post('/', upload.single('image'), (req, res) => {
-  const { sessionId, prompt, options, correctOptionIndex, weight = 100, timeLimitSeconds = 20 } = req.body;
+  const { sessionId, prompt, options, correctOptionIndex, weight = 100, timeLimitSeconds = 20, pastedImageDataUrl } = req.body;
   const parsedOptions = Array.isArray(options) ? options : JSON.parse(options ?? '[]');
   if (!sessionId || !prompt || parsedOptions.length < 2 || parsedOptions.length > 5) return res.status(400).json({ error: 'invalid question payload' });
 
@@ -26,7 +40,16 @@ questionsRouter.post('/', upload.single('image'), (req, res) => {
       `INSERT INTO questions (sessionId, prompt, imagePath, optionsJson, correctOptionIndex, weight, timeLimitSeconds, orderInSession)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(Number(sessionId), prompt, req.file ? `/uploads/${req.file.filename}` : null, JSON.stringify(parsedOptions), Number(correctOptionIndex), Number(weight), Number(timeLimitSeconds), order);
+    .run(
+      Number(sessionId),
+      prompt,
+      req.file ? `/uploads/${req.file.filename}` : savePastedDataUrl(pastedImageDataUrl),
+      JSON.stringify(parsedOptions),
+      Number(correctOptionIndex),
+      Number(weight),
+      Number(timeLimitSeconds),
+      order
+    );
 
   emitAll(Number(sessionId));
   res.status(201).json(db.prepare('SELECT * FROM questions WHERE id = ?').get(result.lastInsertRowid));
@@ -43,9 +66,10 @@ questionsRouter.put('/:id', upload.single('image'), (req, res) => {
   const correctOptionIndex = Number(req.body.correctOptionIndex ?? q.correctOptionIndex);
   const options = req.body.options ? (Array.isArray(req.body.options) ? req.body.options : JSON.parse(req.body.options)) : JSON.parse(q.optionsJson);
 
+  const pastedPath = savePastedDataUrl(req.body.pastedImageDataUrl);
   db.prepare(
     `UPDATE questions SET prompt=?, imagePath=?, optionsJson=?, correctOptionIndex=?, weight=?, timeLimitSeconds=? WHERE id=?`
-  ).run(prompt, req.file ? `/uploads/${req.file.filename}` : q.imagePath, JSON.stringify(options), correctOptionIndex, weight, timeLimitSeconds, id);
+  ).run(prompt, req.file ? `/uploads/${req.file.filename}` : pastedPath ?? q.imagePath, JSON.stringify(options), correctOptionIndex, weight, timeLimitSeconds, id);
 
   emitAll(q.sessionId);
   res.json({ ok: true });

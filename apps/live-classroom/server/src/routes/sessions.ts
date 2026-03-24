@@ -10,6 +10,19 @@ const randomNames = ['반짝호랑이', '푸른고래', '우주토끼', '행복�
 
 export const sessionsRouter = Router();
 
+sessionsRouter.get('/', (_req, res) => {
+  const sessions = db
+    .prepare(
+      `SELECT s.*, COUNT(q.id) AS questionCount
+       FROM sessions s
+       LEFT JOIN questions q ON q.sessionId = s.id
+       GROUP BY s.id
+       ORDER BY s.id DESC`
+    )
+    .all();
+  res.json(sessions);
+});
+
 sessionsRouter.get('/code/:joinCode', (req, res) => {
   const joinCode = String(req.params.joinCode || '').toUpperCase();
   const session = db.prepare('SELECT * FROM sessions WHERE joinCode = ?').get(joinCode);
@@ -20,11 +33,29 @@ sessionsRouter.get('/code/:joinCode', (req, res) => {
 sessionsRouter.post('/', (req, res) => {
   const { name, randomNicknameEnabled = false } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
+  const duplicate = db.prepare('SELECT id FROM sessions WHERE name = ?').get(String(name).trim());
+  if (duplicate) return res.status(409).json({ error: 'duplicate worksheet name' });
   let joinCode = makeJoinCode();
   while (getSessionByCode(joinCode)) joinCode = makeJoinCode();
   const result = db.prepare('INSERT INTO sessions (name, joinCode, randomNicknameEnabled) VALUES (?, ?, ?)').run(name, joinCode, randomNicknameEnabled ? 1 : 0);
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(session);
+});
+
+sessionsRouter.delete('/:id', (req, res) => {
+  const sessionId = Number(req.params.id);
+  const tx = db.transaction(() => {
+    const questionIds = db.prepare('SELECT id FROM questions WHERE sessionId = ?').all(sessionId) as Array<{ id: number }>;
+    for (const q of questionIds) {
+      db.prepare('DELETE FROM responses WHERE questionId = ?').run(q.id);
+      db.prepare('DELETE FROM score_logs WHERE sourceType = ? AND sourceId = ?').run('question', q.id);
+    }
+    db.prepare('DELETE FROM questions WHERE sessionId = ?').run(sessionId);
+    db.prepare('DELETE FROM students WHERE sessionId = ?').run(sessionId);
+    db.prepare('DELETE FROM sessions WHERE id = ?').run(sessionId);
+  });
+  tx();
+  res.json({ ok: true });
 });
 
 sessionsRouter.get('/:id', (req, res) => {
