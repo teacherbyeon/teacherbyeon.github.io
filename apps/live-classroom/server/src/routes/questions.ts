@@ -4,6 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { db, paths } from '../db.js';
 import { calculateScore } from '../lib/scoring.js';
+import { parseDbTimestampToMs } from '../lib/time.js';
 import { emitQuestionStats, emitSessionUpdate } from '../sockets/socket.js';
 
 const storage = multer.diskStorage({
@@ -78,7 +79,7 @@ questionsRouter.post('/:id/start', (req, res) => {
   if (!question) return res.status(404).json({ error: 'question not found' });
   if (question.status !== 'idle') return res.status(400).json({ error: 'question must be idle' });
 
-  db.prepare(`UPDATE questions SET status = 'active', startedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(id);
+  db.prepare(`UPDATE questions SET status = 'active', startedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
   db.prepare('UPDATE sessions SET activeQuestionId = ?, activePollId = NULL WHERE id = ?').run(id, question.sessionId);
   emitSessionUpdate(question.sessionId);
   res.json({ ok: true });
@@ -88,7 +89,7 @@ questionsRouter.post('/:id/end', (req, res) => {
   const id = Number(req.params.id);
   const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
   if (!question) return res.status(404).json({ error: 'question not found' });
-  db.prepare(`UPDATE questions SET status = 'ended', endedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(id);
+  db.prepare(`UPDATE questions SET status = 'ended', endedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
   db.prepare('UPDATE sessions SET activeQuestionId = NULL WHERE id = ?').run(question.sessionId);
   emitSessionUpdate(question.sessionId);
   res.json({ ok: true });
@@ -102,7 +103,7 @@ questionsRouter.post('/:id/reveal', (req, res) => {
     return res.status(400).json({ error: 'question must be ended or active before reveal' });
   }
 
-  db.prepare(`UPDATE questions SET status = 'revealed', revealedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(id);
+  db.prepare(`UPDATE questions SET status = 'revealed', revealedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
   emitSessionUpdate(question.sessionId);
   res.json({ ok: true });
 });
@@ -123,7 +124,7 @@ questionsRouter.post('/:id/respond', (req, res) => {
   if (already) return res.status(409).json({ error: 'already submitted' });
 
   const now = Date.now();
-  const startedAt = new Date(question.startedAt).getTime();
+  const startedAt = parseDbTimestampToMs(question.startedAt);
   const elapsed = now - startedAt;
   if (elapsed > question.timeLimitSeconds * 1000) {
     return res.status(400).json({ error: 'time over' });

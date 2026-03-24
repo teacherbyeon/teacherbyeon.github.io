@@ -1,4 +1,5 @@
 import { db } from '../db.js';
+import { parseDbTimestampToMs } from '../lib/time.js';
 import { emitSessionUpdate } from './socket.js';
 
 export function startTimerLoop() {
@@ -10,10 +11,10 @@ export function startTimerLoop() {
       .all() as { id: number; sessionId: number; startedAt: string; timeLimitSeconds: number }[];
 
     for (const q of activeQuestions) {
-      const endMs = new Date(q.startedAt).getTime() + q.timeLimitSeconds * 1000;
+      const endMs = parseDbTimestampToMs(q.startedAt) + q.timeLimitSeconds * 1000;
       const remainingMs = Math.max(0, endMs - now);
       if (remainingMs === 0) {
-        db.prepare(`UPDATE questions SET status = 'ended', endedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(q.id);
+        db.prepare(`UPDATE questions SET status = 'ended', endedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(q.id);
         db.prepare(`UPDATE sessions SET activeQuestionId = NULL WHERE id = ?`).run(q.sessionId);
         emitSessionUpdate(q.sessionId);
       }
@@ -24,10 +25,10 @@ export function startTimerLoop() {
       .all() as { id: number; sessionId: number; startedAt: string; timeLimitSeconds: number }[];
 
     for (const p of activePolls) {
-      const endMs = new Date(p.startedAt).getTime() + p.timeLimitSeconds * 1000;
+      const endMs = parseDbTimestampToMs(p.startedAt) + p.timeLimitSeconds * 1000;
       const remainingMs = Math.max(0, endMs - now);
       if (remainingMs === 0) {
-        db.prepare(`UPDATE polls SET status = 'ended', endedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(p.id);
+        db.prepare(`UPDATE polls SET status = 'ended', endedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(p.id);
         db.prepare(`UPDATE sessions SET activePollId = NULL WHERE id = ?`).run(p.sessionId);
         emitSessionUpdate(p.sessionId);
       }

@@ -21,6 +21,14 @@ function safeOptions(value: string | null | undefined): string[] {
   }
 }
 
+function parseServerTimeMs(value: string | null | undefined): number {
+  if (!value) return 0;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(value)) {
+    return new Date(value.replace(' ', 'T') + 'Z').getTime();
+  }
+  return new Date(value).getTime();
+}
+
 export function StudentPage() {
   const [joinCode, setJoinCode] = useState('');
   const [name, setName] = useState('');
@@ -145,7 +153,7 @@ export function StudentPage() {
 
   const remainSeconds = useMemo(() => {
     if (!state?.currentQuestion?.startedAt) return 0;
-    const end = new Date(state.currentQuestion.startedAt).getTime() + state.currentQuestion.timeLimitSeconds * 1000;
+    const end = parseServerTimeMs(state.currentQuestion.startedAt) + state.currentQuestion.timeLimitSeconds * 1000;
     return Math.max(0, Math.ceil((end - now) / 1000));
   }, [state, now]);
 

@@ -27,7 +27,7 @@ pollsRouter.post('/:id/start', (req, res) => {
   const poll = db.prepare('SELECT * FROM polls WHERE id = ?').get(id) as any;
   if (!poll) return res.status(404).json({ error: 'poll not found' });
   if (poll.status !== 'draft') return res.status(400).json({ error: 'poll must be draft' });
-  db.prepare(`UPDATE polls SET status = 'active', startedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(id);
+  db.prepare(`UPDATE polls SET status = 'active', startedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
   db.prepare('UPDATE sessions SET activePollId = ?, activeQuestionId = NULL WHERE id = ?').run(id, poll.sessionId);
   emitSessionUpdate(poll.sessionId);
   res.json({ ok: true });
@@ -37,7 +37,7 @@ pollsRouter.post('/:id/end', (req, res) => {
   const id = Number(req.params.id);
   const poll = db.prepare('SELECT * FROM polls WHERE id = ?').get(id) as any;
   if (!poll) return res.status(404).json({ error: 'poll not found' });
-  db.prepare(`UPDATE polls SET status = 'ended', endedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(id);
+  db.prepare(`UPDATE polls SET status = 'ended', endedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
   db.prepare('UPDATE sessions SET activePollId = NULL WHERE id = ?').run(poll.sessionId);
   emitSessionUpdate(poll.sessionId);
   res.json({ ok: true });
