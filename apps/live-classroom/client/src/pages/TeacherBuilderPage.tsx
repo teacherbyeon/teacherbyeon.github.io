@@ -112,6 +112,40 @@ export function TeacherBuilderPage() {
     await loadWorksheets();
   };
 
+  const renameWorksheet = async (id: number, currentName: string) => {
+    const nextName = window.prompt('새 워크시트 이름을 입력하세요.', currentName)?.trim();
+    if (!nextName || nextName === currentName) return;
+    try {
+      await api(`/api/sessions/${id}`, { method: 'PATCH', body: JSON.stringify({ name: nextName }) });
+      if (sessionId === id) await loadSession(id);
+      await loadWorksheets();
+      setError('');
+    } catch {
+      setError('워크시트 이름 변경에 실패했습니다. 중복 이름인지 확인하세요.');
+    }
+  };
+
+  const copyWorksheet = async (id: number, sourceName: string) => {
+    const copiedName = window.prompt('복사본 이름을 입력하세요.', `${sourceName} (복사본)`)?.trim();
+    if (!copiedName) return;
+    try {
+      const copied = await api<any>(`/api/sessions/${id}/copy`, { method: 'POST', body: JSON.stringify({ name: copiedName }) });
+      await loadWorksheets();
+      await loadSession(copied.id);
+      setError('');
+    } catch {
+      setError('워크시트 복사에 실패했습니다. 중복 이름인지 확인하세요.');
+    }
+  };
+
+  const resetWorksheetStudents = async (id: number, worksheetName: string) => {
+    const ok = window.confirm(`"${worksheetName}"의 학생/응답 기록을 초기화할까요?`);
+    if (!ok) return;
+    await api(`/api/sessions/${id}/students/reset`, { method: 'POST' });
+    if (sessionId === id) await loadSession(id);
+    await loadWorksheets();
+  };
+
   const move = async (id: number, d: -1 | 1) => {
     const list = [...(state?.questionSet ?? [])];
     const i = list.findIndex((q) => q.id === id);
@@ -172,6 +206,9 @@ export function TeacherBuilderPage() {
                 {w.name} (문항 {w.questionCount})
               </button>
               <button className="inline-btn" onClick={() => navigate(`/teacher/live?sessionId=${w.id}`)}>라이브</button>
+              <button className="inline-btn" onClick={() => renameWorksheet(w.id, w.name)}>이름변경</button>
+              <button className="inline-btn" onClick={() => copyWorksheet(w.id, w.name)}>복사</button>
+              <button className="inline-btn warn-btn" onClick={() => resetWorksheetStudents(w.id, w.name)}>학생초기화</button>
               <button className="inline-btn danger-btn" onClick={() => deleteWorksheet(w.id)}>삭제</button>
             </li>
           ))}

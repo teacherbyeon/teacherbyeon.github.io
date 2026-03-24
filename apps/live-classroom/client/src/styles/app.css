@@ -8,6 +8,7 @@ button { background: #2563eb; color: white; border: none; font-weight: 700; }
 button:disabled { background: #94a3b8; }
 .row { display: flex; gap: 8px; }
 .inline-btn { width: auto; min-width: 72px; }
+.warn-btn { background: #d97706; }
 .danger-btn { background: #dc2626; }
 .item { border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
 .worksheet-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }

@@ -42,6 +42,91 @@ sessionsRouter.post('/', (req, res) => {
   res.status(201).json(session);
 });
 
+sessionsRouter.patch('/:id', (req, res) => {
+  const sessionId = Number(req.params.id);
+  const rawName = String(req.body?.name ?? '').trim();
+  if (!rawName) return res.status(400).json({ error: 'name is required' });
+
+  const session = db.prepare('SELECT id FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'session not found' });
+
+  const duplicate = db.prepare('SELECT id FROM sessions WHERE name = ? AND id != ?').get(rawName, sessionId);
+  if (duplicate) return res.status(409).json({ error: 'duplicate worksheet name' });
+
+  db.prepare('UPDATE sessions SET name = ? WHERE id = ?').run(rawName, sessionId);
+  const updated = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+  res.json(updated);
+});
+
+sessionsRouter.post('/:id/copy', (req, res) => {
+  const sessionId = Number(req.params.id);
+  const source = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as any;
+  if (!source) return res.status(404).json({ error: 'session not found' });
+
+  const rawName = String(req.body?.name ?? '').trim() || `${source.name} (복사본)`;
+  const duplicate = db.prepare('SELECT id FROM sessions WHERE name = ?').get(rawName);
+  if (duplicate) return res.status(409).json({ error: 'duplicate worksheet name' });
+
+  let joinCode = makeJoinCode();
+  while (getSessionByCode(joinCode)) joinCode = makeJoinCode();
+
+  const tx = db.transaction(() => {
+    const inserted = db
+      .prepare('INSERT INTO sessions (name, joinCode, randomNicknameEnabled) VALUES (?, ?, ?)')
+      .run(rawName, joinCode, source.randomNicknameEnabled ? 1 : 0);
+    const copiedSessionId = Number(inserted.lastInsertRowid);
+    const questions = db
+      .prepare(
+        `SELECT prompt, imagePath, optionsJson, correctOptionIndex, weight, timeLimitSeconds, orderInSession
+         FROM questions
+         WHERE sessionId = ?
+         ORDER BY orderInSession`
+      )
+      .all(sessionId) as any[];
+
+    const qInsert = db.prepare(
+      `INSERT INTO questions
+       (sessionId, prompt, imagePath, optionsJson, correctOptionIndex, weight, timeLimitSeconds, orderInSession)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    for (const q of questions) {
+      qInsert.run(
+        copiedSessionId,
+        q.prompt,
+        q.imagePath ?? null,
+        q.optionsJson,
+        q.correctOptionIndex,
+        q.weight,
+        q.timeLimitSeconds,
+        q.orderInSession
+      );
+    }
+    return copiedSessionId;
+  });
+
+  const copiedSessionId = tx();
+  const copied = db.prepare('SELECT * FROM sessions WHERE id = ?').get(copiedSessionId);
+  res.status(201).json(copied);
+});
+
+sessionsRouter.post('/:id/students/reset', (req, res) => {
+  const sessionId = Number(req.params.id);
+  const session = db.prepare('SELECT id FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'session not found' });
+
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM responses WHERE sessionId = ?').run(sessionId);
+    db.prepare('DELETE FROM score_logs WHERE sessionId = ?').run(sessionId);
+    db.prepare('DELETE FROM students WHERE sessionId = ?').run(sessionId);
+    db.prepare(
+      "UPDATE sessions SET status='waiting', startedAt=NULL, finishedAt=NULL, currentQuestionOrder=0, questionState='waiting', questionDeadlineAt=NULL WHERE id = ?"
+    ).run(sessionId);
+  });
+  tx();
+  emitAll(sessionId);
+  res.json({ ok: true });
+});
+
 sessionsRouter.delete('/:id', (req, res) => {
   const sessionId = Number(req.params.id);
   const tx = db.transaction(() => {
