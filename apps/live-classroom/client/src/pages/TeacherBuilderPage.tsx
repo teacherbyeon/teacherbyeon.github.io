@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/http';
 import { LatexMixedText } from '../components/LatexMixedText';
 import type { Question, TeacherState } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 function parseOptions(json: string): string[] {
   try { const p = JSON.parse(json); return Array.isArray(p) ? p : []; } catch { return []; }
@@ -19,6 +20,7 @@ const formulaButtons = [
 type FocusTarget = { kind: 'prompt' } | { kind: 'option'; index: number };
 
 export function TeacherBuilderPage() {
+  const navigate = useNavigate();
   const [worksheets, setWorksheets] = useState<any[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [state, setState] = useState<TeacherState | null>(null);
@@ -165,9 +167,12 @@ export function TeacherBuilderPage() {
         {error && <p style={{ color: '#dc2626' }}>{error}</p>}
         <ul>
           {worksheets.map((w) => (
-            <li key={w.id}>
-              <button onClick={() => loadSession(w.id)}>{w.name} (ID:{w.id}, 문항 {w.questionCount})</button>
-              <button onClick={() => deleteWorksheet(w.id)}>삭제</button>
+            <li key={w.id} className="worksheet-row">
+              <button className="worksheet-name-btn" onClick={() => loadSession(w.id)}>
+                {w.name} (문항 {w.questionCount})
+              </button>
+              <button className="inline-btn" onClick={() => navigate(`/teacher/live?sessionId=${w.id}`)}>라이브</button>
+              <button className="inline-btn danger-btn" onClick={() => deleteWorksheet(w.id)}>삭제</button>
             </li>
           ))}
         </ul>

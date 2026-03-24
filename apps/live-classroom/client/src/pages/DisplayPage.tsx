@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { socket } from '../api/socket';
 import type { TeacherState } from '../types';
+import { useSearchParams } from 'react-router-dom';
 
 export function DisplayPage() {
-  const [sessionId, setSessionId] = useState(1);
+  const [searchParams] = useSearchParams();
+  const initialId = Number(searchParams.get('sessionId') || 1);
+  const [sessionId, setSessionId] = useState(initialId);
   const [state, setState] = useState<TeacherState | null>(null);
 
   useEffect(() => {

@@ -7,7 +7,11 @@ textarea { min-height: 88px; }
 button { background: #2563eb; color: white; border: none; font-weight: 700; }
 button:disabled { background: #94a3b8; }
 .row { display: flex; gap: 8px; }
+.inline-btn { width: auto; min-width: 72px; }
+.danger-btn { background: #dc2626; }
 .item { border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+.worksheet-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.worksheet-name-btn { flex: 1; text-align: left; }
 .student { max-width: 720px; }
 .student .big-btn { font-size: 1.1rem; min-height: 56px; text-align: left; }
 .preview-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 8px; margin: 4px 0 8px; }
@@ -18,4 +22,8 @@ button:disabled { background: #94a3b8; }
 .race-row { margin-bottom: 10px; }
 .race-track { width: 100%; height: 30px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
 .race-runner { height: 100%; background: linear-gradient(90deg,#f97316,#ef4444); color: #fff; font-weight: 700; padding-left: 8px; display:flex; align-items:center; }
-@media (max-width: 768px) { .page { padding: 12px; } .row { flex-direction: column; } }
+@media (max-width: 768px) {
+  .page { padding: 12px; }
+  .row { flex-direction: column; }
+  .worksheet-row { flex-wrap: wrap; }
+}

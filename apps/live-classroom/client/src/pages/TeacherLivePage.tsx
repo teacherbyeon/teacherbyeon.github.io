@@ -4,9 +4,12 @@ import { api } from '../api/http';
 import { socket } from '../api/socket';
 import { LatexMixedText } from '../components/LatexMixedText';
 import type { TeacherState } from '../types';
+import { useSearchParams } from 'react-router-dom';
 
 export function TeacherLivePage() {
-  const [sessionId, setSessionId] = useState<number>(1);
+  const [searchParams] = useSearchParams();
+  const initialId = Number(searchParams.get('sessionId') || 1);
+  const [sessionId, setSessionId] = useState<number>(initialId);
   const [state, setState] = useState<TeacherState | null>(null);
 
   useEffect(() => {
@@ -27,8 +30,16 @@ export function TeacherLivePage() {
     <main className="page">
       <h1>교사 라이브 진행 화면</h1>
       <a href="/teacher/builder">워크시트 빌더로 이동</a>
-      <input type="number" value={sessionId} onChange={(e) => setSessionId(Number(e.target.value))} />
-      <button onClick={refresh}>불러오기</button>
+      <div className="row">
+        <input type="number" value={sessionId} onChange={(e) => setSessionId(Number(e.target.value))} />
+        <button className="inline-btn" onClick={refresh}>불러오기</button>
+        <button
+          className="inline-btn"
+          onClick={() => window.open(`/display?sessionId=${sessionId}`, 'raceBoard', 'width=1200,height=800')}
+        >
+          레이스 보드 팝업
+        </button>
+      </div>
 
       {state && (
         <>
