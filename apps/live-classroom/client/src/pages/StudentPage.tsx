@@ -1,247 +1,140 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/http';
 import { socket } from '../api/socket';
-import type { Poll, Question, Session } from '../types';
+import type { Session, SessionStatePayload } from '../types';
 
-interface StatePayload {
-  session: Session;
-  currentQuestion: Question | null;
-  currentPoll: Poll | null;
-  leaderboard: Array<{ id: number; displayName: string; totalScore: number }>;
-}
-
-function safeOptions(value: string | null | undefined): string[] {
-  if (!value) return [];
+function parseOptions(json: string): string[] {
   try {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((x) => String(x));
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v.map((x) => String(x)) : [];
   } catch {
     return [];
   }
-}
-
-function parseServerTimeMs(value: string | null | undefined): number {
-  if (!value) return 0;
-  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(value)) {
-    return new Date(value.replace(' ', 'T') + 'Z').getTime();
-  }
-  return new Date(value).getTime();
 }
 
 export function StudentPage() {
   const [joinCode, setJoinCode] = useState('');
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState('');
+  const [session, setSession] = useState<Session | null>(null);
+  const [state, setState] = useState<SessionStatePayload | null>(null);
   const [studentId, setStudentId] = useState<number | null>(null);
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  const [state, setState] = useState<StatePayload | null>(null);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState('');
-  const [debug, setDebug] = useState('');
-  const [now, setNow] = useState(Date.now());
-  const [submittedQuestionId, setSubmittedQuestionId] = useState<number | null>(null);
-  const [submittedOptionIndex, setSubmittedOptionIndex] = useState<number | null>(null);
-  const [submittedPollId, setSubmittedPollId] = useState<number | null>(null);
-  const connected = socket.connected;
 
   useEffect(() => {
-    const onStateUpdated = (payload: StatePayload) => {
-      console.log('[학생] state 수신', payload);
-      setState(payload);
-      setDebug(`state 수신 완료: q=${payload.currentQuestion?.id ?? '-'}, p=${payload.currentPoll?.id ?? '-'}`);
-    };
-
-    socket.on('display:stateUpdated', onStateUpdated);
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => {
-      socket.off('display:stateUpdated', onStateUpdated);
-      clearInterval(timer);
-    };
+    const onState = (payload: SessionStatePayload) => setState(payload);
+    socket.on('session:stateUpdated', onState);
+    return () => socket.off('session:stateUpdated', onState);
   }, []);
 
-  useEffect(() => {
-    const checkSubmission = async () => {
-      if (!studentId || !state?.currentQuestion) return;
-      try {
-        const result = await api<{ submitted: boolean; selectedOptionIndex?: number }>(
-          `/api/questions/${state.currentQuestion.id}/submission/${studentId}`
-        );
-        if (result.submitted) {
-          setSubmittedQuestionId(state.currentQuestion.id);
-          setSubmittedOptionIndex(result.selectedOptionIndex ?? null);
-          setMessage('이미 제출한 문제입니다. 결과를 기다려 주세요.');
-        } else {
-          setSubmittedQuestionId(null);
-          setSubmittedOptionIndex(null);
-        }
-      } catch (error) {
-        console.error('[학생] 제출 상태 확인 실패', error);
-      }
-    };
-
-    void checkSubmission();
-  }, [studentId, state?.currentQuestion?.id]);
-
   const join = async () => {
-    try {
-      setMessage('');
-      const sessionRes = await fetch(`/api/sessions/code/${joinCode.toUpperCase()}`);
-      let session: Session | null = null;
-      if (sessionRes.ok) session = await sessionRes.json();
-      if (!session) {
-        setMessage('입장 코드를 확인해 주세요.');
-        return;
-      }
-
-      const existingStudentId = Number(localStorage.getItem(`student:${session.id}`)) || undefined;
-      const student = await api<any>(`/api/sessions/${session.id}/students/join`, {
-        method: 'POST',
-        body: JSON.stringify({ name, identifier: identifier || name, existingStudentId })
-      });
-      setStudentId(student.id);
-      setSessionId(session.id);
-      localStorage.setItem(`student:${session.id}`, String(student.id));
-      socket.emit('session:joinRoom', { sessionId: session.id });
-      setDebug('세션 room join 요청 완료');
-    } catch (error) {
-      console.error('[학생] 입장 실패', error);
-      setMessage('입장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    const res = await fetch(`/api/sessions/code/${joinCode.toUpperCase()}`);
+    if (!res.ok) {
+      setMessage('입장 코드를 확인하세요.');
+      return;
     }
+    const sessionData = (await res.json()) as Session;
+
+    const existingStudentId = Number(localStorage.getItem(`student:${sessionData.id}`)) || undefined;
+    const student = await api<any>(`/api/sessions/${sessionData.id}/students/join`, {
+      method: 'POST',
+      body: JSON.stringify({ name, identifier: identifier || name, existingStudentId })
+    });
+
+    setSession(sessionData);
+    setStudentId(student.id);
+    localStorage.setItem(`student:${sessionData.id}`, String(student.id));
+    socket.emit('session:joinRoom', { sessionId: sessionData.id });
+
+    const answerState = await api<{ answers: Array<{ questionId: number; selectedOptionIndex: number }>; submitted: boolean }>(
+      `/api/sessions/${sessionData.id}/student/${student.id}/answers`
+    );
+    const mapped: Record<number, number> = {};
+    for (const a of answerState.answers) mapped[a.questionId] = a.selectedOptionIndex;
+    setAnswers(mapped);
+    setSubmitted(answerState.submitted);
   };
 
-  const submitAnswer = async (optionIndex: number) => {
-    if (!state?.currentQuestion || !studentId) return;
-    try {
-      const result = await api<{ ok: boolean; score: number }>(`/api/questions/${state.currentQuestion.id}/respond`, {
-        method: 'POST',
-        body: JSON.stringify({ studentId, selectedOptionIndex: optionIndex })
-      });
-      console.log('[학생] 응답 제출 성공', result);
-      setSubmittedQuestionId(state.currentQuestion.id);
-      setSubmittedOptionIndex(optionIndex);
-      setMessage(`제출 완료! (+${result.score}점)`);
-    } catch (error: unknown) {
-      const raw = String(error ?? '');
-      console.error('[학생] 응답 제출 실패', raw);
-      if (raw.includes('already submitted')) {
-        setSubmittedQuestionId(state.currentQuestion.id);
-        setMessage('이미 제출한 문제입니다.');
-      } else if (raw.includes('time over')) {
-        setMessage('제한 시간이 종료되어 제출할 수 없습니다.');
-      } else if (raw.includes('question is not active')) {
-        setMessage('아직 시작되지 않았거나 이미 종료된 문제입니다.');
-      } else {
-        setMessage('답안 제출에 실패했습니다. 네트워크 상태를 확인해 주세요.');
-      }
+  const saveAnswer = async (questionId: number, selectedOptionIndex: number) => {
+    if (!session || !studentId || submitted) return;
+    if (state?.session.status !== 'active') {
+      setMessage('현재 세션이 풀이 가능 상태가 아닙니다.');
+      return;
     }
+
+    await api('/api/questions/answer', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId: session.id, questionId, studentId, selectedOptionIndex })
+    });
+    setAnswers((prev) => ({ ...prev, [questionId]: selectedOptionIndex }));
   };
 
-  const submitVote = async (optionIndex: number) => {
-    if (!state?.currentPoll || !studentId) return;
-    try {
-      await api(`/api/polls/${state.currentPoll.id}/vote`, {
-        method: 'POST',
-        body: JSON.stringify({ studentId, selectedOptionIndex: optionIndex })
-      });
-      setSubmittedPollId(state.currentPoll.id);
-      setMessage('투표 완료!');
-    } catch (error) {
-      console.error('[학생] 투표 실패', error);
-      setMessage('투표 제출에 실패했습니다.');
-    }
+  const submitAll = async () => {
+    if (!session || !studentId) return;
+    await api(`/api/sessions/${session.id}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ studentId })
+    });
+    setSubmitted(true);
+    setMessage('제출이 완료되었습니다.');
   };
 
-  const remainSeconds = useMemo(() => {
-    if (!state?.currentQuestion?.startedAt) return 0;
-    const end = parseServerTimeMs(state.currentQuestion.startedAt) + state.currentQuestion.timeLimitSeconds * 1000;
-    return Math.max(0, Math.ceil((end - now) / 1000));
-  }, [state, now]);
+  const readyCount = useMemo(() => {
+    const total = state?.questionSet.length ?? 0;
+    if (total === 0) return { done: 0, total: 0 };
+    return { done: Object.keys(answers).length, total };
+  }, [answers, state]);
 
-  const myScore = useMemo(() => {
-    if (!studentId) return 0;
-    return state?.leaderboard.find((x) => x.id === studentId)?.totalScore ?? 0;
-  }, [state, studentId]);
-
-  const questionOptions = useMemo(() => safeOptions(state?.currentQuestion?.optionsJson), [state?.currentQuestion?.optionsJson]);
-  const pollOptions = useMemo(() => safeOptions(state?.currentPoll?.optionsJson), [state?.currentPoll?.optionsJson]);
-
-  if (!sessionId) {
+  if (!session) {
     return (
       <main className="page student">
         <h1>학생 입장</h1>
         <input placeholder="입장 코드" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
         <input placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
         <input placeholder="번호(선택)" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
-        <button onClick={join}>입장</button>
-        <small>{message}</small>
+        <button onClick={join}>입장하기</button>
+        <p>{message}</p>
       </main>
     );
   }
 
-  const currentQuestion = state?.currentQuestion;
-  const currentPoll = state?.currentPoll;
-  const canAnswer =
-    !!currentQuestion &&
-    currentQuestion.status === 'active' &&
-    submittedQuestionId !== currentQuestion.id &&
-    questionOptions.length > 0;
-
   return (
     <main className="page student">
-      <h1>학생 화면</h1>
-      <p>연결 상태: {connected ? '온라인' : '재연결 중'}</p>
-      <p>내 점수: {myScore}</p>
+      <h1>문제 풀이</h1>
+      <p>세션 상태: <b>{state?.session.status ?? session.status}</b></p>
+      <p>풀이 진행: {readyCount.done} / {readyCount.total}</p>
       {message && <p>{message}</p>}
-      <small style={{ color: '#64748b' }}>디버그: {debug} / options={questionOptions.length}</small>
 
-      {currentQuestion && (
-        <section className="card">
-          <h2>{currentQuestion.title || '퀴즈 문제'}</h2>
-          <p>상태: {currentQuestion.status} / 남은 시간: {remainSeconds}s</p>
-          {currentQuestion.imagePath && <img src={currentQuestion.imagePath} className="question-image" />}
-
-          {questionOptions.length === 0 && <p>선택지를 불러오지 못했습니다.</p>}
-
-          {questionOptions.map((opt: string, idx: number) => {
-            const isSelected = submittedOptionIndex === idx && submittedQuestionId === currentQuestion.id;
-            return (
+      {state?.questionSet.map((q) => {
+        const options = parseOptions(q.optionsJson);
+        return (
+          <section key={q.id} className="card">
+            <h2>{q.orderInSession}. {q.prompt}</h2>
+            {q.imagePath && <img src={q.imagePath} className="question-image" />}
+            {options.map((opt, idx) => (
               <button
                 key={idx}
                 className="big-btn"
-                disabled={!canAnswer}
-                onClick={() => submitAnswer(idx)}
-                style={isSelected ? { background: '#16a34a' } : undefined}
+                disabled={submitted || state.session.status !== 'active'}
+                style={answers[q.id] === idx ? { background: '#16a34a' } : undefined}
+                onClick={() => saveAnswer(q.id, idx)}
               >
                 {opt}
               </button>
-            );
-          })}
+            ))}
+          </section>
+        );
+      })}
 
-          {!canAnswer && currentQuestion.status === 'active' && submittedQuestionId === currentQuestion.id && (
-            <p>✅ 제출 완료 상태입니다.</p>
-          )}
-        </section>
+      {!submitted ? (
+        <button disabled={(state?.session.status !== 'active') || readyCount.done !== readyCount.total} onClick={submitAll}>
+          최종 제출
+        </button>
+      ) : (
+        <div className="card"><h2>제출 완료</h2><p>교사가 세션을 마감할 때까지 대기해주세요.</p></div>
       )}
-
-      {currentPoll && (
-        <section className="card">
-          <h2>{currentPoll.title}</h2>
-          <p>상태: {currentPoll.status}</p>
-          {pollOptions.map((opt: string, idx: number) => (
-            <button
-              key={idx}
-              className="big-btn"
-              disabled={currentPoll.status !== 'active' || submittedPollId === currentPoll.id}
-              onClick={() => submitVote(idx)}
-            >
-              {opt}
-            </button>
-          ))}
-          {submittedPollId === currentPoll.id && <p>✅ 투표 제출 완료</p>}
-        </section>
-      )}
-
-      {!currentQuestion && !currentPoll && <p>교사가 문제/투표를 시작하면 여기에 표시됩니다.</p>}
     </main>
   );
 }

@@ -3,9 +3,7 @@ import multer from 'multer';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { db, paths } from '../db.js';
-import { calculateScore } from '../lib/scoring.js';
-import { parseDbTimestampToMs } from '../lib/time.js';
-import { emitQuestionStats, emitSessionUpdate } from '../sockets/socket.js';
+import { emitSessionUpdate } from '../sockets/socket.js';
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, paths.uploadDir),
@@ -19,23 +17,9 @@ const upload = multer({ storage });
 export const questionsRouter = Router();
 
 questionsRouter.post('/', upload.single('image'), (req, res) => {
-  const {
-    sessionId,
-    title,
-    body,
-    options,
-    correctOptionIndex,
-    timeLimitSeconds,
-    baseScore = 100,
-    speedBonusEnabled = true,
-    firstCorrectBonusEnabled = true,
-    firstBonus1 = 20,
-    firstBonus2 = 10,
-    firstBonus3 = 5
-  } = req.body;
-
+  const { sessionId, prompt, options, correctOptionIndex, weight = 100 } = req.body;
   const parsedOptions = Array.isArray(options) ? options : JSON.parse(options ?? '[]');
-  if (!sessionId || parsedOptions.length < 2 || parsedOptions.length > 5) {
+  if (!sessionId || !prompt || parsedOptions.length < 2 || parsedOptions.length > 5) {
     return res.status(400).json({ error: 'invalid question payload' });
   }
 
@@ -46,25 +30,16 @@ questionsRouter.post('/', upload.single('image'), (req, res) => {
 
   const result = db
     .prepare(
-      `INSERT INTO questions (
-        sessionId, title, body, imagePath, optionsJson, correctOptionIndex, timeLimitSeconds,
-        baseScore, speedBonusEnabled, firstCorrectBonusEnabled, firstBonus1, firstBonus2, firstBonus3, orderInSession
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO questions (sessionId, prompt, imagePath, optionsJson, correctOptionIndex, weight, orderInSession)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       Number(sessionId),
-      title ?? null,
-      body ?? null,
+      prompt,
       req.file ? `/uploads/${req.file.filename}` : null,
       JSON.stringify(parsedOptions),
       Number(correctOptionIndex),
-      Number(timeLimitSeconds),
-      Number(baseScore),
-      speedBonusEnabled === 'false' ? 0 : Number(speedBonusEnabled ? 1 : 0),
-      firstCorrectBonusEnabled === 'false' ? 0 : Number(firstCorrectBonusEnabled ? 1 : 0),
-      Number(firstBonus1),
-      Number(firstBonus2),
-      Number(firstBonus3),
+      Number(weight),
       order
     );
 
@@ -73,124 +48,96 @@ questionsRouter.post('/', upload.single('image'), (req, res) => {
   res.status(201).json(question);
 });
 
-questionsRouter.post('/:id/start', (req, res) => {
+questionsRouter.put('/:id', upload.single('image'), (req, res) => {
   const id = Number(req.params.id);
-  const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
-  if (!question) return res.status(404).json({ error: 'question not found' });
-  if (question.status !== 'idle') return res.status(400).json({ error: 'question must be idle' });
+  const q = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
+  if (!q) return res.status(404).json({ error: 'question not found' });
 
-  db.prepare(`UPDATE questions SET status = 'active', startedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
-  db.prepare('UPDATE sessions SET activeQuestionId = ?, activePollId = NULL WHERE id = ?').run(id, question.sessionId);
-  emitSessionUpdate(question.sessionId);
+  const prompt = req.body.prompt ?? q.prompt;
+  const weight = Number(req.body.weight ?? q.weight);
+  const correctOptionIndex = Number(req.body.correctOptionIndex ?? q.correctOptionIndex);
+  const options = req.body.options ? (Array.isArray(req.body.options) ? req.body.options : JSON.parse(req.body.options)) : JSON.parse(q.optionsJson);
+
+  db.prepare(
+    `UPDATE questions SET prompt = ?, imagePath = ?, optionsJson = ?, correctOptionIndex = ?, weight = ? WHERE id = ?`
+  ).run(prompt, req.file ? `/uploads/${req.file.filename}` : q.imagePath, JSON.stringify(options), correctOptionIndex, weight, id);
+
+  emitSessionUpdate(q.sessionId);
   res.json({ ok: true });
 });
 
-questionsRouter.post('/:id/end', (req, res) => {
+questionsRouter.delete('/:id', (req, res) => {
   const id = Number(req.params.id);
-  const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
-  if (!question) return res.status(404).json({ error: 'question not found' });
-  db.prepare(`UPDATE questions SET status = 'ended', endedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
-  db.prepare('UPDATE sessions SET activeQuestionId = NULL WHERE id = ?').run(question.sessionId);
-  emitSessionUpdate(question.sessionId);
+  const q = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
+  if (!q) return res.status(404).json({ error: 'question not found' });
+
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM responses WHERE questionId = ?').run(id);
+    db.prepare('DELETE FROM score_logs WHERE sourceType = ? AND sourceId = ?').run('question', id);
+    db.prepare('DELETE FROM questions WHERE id = ?').run(id);
+  });
+  tx();
+
+  emitSessionUpdate(q.sessionId);
   res.json({ ok: true });
 });
 
-questionsRouter.post('/:id/reveal', (req, res) => {
-  const id = Number(req.params.id);
-  const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
-  if (!question) return res.status(404).json({ error: 'question not found' });
-  if (!['ended', 'active'].includes(question.status)) {
-    return res.status(400).json({ error: 'question must be ended or active before reveal' });
-  }
+questionsRouter.post('/reorder', (req, res) => {
+  const { sessionId, questionIds } = req.body as { sessionId: number; questionIds: number[] };
+  if (!sessionId || !Array.isArray(questionIds)) return res.status(400).json({ error: 'invalid payload' });
 
-  db.prepare(`UPDATE questions SET status = 'revealed', revealedAt = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).run(id);
-  emitSessionUpdate(question.sessionId);
+  const tx = db.transaction(() => {
+    questionIds.forEach((id, idx) => {
+      db.prepare('UPDATE questions SET orderInSession = ? WHERE id = ? AND sessionId = ?').run(idx + 1, id, sessionId);
+    });
+  });
+  tx();
+
+  emitSessionUpdate(sessionId);
   res.json({ ok: true });
 });
 
-questionsRouter.post('/:id/respond', (req, res) => {
-  const id = Number(req.params.id);
-  const { studentId, selectedOptionIndex } = req.body as { studentId: number; selectedOptionIndex: number };
-  const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(id) as any;
+questionsRouter.post('/answer', (req, res) => {
+  const { sessionId, questionId, studentId, selectedOptionIndex } = req.body as {
+    sessionId: number;
+    questionId: number;
+    studentId: number;
+    selectedOptionIndex: number;
+  };
+
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as any;
+  if (!session) return res.status(404).json({ error: 'session not found' });
+  if (session.status !== 'active') return res.status(400).json({ error: 'session is not active' });
+
+  const question = db.prepare('SELECT * FROM questions WHERE id = ? AND sessionId = ?').get(questionId, sessionId) as any;
   if (!question) return res.status(404).json({ error: 'question not found' });
-  if (question.status !== 'active') return res.status(400).json({ error: 'question is not active' });
 
-  const student = db
-    .prepare('SELECT * FROM students WHERE id = ? AND sessionId = ?')
-    .get(studentId, question.sessionId);
-  if (!student) return res.status(400).json({ error: 'student does not belong to session' });
-
-  const already = db.prepare('SELECT id FROM responses WHERE questionId = ? AND studentId = ?').get(id, studentId);
-  if (already) return res.status(409).json({ error: 'already submitted' });
-
-  const now = Date.now();
-  const startedAt = parseDbTimestampToMs(question.startedAt);
-  const elapsed = now - startedAt;
-  if (elapsed > question.timeLimitSeconds * 1000) {
-    return res.status(400).json({ error: 'time over' });
-  }
+  const submitted = db.prepare('SELECT id FROM submissions WHERE sessionId = ? AND studentId = ?').get(sessionId, studentId);
+  if (submitted) return res.status(409).json({ error: 'already submitted whole set' });
 
   const isCorrect = Number(selectedOptionIndex) === question.correctOptionIndex ? 1 : 0;
-
-  let rankAmongCorrect: number | null = null;
-  if (isCorrect) {
-    const countCorrect = db
-      .prepare('SELECT COUNT(*) as c FROM responses WHERE questionId = ? AND isCorrect = 1')
-      .get(id) as any;
-    rankAmongCorrect = Number(countCorrect.c) + 1;
-  }
-
-  const score = calculateScore({
-    baseScore: question.baseScore,
-    isCorrect: Boolean(isCorrect),
-    responseTimeMs: elapsed,
-    timeLimitSeconds: question.timeLimitSeconds,
-    speedBonusEnabled: Boolean(question.speedBonusEnabled),
-    firstCorrectBonusEnabled: Boolean(question.firstCorrectBonusEnabled),
-    rankAmongCorrect,
-    firstBonuses: [question.firstBonus1, question.firstBonus2, question.firstBonus3]
-  });
+  const awardedScore = isCorrect ? question.weight : 0;
 
   const tx = db.transaction(() => {
     db.prepare(
-      `INSERT INTO responses (sessionId, questionId, studentId, selectedOptionIndex, isCorrect, responseTimeMs, awardedScore, rankAmongCorrect)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(question.sessionId, id, studentId, selectedOptionIndex, isCorrect, elapsed, score.total, rankAmongCorrect);
+      `INSERT INTO responses (sessionId, questionId, studentId, selectedOptionIndex, isCorrect, awardedScore, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+       ON CONFLICT(questionId, studentId)
+       DO UPDATE SET selectedOptionIndex = excluded.selectedOptionIndex,
+                     isCorrect = excluded.isCorrect,
+                     awardedScore = excluded.awardedScore,
+                     updatedAt = excluded.updatedAt`
+    ).run(sessionId, questionId, studentId, selectedOptionIndex, isCorrect, awardedScore);
 
     db.prepare(
-      `INSERT OR REPLACE INTO score_logs (studentId, sessionId, sourceType, sourceId, baseScore, speedBonus, rankBonus, totalAwarded)
-       VALUES (?, ?, 'question', ?, ?, ?, ?, ?)`
-    ).run(studentId, question.sessionId, id, score.baseScore, score.speedBonus, score.rankBonus, score.total);
+      `INSERT INTO score_logs (studentId, sessionId, sourceType, sourceId, baseScore, speedBonus, rankBonus, totalAwarded)
+       VALUES (?, ?, 'question', ?, ?, 0, 0, ?)
+       ON CONFLICT(studentId, sourceType, sourceId)
+       DO UPDATE SET baseScore = excluded.baseScore, totalAwarded = excluded.totalAwarded`
+    ).run(studentId, sessionId, questionId, awardedScore, awardedScore);
   });
-
   tx();
 
-  emitQuestionStats(question.sessionId, id);
-  emitSessionUpdate(question.sessionId);
-  res.status(201).json({ ok: true, score: score.total });
-});
-
-questionsRouter.get('/:id/submission/:studentId', (req, res) => {
-  const questionId = Number(req.params.id);
-  const studentId = Number(req.params.studentId);
-  const row = db
-    .prepare(
-      `SELECT id, selectedOptionIndex, awardedScore, submittedAt
-       FROM responses
-       WHERE questionId = ? AND studentId = ?`
-    )
-    .get(questionId, studentId) as
-    | { id: number; selectedOptionIndex: number; awardedScore: number; submittedAt: string }
-    | undefined;
-
-  if (!row) {
-    return res.json({ submitted: false });
-  }
-
-  return res.json({
-    submitted: true,
-    selectedOptionIndex: row.selectedOptionIndex,
-    awardedScore: row.awardedScore,
-    submittedAt: row.submittedAt
-  });
+  emitSessionUpdate(sessionId);
+  res.json({ ok: true, awardedScore });
 });

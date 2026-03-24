@@ -6,9 +6,7 @@ import { config } from './config.js';
 import './db.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { questionsRouter } from './routes/questions.js';
-import { pollsRouter } from './routes/polls.js';
 import { initSocket } from './sockets/socket.js';
-import { startTimerLoop } from './sockets/timerManager.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +23,6 @@ app.use('/uploads', express.static(path.resolve(process.cwd(), 'server/uploads')
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/questions', questionsRouter);
-app.use('/api/polls', pollsRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
@@ -33,7 +30,6 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 initSocket(server);
-startTimerLoop();
 
 server.listen(config.port, '0.0.0.0', () => {
   console.log(`Server listening on http://0.0.0.0:${config.port}`);

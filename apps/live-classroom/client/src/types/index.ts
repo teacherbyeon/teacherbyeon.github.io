@@ -3,8 +3,9 @@ export interface Session {
   name: string;
   joinCode: string;
   randomNicknameEnabled: number;
-  activeQuestionId: number | null;
-  activePollId: number | null;
+  status: 'waiting' | 'active' | 'closed';
+  startedAt: string | null;
+  closedAt: string | null;
 }
 
 export interface Student {
@@ -17,22 +18,21 @@ export interface Student {
 export interface Question {
   id: number;
   sessionId: number;
-  title: string | null;
-  body: string | null;
+  prompt: string;
   imagePath: string | null;
   optionsJson: string;
   correctOptionIndex: number;
-  timeLimitSeconds: number;
-  status: 'idle' | 'active' | 'ended' | 'revealed';
+  weight: number;
   orderInSession: number;
-  startedAt?: string | null;
 }
 
-export interface Poll {
-  id: number;
-  sessionId: number;
-  title: string;
-  optionsJson: string;
-  status: 'draft' | 'active' | 'ended';
-  isAnonymous: number;
+export interface SessionStatePayload {
+  session: Session;
+  questionSet: Question[];
+  progress: {
+    totalStudents: number;
+    submittedStudents: number;
+    notSubmitted: Array<{ id: number; displayName: string }>;
+  };
+  leaderboard: Array<{ id: number; displayName: string; totalScore: number }>;
 }
