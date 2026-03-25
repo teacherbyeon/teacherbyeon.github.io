@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS students (
   name TEXT NOT NULL,
   displayName TEXT NOT NULL,
   identifier TEXT NOT NULL,
+  rejoinToken TEXT,
   createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   lastSeenAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(sessionId, identifier)
@@ -78,5 +79,10 @@ CREATE TABLE IF NOT EXISTS score_logs (
   UNIQUE(studentId, sourceType, sourceId)
 );
 `);
+
+const studentColumns = db.prepare('PRAGMA table_info(students)').all() as Array<{ name: string }>;
+if (!studentColumns.some((c) => c.name === 'rejoinToken')) {
+  db.exec('ALTER TABLE students ADD COLUMN rejoinToken TEXT');
+}
 
 export const paths = { root, dataDir, uploadDir, exportDir, dbPath };

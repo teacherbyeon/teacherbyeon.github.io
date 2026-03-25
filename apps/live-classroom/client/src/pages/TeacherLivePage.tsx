@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../api/http';
-import { socket } from '../api/socket';
+import { joinSessionRoom, socket, subscribeSocketStatus } from '../api/socket';
 import { LatexMixedText } from '../components/LatexMixedText';
 import type { TeacherState } from '../types';
 import { useSearchParams } from 'react-router-dom';
@@ -11,15 +11,37 @@ export function TeacherLivePage() {
   const initialId = Number(searchParams.get('sessionId') || 1);
   const [sessionId, setSessionId] = useState<number>(initialId);
   const [state, setState] = useState<TeacherState | null>(null);
+  const [notice, setNotice] = useState('');
+  const [syncing, setSyncing] = useState(true);
+
+  const refresh = async () => {
+    setSyncing(true);
+    try {
+      setState(await api<TeacherState>(`/api/sessions/${sessionId}`));
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const onState = (payload: TeacherState) => setState(payload);
-    socket.emit('session:joinRoom', { sessionId, role: 'teacher' });
+    joinSessionRoom({ sessionId, role: 'teacher' });
     socket.on('teacher:stateUpdated', onState);
-    return () => socket.off('teacher:stateUpdated', onState);
+    const unsub = subscribeSocketStatus((status) => {
+      if (status === 'reconnecting' || status === 'disconnected') {
+        setNotice('연결이 불안정하여 상태를 다시 불러오는 중...');
+      }
+      if (status === 'connected') {
+        setNotice('다시 연결되었습니다. 상태를 동기화했습니다.');
+        void refresh();
+      }
+    });
+    void refresh();
+    return () => {
+      socket.off('teacher:stateUpdated', onState);
+      unsub();
+    };
   }, [sessionId]);
-
-  const refresh = async () => setState(await api<TeacherState>(`/api/sessions/${sessionId}`));
 
   const remain = useMemo(() => {
     if (!state?.session.questionDeadlineAt) return 0;
@@ -30,9 +52,10 @@ export function TeacherLivePage() {
     <main className="page">
       <h1>교사 라이브 진행 화면</h1>
       <a href="/teacher/builder">워크시트 빌더로 이동</a>
+      {notice && <p>{notice}</p>}
       <div className="row">
         <input type="number" value={sessionId} onChange={(e) => setSessionId(Number(e.target.value))} />
-        <button className="inline-btn" onClick={refresh}>불러오기</button>
+        <button className="inline-btn" onClick={refresh} disabled={syncing}>{syncing ? '동기화 중...' : '불러오기'}</button>
         <button
           className="inline-btn"
           onClick={() => window.open(`/display?sessionId=${sessionId}`, 'raceBoard', 'width=1200,height=800')}

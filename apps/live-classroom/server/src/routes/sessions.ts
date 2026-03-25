@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { stringify } from 'csv-stringify/sync';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { db, paths } from '../db.js';
@@ -197,36 +198,42 @@ sessionsRouter.post('/:id/finish', (req, res) => {
 
 sessionsRouter.post('/:id/students/join', (req, res) => {
   const sessionId = Number(req.params.id);
-  const { name, identifier, existingStudentId } = req.body as { name?: string; identifier?: string; existingStudentId?: number };
+  const { name, identifier, existingStudentId, rejoinToken } = req.body as { name?: string; identifier?: string; existingStudentId?: number; rejoinToken?: string };
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as any;
   if (!session) return res.status(404).json({ error: 'session not found' });
 
-  if (existingStudentId) {
+  const normalizedIdentifier = String(identifier ?? '').trim();
+
+  if (existingStudentId && rejoinToken) {
     const existing = db.prepare('SELECT * FROM students WHERE id = ? AND sessionId = ?').get(existingStudentId, sessionId);
-    if (existing) {
+    if (existing && existing.rejoinToken === rejoinToken) {
       db.prepare('UPDATE students SET lastSeenAt = CURRENT_TIMESTAMP WHERE id = ?').run(existingStudentId);
-      emitTeacherUpdate(sessionId);
+      emitAll(sessionId);
       return res.json(existing);
     }
   }
 
-  if (!identifier) return res.status(400).json({ error: 'identifier is required' });
-  let displayName = name?.trim() || `학생-${identifier}`;
+  if (!normalizedIdentifier) return res.status(400).json({ error: 'identifier is required' });
+  if (!/^\d{1,10}$/.test(normalizedIdentifier)) {
+    return res.status(400).json({ error: 'identifier must be numeric', code: 'INVALID_IDENTIFIER' });
+  }
+  let displayName = name?.trim() || `학생-${normalizedIdentifier}`;
   if (session.randomNicknameEnabled && !name?.trim()) {
     const idx = Math.floor(Math.random() * randomNames.length);
     displayName = `${randomNames[idx]}-${Math.floor(Math.random() * 90 + 10)}`;
   }
 
-  const found = db.prepare('SELECT * FROM students WHERE sessionId = ? AND identifier = ?').get(sessionId, identifier) as any;
+  const found = db.prepare('SELECT * FROM students WHERE sessionId = ? AND identifier = ?').get(sessionId, normalizedIdentifier) as any;
   if (found) {
-    db.prepare('UPDATE students SET displayName = ?, lastSeenAt = CURRENT_TIMESTAMP WHERE id = ?').run(displayName, found.id);
-    emitTeacherUpdate(sessionId);
-    return res.json({ ...found, displayName });
+    return res.status(409).json({ error: 'identifier already in use', code: 'DUPLICATE_IDENTIFIER' });
   }
 
-  const r = db.prepare('INSERT INTO students (sessionId, name, displayName, identifier) VALUES (?, ?, ?, ?)').run(sessionId, name ?? identifier, displayName, identifier);
+  const token = crypto.randomUUID();
+  const r = db
+    .prepare('INSERT INTO students (sessionId, name, displayName, identifier, rejoinToken) VALUES (?, ?, ?, ?, ?)')
+    .run(sessionId, name ?? normalizedIdentifier, displayName, normalizedIdentifier, token);
   const student = db.prepare('SELECT * FROM students WHERE id = ?').get(r.lastInsertRowid);
-  emitTeacherUpdate(sessionId);
+  emitAll(sessionId);
   res.status(201).json(student);
 });
 
