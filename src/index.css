@@ -1,0 +1,91 @@
+:root {
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', 'Malgun Gothic', serif;
+  color: #111;
+  background: #efefef;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.app-layout { display: grid; grid-template-columns: 380px 1fr; min-height: 100vh; }
+.left-panel { background: #f7f7f7; border-right: 1px solid #d1d1d1; padding: 16px; overflow-y: auto; }
+.left-panel h1 { font-size: 18px; margin: 0 0 12px; }
+.editor-panel, .panel-section { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.panel-section h2 { font-size: 15px; margin: 0; padding-bottom: 6px; border-bottom: 1px solid #d5d5d5; }
+.control-row { display: flex; flex-direction: column; gap: 5px; }
+.control-row label { font-size: 13px; color: #333; }
+input, select, textarea, button { font: inherit; }
+input, select, textarea { border: 1px solid #b9b9b9; background: #fff; padding: 6px 8px; }
+button { border: 1px solid #555; background: #fff; padding: 6px 10px; cursor: pointer; }
+button:hover { background: #f1f1f1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.check-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.doc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.doc-list li { border: 1px solid #cfcfcf; background: #fff; padding: 6px; display: flex; align-items: center; gap: 6px; }
+.doc-list li.active { border-color: #111; }
+.doc-item-button { flex: 1; border: none; text-align: left; display: flex; flex-direction: column; gap: 2px; background: transparent; padding: 0; }
+button.danger { border-color: #a40000; color: #a40000; }
+
+.right-preview { padding: 20px; display: flex; justify-content: center; overflow: auto; }
+.preview-area { width: 100%; display: flex; justify-content: center; }
+
+.doc-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  padding: 20mm 18mm 18mm;
+  border: 1px solid #8ed08e;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: relative;
+  color: #000;
+  font-size: 18px;
+  line-height: 1.65;
+}
+.doc-form-tag { margin: 0 0 20px; font-size: 34px; color: #b00000; }
+.doc-title { text-align: center; letter-spacing: .5em; font-size: 56px; margin: 0 0 26px; font-weight: 700; }
+.doc-student-line { text-align: center; margin: 22px 0; font-weight: 600; }
+.doc-paragraph { margin: 20px 0; text-align: justify; }
+.doc-list-numbered { margin: 10px 0 0 0; padding-left: 28px; display: flex; flex-direction: column; gap: 20px; }
+.doc-center { text-align: center; margin-top: 24px; }
+.doc-sign-line { text-align: center; margin: 8px 0; font-weight: 600; }
+.doc-school-name { text-align: center; margin: 22px 0; font-size: 48px; font-weight: 700; letter-spacing: .08em; }
+.doc-school-name.bottom { margin-top: 180px; }
+.doc-subtitle { text-align: center; font-size: 52px; margin: 12px 0; letter-spacing: .15em; }
+.doc-opinion-box { border: 1px solid #000; min-height: 120px; margin-top: 14px; padding: 12px; white-space: pre-wrap; }
+.doc-opinion-box.tall { min-height: 160px; }
+.doc-bottom-line { text-align: center; margin: 12px 0 8px; font-weight: 600; }
+.doc-note { margin: 8px 0 0; font-weight: 600; }
+.large-gap { margin-top: 30px; }
+
+.approval-table {
+  margin-left: auto;
+  border-collapse: collapse;
+  font-size: 38px;
+}
+.approval-table th,
+.approval-table td { border: 1px solid #000; min-width: 130px; height: 54px; text-align: center; vertical-align: middle; }
+.approval-table th[rowspan='2'] { min-width: 56px; }
+.sign-cell { height: 82px !important; }
+
+@media (max-width: 1400px) {
+  .app-layout { grid-template-columns: 340px 1fr; }
+  .doc-page { transform-origin: top center; transform: scale(0.8); margin-bottom: -55mm; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  body { background: #fff; }
+  .print-hidden { display: none !important; }
+  .app-layout { display: block; }
+  .right-preview { padding: 0; }
+  .doc-page {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    width: 210mm;
+    min-height: 297mm;
+    transform: none !important;
+    page-break-after: always;
+  }
+}
