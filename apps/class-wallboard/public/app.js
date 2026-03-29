@@ -236,6 +236,17 @@ async function makeSubmissionPayload(file, questionNo) {
   return { questionNo, fileName: file.name || 'submission', mimeType: isImage ? displayMime : (file.type || 'application/octet-stream'), dataUrl, thumb };
 }
 
+async function makeProblemPayload(file) {
+  if (!file) return { problemFileName: '', problemMimeType: '', problemDataUrl: '', problemThumb: '' };
+  const raw = await readFile(file);
+  if (file.type.startsWith('image/')) {
+    const problemDataUrl = await compressImage(raw, 2200, 0.92, file.type === 'image/png' ? 'image/png' : 'image/jpeg');
+    const problemThumb = await compressImage(raw, 520, 0.78, 'image/jpeg');
+    return { problemFileName: file.name || 'problem', problemMimeType: file.type, problemDataUrl, problemThumb };
+  }
+  return { problemFileName: file.name || 'problem', problemMimeType: file.type || 'application/octet-stream', problemDataUrl: raw, problemThumb: '' };
+}
+
 function boardProgress(board) {
   const total = (state.participants || []).length || Number(state.participantCount || 0);
   if (!total) return { total: 0, submitted: 0, remaining: [] };
@@ -337,6 +348,24 @@ function renderBoardPage() {
     return;
   }
 
+  const studentProblemTitle = byId('studentProblemTitle');
+  const studentProblemText = byId('studentProblemText');
+  const studentProblemImg = byId('studentProblemImg');
+  const studentProblemDoc = byId('studentProblemDoc');
+  if (studentProblemTitle) studentProblemTitle.textContent = board.promptTitle || board.title || '문제 정보';
+  if (studentProblemText) studentProblemText.textContent = board.problemText || '문제 설명이 등록되지 않았습니다.';
+  if (studentProblemImg && studentProblemDoc) {
+    studentProblemImg.classList.add('hidden');
+    studentProblemDoc.classList.add('hidden');
+    if ((board.problemMimeType || '').startsWith('image/') && board.problemDataUrl) {
+      studentProblemImg.src = board.problemDataUrl;
+      studentProblemImg.classList.remove('hidden');
+    } else if ((board.problemMimeType || '').includes('pdf') && board.problemDataUrl) {
+      studentProblemDoc.src = board.problemDataUrl;
+      studentProblemDoc.classList.remove('hidden');
+    }
+  }
+
   const progress = boardProgress(board);
   if (summary) summary.textContent = progress.total
     ? `업로드 완료 ${progress.submitted}명 / 미업로드 ${progress.remaining.length}명 / 전체 ${progress.total}명`
@@ -352,6 +381,40 @@ function renderBoardPage() {
   }
 
   (board.slots || []).forEach((slot) => wall.appendChild(createSlotCard(slot)));
+
+  const mySlot = (board.slots || []).find((s) => s.participantId === getParticipantId(state.className));
+  const studentAiFeedback = byId('studentAiFeedback');
+  if (studentAiFeedback) {
+    if (!mySlot) studentAiFeedback.textContent = '아직 제출 전입니다.';
+    else if (mySlot.aiStatus === 'queued') studentAiFeedback.textContent = 'AI 분석 중입니다...';
+    else if (mySlot.aiStatus === 'error') studentAiFeedback.textContent = 'AI 분석을 완료하지 못했습니다.';
+    else studentAiFeedback.textContent = mySlot.aiFeedbackForStudent || '아직 분석 결과가 없습니다.';
+  }
+
+  const aiHint = byId('aiCandidateHint');
+  const learnWrap = byId('aiLearnCandidates');
+  const excellentWrap = byId('aiExcellentCandidates');
+  if (aiHint && learnWrap && excellentWrap) {
+    learnWrap.innerHTML = '';
+    excellentWrap.innerHTML = '';
+    const slots = board.slots || [];
+    const learn = (board.aiTopLearnCandidateIds || []).map((id) => slots.find((s) => s.id === id)).filter(Boolean);
+    const excellent = (board.aiTopExcellentCandidateIds || []).map((id) => slots.find((s) => s.id === id)).filter(Boolean);
+    aiHint.textContent = slots.filter((s) => s.thumb).length < 2 ? '제출이 2개 미만이면 후보 추천이 제한됩니다.' : 'AI 추천 후보 (최종 선택은 교사)';
+    const addList = (title, arr, wrap) => {
+      const h = document.createElement('h4'); h.textContent = title; wrap.appendChild(h);
+      if (!arr.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = '추천 후보 없음'; wrap.appendChild(p); return; }
+      arr.forEach((s) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'tab-btn';
+        b.textContent = `${s.nickname}: ${s.aiTeacherSummary || '요약 없음'} (${s.aiConfidence || 'low'})`;
+        b.onclick = () => socket?.emit('focus:set', { className: state.className, slotId: s.id, teacherToken: getTeacherToken() });
+        wrap.appendChild(b);
+      });
+    };
+    addList('같이 오류를 보며 학습할 후보', learn, learnWrap);
+    addList('아주 잘 풀이한 후보', excellent, excellentWrap);
+  }
 
   const focus = byId('focusView');
   const selected = (board.slots || []).find((s) => s.id === state.selectedSubmissionId);
@@ -841,8 +904,23 @@ function initBoardPage() {
     const next = (localStorage.getItem(themeKey) || 'teacher') === 'teacher' ? 'projector' : 'teacher';
     applyTheme(next);
   });
-  byId('newBoardBtn')?.addEventListener('click', () => {
-    socket?.emit('board:create', { className: state.className, title: byId('boardTitle').value.trim(), teacherToken: getTeacherToken() });
+  byId('newBoardBtn')?.addEventListener('click', async () => {
+    const f = byId('problemFileInput')?.files?.[0];
+    const payload = await makeProblemPayload(f);
+    socket?.emit('board:create', {
+      className: state.className,
+      title: byId('boardTitle').value.trim(),
+      problemText: byId('problemText')?.value?.trim() || '',
+      aiAnalysisEnabled: Boolean(byId('aiAnalysisEnabled')?.checked),
+      ...payload,
+      teacherToken: getTeacherToken(),
+    });
+  });
+  byId('runAiBtn')?.addEventListener('click', () => {
+    socket?.emit('ai:analyze-board', { className: state.className, teacherToken: getTeacherToken() }, (ack = {}) => {
+      if (!ack.ok) return alert(ack.message || 'AI 분석 실패');
+      if (ack.insufficientForRanking) alert('분석은 완료했지만 제출이 2개 미만이라 후보 추천은 제한됩니다.');
+    });
   });
   byId('clearFocusBtn')?.addEventListener('click', () => {
     socket?.emit('focus:clear', { className: state.className, teacherToken: getTeacherToken() });

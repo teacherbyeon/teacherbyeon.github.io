@@ -12,7 +12,15 @@
       <h2>교사용 제어</h2>
       <div class="row">
         <label>새 벽보드 제목 <input id="boardTitle" placeholder="예: 1번 문항" /></label>
+        <label>문제 설명
+          <textarea id="problemText" placeholder="문제 텍스트(선택)"></textarea>
+        </label>
+        <label>문제 파일(이미지/PDF)
+          <input id="problemFileInput" type="file" accept="image/*,application/pdf" />
+        </label>
+        <label><input id="aiAnalysisEnabled" type="checkbox" /> AI 분석 사용</label>
         <button id="newBoardBtn">새 벽보드 시작</button>
+        <button id="runAiBtn" class="secondary">AI 분석 실행</button>
         <button id="clearFocusBtn" class="danger">확대 해제</button>
         <button id="toggleThemeBtn" class="secondary">전자칠판 테마 전환</button>
       </div>
@@ -33,6 +41,12 @@
 
     <section class="panel student-only hidden">
       <h2>손풀이 제출</h2>
+      <div id="studentProblemCard" class="board-progress">
+        <h3 id="studentProblemTitle">문제 정보</h3>
+        <p id="studentProblemText" class="hint"></p>
+        <iframe id="studentProblemDoc" class="hidden" style="width:100%;height:220px;border:none;"></iframe>
+        <img id="studentProblemImg" class="hidden" alt="문제 이미지" />
+      </div>
       <div class="row">
         <label>파일 선택(이미지/PDF/기타)
           <input id="fileInput" type="file" accept="*/*" />
@@ -40,6 +54,10 @@
         <button id="submitFileBtn" type="button">손풀이 제출</button>
       </div>
       <p id="uploadStatus" class="hint"></p>
+      <div class="board-progress">
+        <strong>AI 코멘트</strong>
+        <p id="studentAiFeedback" class="hint">아직 분석 결과가 없습니다.</p>
+      </div>
       <small>이미지/PDF/기타 파일 제출을 지원합니다. (모바일 촬영 파일도 선택 제출 가능)</small>
     </section>
 
@@ -50,6 +68,12 @@
         <p id="boardRemainingList" class="hint hidden"></p>
       </div>
       <div id="wallboard" class="wallboard"></div>
+      <div class="board-progress teacher-only hidden">
+        <h3>AI 추천 후보</h3>
+        <p id="aiCandidateHint" class="hint"></p>
+        <div id="aiLearnCandidates"></div>
+        <div id="aiExcellentCandidates"></div>
+      </div>
       <p class="hint">썸네일 클릭: 확대 / 확대 이미지(또는 Esc)로 닫기</p>
       <div id="focusView" class="focus hidden">
         <h3 id="focusNickname"></h3>

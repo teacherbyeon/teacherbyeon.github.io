@@ -132,6 +132,69 @@ function createSlotFromParticipant(participant) {
     dataPath: '',
     thumbPath: '',
     submittedAt: '',
+    aiFeedbackForStudent: '',
+    aiTeacherSummary: '',
+    aiCandidateTag: 'none',
+    aiConfidence: 'low',
+    aiReasons: [],
+    aiAnalyzedAt: '',
+    aiStatus: 'idle',
+    aiErrorMessage: '',
+  };
+}
+
+async function analyzeWithAi({ board, slot }) {
+  const apiKey = process.env.OPENAI_API_KEY || '';
+  if (!apiKey) {
+    return {
+      student_feedback: '풀이 흐름은 잘 보입니다. 계산 과정에서 핵심 단계를 한 번 더 점검해 보세요.',
+      teacher_summary: '풀이 흐름이 보이며 수업에서 비교 설명용으로 활용 가능',
+      candidate_tag: 'none',
+      confidence: 'low',
+      reasons: ['API 키가 없어 보수적 규칙 기반 코멘트만 생성됨'],
+    };
+  }
+
+  const systemPrompt = [
+    '너는 학생 손풀이를 돕는 수학 수업 보조자다.',
+    '정답을 단정하지 말고 교육적으로 짧게 코멘트하라.',
+    '문제 정보가 없으면 풀이 구조/표현/점검 포인트 위주로만 평가하라.',
+    '반드시 JSON으로만 답하라.',
+  ].join(' ');
+
+  const userPayload = {
+    boardTitle: board.title || '',
+    promptTitle: board.promptTitle || '',
+    problemText: board.problemText || '',
+    problemProvided: Boolean(board.problemText || board.problemFileName),
+    studentNickname: slot.nickname || '',
+    studentMimeType: slot.mimeType || '',
+    studentFileName: slot.fileName || '',
+  };
+
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: JSON.stringify(userPayload) },
+      ],
+    }),
+  });
+  if (!resp.ok) throw new Error(`AI HTTP ${resp.status}`);
+  const data = await resp.json();
+  const text = data?.choices?.[0]?.message?.content || '{}';
+  const parsed = JSON.parse(text);
+  return {
+    student_feedback: parsed.student_feedback || '',
+    teacher_summary: parsed.teacher_summary || '',
+    candidate_tag: ['learn_from_mistake', 'excellent_solution', 'none'].includes(parsed.candidate_tag) ? parsed.candidate_tag : 'none',
+    confidence: ['low', 'medium', 'high'].includes(parsed.confidence) ? parsed.confidence : 'low',
+    reasons: Array.isArray(parsed.reasons) ? parsed.reasons.slice(0, 3) : [],
   };
 }
 
@@ -215,12 +278,20 @@ function sanitizeStateForStudent(state) {
     boards: (state.boards || []).map((b) => ({
       id: b.id,
       title: b.title,
+      promptTitle: b.promptTitle || '',
+      problemText: b.problemText || '',
+      problemFileName: b.problemFileName || '',
+      problemMimeType: b.problemMimeType || '',
+      problemDataUrl: b.problemDataUrl || '',
+      aiAnalysisEnabled: Boolean(b.aiAnalysisEnabled),
       slots: (b.slots || []).map((s) => ({
         id: s.id,
         participantId: s.participantId,
         nickname: s.nickname || '익명',
         thumb: s.thumb || '',
         hasSubmission: Boolean(s.thumb),
+        aiFeedbackForStudent: s.aiFeedbackForStudent || '',
+        aiStatus: s.aiStatus || 'idle',
       })),
     })),
     activeBoardId: state.activeBoardId,
@@ -247,6 +318,15 @@ function sanitizeStateForTeacher(state) {
       id: b.id,
       title: b.title,
       createdAt: b.createdAt,
+      promptTitle: b.promptTitle || '',
+      problemText: b.problemText || '',
+      problemFileName: b.problemFileName || '',
+      problemMimeType: b.problemMimeType || '',
+      problemDataUrl: b.problemDataUrl || '',
+      aiAnalysisEnabled: Boolean(b.aiAnalysisEnabled),
+      aiTopLearnCandidateIds: b.aiTopLearnCandidateIds || [],
+      aiTopExcellentCandidateIds: b.aiTopExcellentCandidateIds || [],
+      aiLastBatchAnalyzedAt: b.aiLastBatchAnalyzedAt || '',
       slots: (b.slots || []).map((s) => ({
         id: s.id,
         participantId: s.participantId,
@@ -260,6 +340,14 @@ function sanitizeStateForTeacher(state) {
         thumb: s.thumb || '',
         submittedAt: s.submittedAt || '',
         hasDetail: Boolean(s.dataUrl || s.dataPath),
+        aiFeedbackForStudent: s.aiFeedbackForStudent || '',
+        aiTeacherSummary: s.aiTeacherSummary || '',
+        aiCandidateTag: s.aiCandidateTag || 'none',
+        aiConfidence: s.aiConfidence || 'low',
+        aiReasons: s.aiReasons || [],
+        aiAnalyzedAt: s.aiAnalyzedAt || '',
+        aiStatus: s.aiStatus || 'idle',
+        aiErrorMessage: s.aiErrorMessage || '',
       })),
     })),
   };
@@ -561,7 +649,7 @@ io.on('connection', (socket) => {
     socket.emit('state:update', sanitizeStateForStudent(state));
   });
 
-  socket.on('board:create', ({ className, title, teacherToken }, cb) => {
+  socket.on('board:create', ({ className, title, teacherToken, problemText, problemFileName, problemMimeType, problemDataUrl, problemThumb, aiAnalysisEnabled }, cb) => {
     if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
     const state = getClassByName(className);
     if (!state) return cb?.({ ok: false, message: '수업을 찾을 수 없습니다.' });
@@ -570,6 +658,16 @@ io.on('connection', (socket) => {
       id: makeId('board'),
       title: title?.trim() || `문항 ${state.boards.length + 1}`,
       createdAt: new Date().toISOString(),
+      promptTitle: title?.trim() || '',
+      problemText: problemText || '',
+      problemFileName: problemFileName || '',
+      problemMimeType: problemMimeType || '',
+      problemDataUrl: problemDataUrl || '',
+      problemThumb: problemThumb || '',
+      aiAnalysisEnabled: Boolean(aiAnalysisEnabled),
+      aiTopLearnCandidateIds: [],
+      aiTopExcellentCandidateIds: [],
+      aiLastBatchAnalyzedAt: '',
       slots: state.participants.map((p) => createSlotFromParticipant(p)),
     };
     state.boards.push(board);
@@ -582,6 +680,52 @@ io.on('connection', (socket) => {
     saveMeta();
     emitAllState(state.classId);
     cb?.({ ok: true });
+  });
+
+  socket.on('ai:analyze-board', async ({ className, teacherToken }, cb) => {
+    if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
+    const state = getClassByName(className);
+    if (!state) return cb?.({ ok: false, message: '수업을 찾을 수 없습니다.' });
+    const board = activeBoard(state);
+    if (!board) return cb?.({ ok: false, message: '활성 문항이 없습니다.' });
+    const submitted = (board.slots || []).filter((s) => Boolean(s.thumb));
+    if (!submitted.length) return cb?.({ ok: false, message: '분석할 제출물이 없습니다.' });
+
+    for (const slot of submitted) {
+      slot.aiStatus = 'queued';
+      slot.aiErrorMessage = '';
+    }
+    emitAllState(state.classId);
+
+    for (const slot of submitted) {
+      try {
+        const result = await analyzeWithAi({ board, slot });
+        slot.aiFeedbackForStudent = result.student_feedback;
+        slot.aiTeacherSummary = result.teacher_summary;
+        slot.aiCandidateTag = result.candidate_tag;
+        slot.aiConfidence = result.confidence;
+        slot.aiReasons = result.reasons;
+        slot.aiAnalyzedAt = new Date().toISOString();
+        slot.aiStatus = 'done';
+      } catch (err) {
+        slot.aiStatus = 'error';
+        slot.aiErrorMessage = err.message;
+      }
+    }
+
+    if (submitted.length >= 2) {
+      const byConf = { low: 1, medium: 2, high: 3 };
+      const sorted = [...submitted].sort((a, b) => (byConf[b.aiConfidence] || 0) - (byConf[a.aiConfidence] || 0));
+      board.aiTopLearnCandidateIds = sorted.filter((s) => s.aiCandidateTag === 'learn_from_mistake').slice(0, 3).map((s) => s.id);
+      board.aiTopExcellentCandidateIds = sorted.filter((s) => s.aiCandidateTag === 'excellent_solution').slice(0, 3).map((s) => s.id);
+    } else {
+      board.aiTopLearnCandidateIds = [];
+      board.aiTopExcellentCandidateIds = [];
+    }
+    board.aiLastBatchAnalyzedAt = new Date().toISOString();
+    saveClassState(state.classId);
+    emitAllState(state.classId);
+    cb?.({ ok: true, analyzed: submitted.length, insufficientForRanking: submitted.length < 2 });
   });
 
   socket.on('board:activate', ({ className, boardId, teacherToken }, cb) => {
