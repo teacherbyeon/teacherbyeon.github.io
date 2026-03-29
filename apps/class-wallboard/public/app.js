@@ -786,10 +786,8 @@ function initProfilePage() {
 }
 
 function setUploadUi(isBusy, msg = '') {
-  const cameraBtn = byId('submitCameraBtn');
   const fileBtn = byId('submitFileBtn');
   const status = byId('uploadStatus');
-  if (cameraBtn) cameraBtn.disabled = isBusy;
   if (fileBtn) fileBtn.disabled = isBusy;
   if (status) status.textContent = msg;
 }
@@ -806,7 +804,7 @@ async function submitFileFromInput(inputId) {
   submitting = true;
   setUploadUi(true, '업로드 중...');
   try {
-    const payload = await makeSubmissionPayload(file, byId('questionNo').value.trim());
+    const payload = await makeSubmissionPayload(file, '');
     socket?.emit('submission:upsert', { className: state.className, participantId, participantSecret, ...payload }, (ack = {}) => {
       submitting = false;
       if (!ack.ok) {
@@ -860,7 +858,6 @@ function initBoardPage() {
     socket?.emit('focus:clear', { className: state.className, teacherToken: getTeacherToken() });
   });
 
-  byId('submitCameraBtn')?.addEventListener('click', async () => submitFileFromInput('cameraInput'));
   byId('submitFileBtn')?.addEventListener('click', async () => submitFileFromInput('fileInput'));
 }
 
