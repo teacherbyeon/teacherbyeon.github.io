@@ -93,7 +93,7 @@ function applyTheme(mode) {
 
 function fetchClassList(cb) {
   if (!socket) { state.classes = []; cb?.(); return; }
-  socket.emit('classes:list', {}, (ack = {}) => {
+  socket.emit('classes:list', { role: getRole(), teacherToken: getTeacherToken() }, (ack = {}) => {
     state.classes = ack.classes || [];
     cb?.();
   });
@@ -111,6 +111,13 @@ function renderClassList(containerId, onClick) {
     btn.onclick = () => onClick(c.className);
     wrap.appendChild(btn);
   });
+}
+
+function chooseClass(className, classCode = '') {
+  setClassName(className);
+  if (classCode) setClassCode(classCode);
+  const selected = byId('selectedClassName');
+  if (selected) selected.textContent = className || '-';
 }
 
 function parseJoinParams() {
@@ -536,8 +543,7 @@ function initJoinPage() {
   const status = byId('joinStatus');
   const codeInput = byId('classCode');
   const selectedClassName = byId('selectedClassName');
-  const studentClassNameRow = byId('studentClassNameRow');
-  const studentClassNameInput = byId('studentClassNameInput');
+  const studentClassListRow = byId('studentClassListRow');
 
   const qp = parseJoinParams();
   if (qp.className) setClassName(qp.className);
@@ -545,12 +551,8 @@ function initJoinPage() {
 
   codeInput.value = state.classCode;
   selectedClassName.textContent = state.className || '-';
-  studentClassNameInput.value = state.className || '';
 
-  if (qp.className && role === 'student') {
-    studentClassNameInput.closest('label')?.classList.add('hidden');
-    selectedClassName.textContent = qp.className;
-  }
+  if (qp.className && role === 'student') selectedClassName.textContent = qp.className;
 
   const paintStatus = () => {
     if (!status) return;
@@ -574,9 +576,7 @@ function initJoinPage() {
       if (!className) return alert('수업 이름 필요');
       socket?.emit('class:create', { className, classCode: code, teacherToken: getTeacherToken() }, (ack = {}) => {
         if (!ack.ok) return alert(ack.message || '수업 생성 실패');
-        setClassName(className);
-        setClassCode(code);
-        selectedClassName.textContent = className;
+        chooseClass(className, code);
         codeInput.value = code;
         byId('generatedCode').textContent = `생성됨: ${code}`;
         renderQR(className, code);
@@ -585,11 +585,23 @@ function initJoinPage() {
 
     byId('pastClassesBtn').onclick = () => go('./past-classes.html');
   } else {
-    studentClassNameRow?.classList.remove('hidden');
+    studentClassListRow?.classList.remove('hidden');
+    const renderStudentList = () => {
+      renderClassList('studentClassList', (className) => {
+        const cls = state.classes.find((c) => c.className === className);
+        chooseClass(className, cls?.classCode || '');
+      });
+      if (qp.className) {
+        const cls = state.classes.find((c) => c.className === qp.className);
+        if (cls) chooseClass(cls.className, qp.classCode || cls.classCode || '');
+      }
+    };
+    fetchClassList(renderStudentList);
+    socket?.on('connect', () => fetchClassList(renderStudentList));
   }
 
   byId('joinBtn').onclick = () => {
-    const className = role === 'student' ? (studentClassNameInput.value || '').trim() : selectedClassName.textContent.trim();
+    const className = selectedClassName.textContent.trim();
     if (!className || className === '-') return alert('수업 이름을 입력하세요.');
     setClassName(className);
     const code = (codeInput.value || '').trim();
@@ -607,6 +619,7 @@ function initPastClassesPage() {
   if (!isTeacherAuthorized()) return go('./teacher-auth.html');
   const status = byId('pastStatus');
   const list = byId('pastClassList');
+  const search = byId('pastClassSearch');
   const paintStatus = () => {
     status.textContent = !socket ? '서버에 연결되지 않았습니다.' : (socket.connected ? '수업 목록 조회 가능' : '서버 연결 중...');
   };
@@ -621,19 +634,32 @@ function initPastClassesPage() {
       return;
     }
 
-    state.classes.forEach((c) => {
+    const q = (search?.value || '').trim();
+    state.classes
+      .filter((c) => !q || c.className.includes(q))
+      .forEach((c) => {
       const row = document.createElement('div');
       row.className = 'row';
       const name = document.createElement('strong');
-      name.textContent = c.className;
+      name.textContent = `${c.className}${c.isActive ? ' (현재 활성)' : ''}`;
+      const metaText = document.createElement('small');
+      metaText.textContent = `생성: ${c.createdAt ? new Date(c.createdAt).toLocaleString() : '-'} / 최근 사용: ${c.lastUsedAt ? new Date(c.lastUsedAt).toLocaleString() : '-'} / 문항 ${c.boardCount || 0}개`;
 
       const selectBtn = document.createElement('button');
       selectBtn.type = 'button';
       selectBtn.className = 'secondary';
       selectBtn.textContent = '현재 수업으로 선택';
       selectBtn.onclick = () => {
-        setClassName(c.className);
+        chooseClass(c.className, c.classCode || '');
         alert(`현재 수업을 "${c.className}"(으)로 지정했습니다.`);
+      };
+
+      const openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.textContent = '접속';
+      openBtn.onclick = () => {
+        chooseClass(c.className, c.classCode || '');
+        go('./board.html');
       };
 
       const deleteBtn = document.createElement('button');
@@ -651,10 +677,24 @@ function initPastClassesPage() {
         if (!confirm(msg)) return;
         socket?.emit('class:delete', { className: c.className, teacherToken: getTeacherToken() }, (ack = {}) => {
           if (!ack.ok) return alert(ack.message || '삭제 실패');
+          if (state.className === c.className) {
+            chooseClass('', '');
+            const idMap = getParticipantIdMap();
+            const secMap = getParticipantSecretMap();
+            delete idMap[c.className];
+            delete secMap[c.className];
+            localStorage.setItem(participantIdMapKey, JSON.stringify(idMap));
+            localStorage.setItem(participantSecretMapKey, JSON.stringify(secMap));
+            localStorage.removeItem(profileKey);
+          }
           fetchClassList(renderPastClassList);
         });
       };
-      row.append(name, selectBtn, deleteBtn);
+      if (c.isActive) {
+        deleteBtn.disabled = true;
+        deleteBtn.title = '현재 활성 수업은 삭제할 수 없습니다.';
+      }
+      row.append(name, metaText, openBtn, selectBtn, deleteBtn);
       list.appendChild(row);
     });
   };
@@ -665,6 +705,7 @@ function initPastClassesPage() {
     socket.on('connect', () => { paintStatus(); fetchClassList(renderPastClassList); });
     socket.on('disconnect', paintStatus);
   }
+  search?.addEventListener('input', renderPastClassList);
 }
 
 function initProfilePage() {

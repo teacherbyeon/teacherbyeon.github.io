@@ -371,7 +371,21 @@ function loadStore() {
 }
 
 function classList() {
-  return meta.classes.map((c) => ({ classId: c.classId, className: c.className }));
+  return meta.classes
+    .map((c) => {
+      const state = getClassById(c.classId);
+      return {
+        classId: c.classId,
+        className: c.className,
+        classCode: state?.classCode || '',
+        createdAt: c.createdAt || '',
+        lastUsedAt: c.lastUsedAt || '',
+        isActive: meta.activeClassId === c.classId,
+        participantCount: (state?.participants || []).length,
+        boardCount: (state?.boards || []).length,
+      };
+    })
+    .sort((a, b) => String(b.lastUsedAt || b.createdAt || '').localeCompare(String(a.lastUsedAt || a.createdAt || '')));
 }
 
 function emitTeacherState(classId) {
@@ -420,7 +434,20 @@ app.get('/api/network-info', (_req, res) => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('classes:list', (_payload, cb) => cb?.({ classes: classList() }));
+  socket.on('classes:list', (payload = {}, cb) => {
+    const role = payload.role || 'student';
+    const teacherOk = role === 'teacher' && authorizeTeacher(payload.teacherToken);
+    const classes = classList().map((c) => (teacherOk ? c : {
+      classId: c.classId,
+      className: c.className,
+      createdAt: c.createdAt,
+      lastUsedAt: c.lastUsedAt,
+      isActive: c.isActive,
+      participantCount: c.participantCount,
+      boardCount: c.boardCount,
+    }));
+    cb?.({ classes });
+  });
 
   socket.on('teacher:auth', ({ teacherPin }, cb) => {
     const ok = teacherPin === meta.globalTeacherPin;
@@ -447,13 +474,17 @@ io.on('connection', (socket) => {
       const existing = getClassById(existingId);
       existing.classCode = classCode;
       saveClassState(existingId);
+      const metaClass = meta.classes.find((c) => c.classId === existingId);
+      if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
+      saveMeta();
       return cb?.({ ok: true, classId: existingId, className: key, classCode });
     }
 
     const classId = makeId('c');
     const state = createClassState({ classId, className: key, classCode });
     classesById.set(classId, state);
-    meta.classes.push({ classId, className: key });
+    const now = new Date().toISOString();
+    meta.classes.push({ classId, className: key, createdAt: now, lastUsedAt: now });
     classIdByName.set(key, classId);
     meta.activeClassId = classId;
     saveAll();
@@ -487,6 +518,8 @@ io.on('connection', (socket) => {
       socket.data.classId = state.classId;
       socket.data.role = 'teacher';
       meta.activeClassId = state.classId;
+      const metaClass = meta.classes.find((c) => c.classId === state.classId);
+      if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
       saveMeta();
       cb?.({ ok: true, state: sanitizeStateForTeacher(state), defaultPinInUse: meta.globalTeacherPin === defaultTeacherPin });
       socket.emit('state:update', sanitizeStateForTeacher(state));
@@ -521,6 +554,9 @@ io.on('connection', (socket) => {
     socket.data.classId = state.classId;
     socket.data.role = 'student';
     socket.data.participantId = safeParticipantId;
+    const metaClass = meta.classes.find((c) => c.classId === state.classId);
+    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
+    saveMeta();
     cb?.({ ok: true, participantId: safeParticipantId, participantSecret, state: sanitizeStateForStudent(state) });
     socket.emit('state:update', sanitizeStateForStudent(state));
   });
@@ -540,6 +576,8 @@ io.on('connection', (socket) => {
     state.activeBoardId = board.id;
     state.selectedSubmissionId = null;
     meta.activeClassId = state.classId;
+    const metaClass = meta.classes.find((c) => c.classId === state.classId);
+    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
     saveClassState(state.classId);
     saveMeta();
     emitAllState(state.classId);
@@ -553,6 +591,8 @@ io.on('connection', (socket) => {
     state.activeBoardId = boardId;
     state.selectedSubmissionId = null;
     meta.activeClassId = state.classId;
+    const metaClass = meta.classes.find((c) => c.classId === state.classId);
+    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
     saveClassState(state.classId);
     saveMeta();
     emitAllState(state.classId);
@@ -575,7 +615,10 @@ io.on('connection', (socket) => {
     participant.participantSecret = participant.participantSecret || participantSecret;
     ensureSlot(activeBoard(state), participant);
     socket.data.participantId = participant.participantId;
+    const metaClass = meta.classes.find((c) => c.classId === state.classId);
+    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
     saveClassState(state.classId);
+    saveMeta();
     emitAllState(state.classId);
     cb?.({ ok: true, participantId: participant.participantId, participantSecret: participant.participantSecret });
   });
@@ -601,7 +644,10 @@ io.on('connection', (socket) => {
     slot.thumbPath = '';
     slot.submittedAt = new Date().toISOString();
 
+    const metaClass = meta.classes.find((c) => c.classId === state.classId);
+    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
     saveClassState(state.classId);
+    saveMeta();
     emitAllState(state.classId);
     cb?.({ ok: true, submittedAt: slot.submittedAt });
   });
