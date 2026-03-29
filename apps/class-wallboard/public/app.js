@@ -4,13 +4,19 @@ const classCodeKey = 'wallboard-class-code';
 const profileKey = 'wallboard-profile';
 const participantIdMapKey = 'wallboard-participant-id-map';
 const participantSecretMapKey = 'wallboard-participant-secret-map';
-const teacherPinKey = 'wallboard-teacher-pin';
 const teacherTokenKey = 'wallboard-teacher-token';
 const themeKey = 'wallboard-theme-mode';
 
 const page = document.body.dataset.page;
 const byId = (id) => document.getElementById(id);
-const socket = typeof io === 'function' ? io({ transports: ['websocket', 'polling'] }) : null;
+const socket = typeof io === 'function' ? io({
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: 20,
+  reconnectionDelay: 800,
+  reconnectionDelayMax: 4000,
+  timeout: 12000,
+}) : null;
 const transientMsgKey = 'wallboard-transient-msg';
 
 const state = {
@@ -32,7 +38,7 @@ function setRole(v) { localStorage.setItem(roleKey, v); }
 function getRole() { return localStorage.getItem(roleKey); }
 function setClassName(v) { state.className = v; localStorage.setItem(classNameKey, v || ''); }
 function setClassCode(v) { state.classCode = v; localStorage.setItem(classCodeKey, v || ''); }
-function setTeacherPin(v) { localStorage.setItem(teacherPinKey, v); }
+function setTeacherPin() {}
 function setTeacherToken(v) { localStorage.setItem(teacherTokenKey, v || ''); }
 function getTeacherToken() { return localStorage.getItem(teacherTokenKey) || ''; }
 function isTeacherAuthorized() { return getRole() === 'teacher' && Boolean(getTeacherToken()); }
@@ -126,6 +132,19 @@ function parseJoinParams() {
     className: qs.get('className') || '',
     classCode: qs.get('classCode') || '',
   };
+}
+
+function bindSocketStatus(elId, labels = {}) {
+  const el = byId(elId);
+  if (!el) return;
+  const paint = () => {
+    if (!socket) { el.textContent = labels.offline || '서버 연결 없음'; return; }
+    el.textContent = socket.connected ? (labels.connected || '서버 연결됨') : (labels.connecting || '서버 연결 중...');
+  };
+  paint();
+  socket?.on('connect', () => { paint(); el.textContent = labels.recovered || (labels.connected || '서버 연결됨'); });
+  socket?.on('disconnect', () => { el.textContent = labels.reconnecting || '재연결 시도 중...'; });
+  socket?.io?.on('reconnect_failed', () => { el.textContent = labels.failed || '재연결 실패. 잠시 후 다시 시도하세요.'; });
 }
 
 async function fetchNetworkInfo() {
@@ -489,8 +508,7 @@ function registerSocket(renderFn) {
       if (p) {
         socket.emit('profile:upsert', { className: state.className, profile: p, participantId: getParticipantId(state.className) }, (ack = {}) => {
           if (ack.participantId) setParticipantId(state.className, ack.participantId);
-      if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
-    if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
+          if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
         });
       }
     }
@@ -515,16 +533,16 @@ function initTeacherAuthPage() {
   if (pinUpdateBtn) pinUpdateBtn.disabled = true;
   const transient = consumeTransientMessage();
   if (transient) status.textContent = transient;
-  pinInput.value = localStorage.getItem(teacherPinKey) || '123456';
+  pinInput.value = '';
 
   byId('teacherAuthBtn').onclick = () => {
     const pin = pinInput.value.trim();
     if (!/^\d{6}$/.test(pin)) return alert('PIN은 6자리 숫자');
     socket?.emit('teacher:auth', { teacherPin: pin }, (ack = {}) => {
       if (!ack.ok) return alert('PIN 인증 실패');
-      setTeacherPin(pin);
       setTeacherToken(ack.teacherToken);
       if (pinUpdateBtn) pinUpdateBtn.disabled = false;
+      pinInput.value = '';
       status.textContent = ack.defaultPinInUse ? '⚠️ 기본 PIN(123456) 사용 중입니다. 수업 전 PIN 변경을 권장합니다.' : '';
       go('./join.html');
     });
@@ -535,8 +553,8 @@ function initTeacherAuthPage() {
     const next = byId('newTeacherPinInput').value.trim();
     socket?.emit('teacher:pin:update', { currentPin: curr, nextPin: next, teacherToken: getTeacherToken() }, (ack = {}) => {
       if (!ack.ok) return alert(ack.message || 'PIN 변경 실패');
-      setTeacherPin(next);
       alert('PIN 변경 완료');
+      byId('newTeacherPinInput').value = '';
       status.textContent = ack.defaultPinInUse ? '⚠️ 기본 PIN 사용 중' : 'PIN이 안전하게 변경되었습니다.';
     });
   };
@@ -566,10 +584,7 @@ function initJoinPage() {
   };
   fetchNetworkInfo();
   paintStatus();
-  if (socket) {
-    socket.on('connect', paintStatus);
-    socket.on('disconnect', paintStatus);
-  }
+  bindSocketStatus('joinStatus', { connecting: '서버 연결 중...', connected: '서버 연결됨', reconnecting: '재연결 시도 중...', failed: '재연결 실패. 새로고침해 주세요.' });
 
   if (role === 'teacher') {
     byId('teacherOnly').classList.remove('hidden');
@@ -809,7 +824,12 @@ async function submitFileFromInput(inputId) {
 }
 
 function initBoardPage() {
+  if (getRole() === 'student' && (!getParticipantId(state.className) || !getParticipantSecret(state.className))) {
+    alert('입장 정보가 없어 프로필 화면으로 이동합니다.');
+    return go('./profile.html');
+  }
   registerSocket(renderBoardPage);
+  bindSocketStatus('boardStatus', { connecting: '서버 연결 중...', connected: '수업 입장 완료', reconnecting: '재연결 시도 중...', failed: '재연결 실패. 다시 접속해 주세요.' });
   window.addEventListener('resize', renderBoardPage);
 
   socket?.on('auth:required', (payload = {}) => {
@@ -857,3 +877,4 @@ if (page === 'past-classes') initPastClassesPage();
 if (page === 'profile') initProfilePage();
 if (page === 'board') initBoardPage();
 if (page === 'manage') initManagePage();
+  bindSocketStatus('profileStatus', { connecting: '서버 연결 중...', connected: '수업 입장 확인 중...', reconnecting: '재연결 시도 중...', failed: '재연결 실패. join 화면으로 돌아가 주세요.' });

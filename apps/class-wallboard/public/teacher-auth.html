@@ -11,8 +11,8 @@
     <section class="panel">
       <h1>교사 PIN 인증</h1>
       <div class="row">
-        <label>현재 PIN (기본 123456)
-          <input id="teacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" />
+        <label>교사 PIN
+          <input id="teacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="off" />
         </label>
         <button id="teacherAuthBtn">교사 인증 후 계속</button>
       </div>
@@ -21,7 +21,7 @@
       <h2>PIN 변경</h2>
       <div class="row">
         <label>새 PIN
-          <input id="newTeacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" />
+          <input id="newTeacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="new-password" />
         </label>
         <button id="teacherPinUpdateBtn">PIN 변경</button>
       </div>
