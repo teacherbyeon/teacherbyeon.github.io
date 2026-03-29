@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const os = require('os');
 
 const app = express();
 const server = http.createServer(app);
@@ -394,6 +395,29 @@ function rejectTeacherAction(socket, cb) {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+function localIpv4List() {
+  const nets = os.networkInterfaces();
+  const result = [];
+  Object.values(nets).forEach((arr) => {
+    (arr || []).forEach((n) => {
+      if (n && n.family === 'IPv4' && !n.internal) result.push(n.address);
+    });
+  });
+  return [...new Set(result)];
+}
+
+app.get('/api/network-info', (_req, res) => {
+  const port = process.env.PORT || 4310;
+  const ips = localIpv4List();
+  const preferredHost = ips[0] || 'localhost';
+  res.json({
+    port: Number(port),
+    ips,
+    preferredOrigin: `http://${preferredHost}:${port}`,
+    localOrigin: `http://localhost:${port}`,
+  });
+});
 
 io.on('connection', (socket) => {
   socket.on('classes:list', (_payload, cb) => cb?.({ classes: classList() }));

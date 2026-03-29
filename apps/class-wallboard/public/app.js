@@ -23,6 +23,7 @@ const state = {
   classes: [],
   participantId: '',
   pinDefaultInUse: false,
+  preferredOrigin: '',
 };
 let manageSelectedBoardId = '';
 let submitting = false;
@@ -120,6 +121,22 @@ function parseJoinParams() {
   };
 }
 
+async function fetchNetworkInfo() {
+  try {
+    const r = await fetch('./api/network-info');
+    if (!r.ok) return;
+    const info = await r.json();
+    state.preferredOrigin = info.preferredOrigin || '';
+    const urlInfo = byId('joinUrlInfo');
+    if (urlInfo) {
+      const shown = info.preferredOrigin || info.localOrigin || location.origin;
+      urlInfo.textContent = `학생 접속 주소: ${shown}/join.html`;
+    }
+  } catch {
+    // noop
+  }
+}
+
 function joinClassIfPossible() {
   if (!socket || !state.className) return;
   socket.emit('class:join', {
@@ -148,7 +165,8 @@ function renderQR(className, classCode) {
   if (!window.QRCode) return;
   const params = new URLSearchParams({ className: className || '', classCode: classCode || '' });
   const baseDir = location.pathname.replace(/[^/]*$/, '');
-  const joinUrl = new URL('join.html', `${location.origin}${baseDir}`);
+  const origin = state.preferredOrigin || location.origin;
+  const joinUrl = new URL('join.html', `${origin}${baseDir}`);
   joinUrl.search = params.toString();
   const target = joinUrl.toString();
   QRCode.toCanvas(byId('qrCanvas'), target, { width: 180 }, () => {});
@@ -538,6 +556,7 @@ function initJoinPage() {
     if (!status) return;
     status.textContent = !socket ? '서버에 연결되지 않았습니다. node server.js 실행 후 접속하세요.' : (socket.connected ? '서버 연결됨' : '서버 연결 중...');
   };
+  fetchNetworkInfo();
   paintStatus();
   if (socket) {
     socket.on('connect', paintStatus);
