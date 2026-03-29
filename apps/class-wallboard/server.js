@@ -145,15 +145,7 @@ function createSlotFromParticipant(participant) {
 
 async function analyzeWithAi({ board, slot }) {
   const apiKey = process.env.OPENAI_API_KEY || '';
-  if (!apiKey) {
-    return {
-      student_feedback: '풀이 흐름은 잘 보입니다. 계산 과정에서 핵심 단계를 한 번 더 점검해 보세요.',
-      teacher_summary: '풀이 흐름이 보이며 수업에서 비교 설명용으로 활용 가능',
-      candidate_tag: 'none',
-      confidence: 'low',
-      reasons: ['API 키가 없어 보수적 규칙 기반 코멘트만 생성됨'],
-    };
-  }
+  if (!apiKey) throw new Error('AI 기능을 사용하려면 OPENAI_API_KEY 설정이 필요합니다.');
 
   const systemPrompt = [
     '너는 학생 손풀이를 돕는 수학 수업 보조자다.',
@@ -162,32 +154,43 @@ async function analyzeWithAi({ board, slot }) {
     '반드시 JSON으로만 답하라.',
   ].join(' ');
 
-  const userPayload = {
-    boardTitle: board.title || '',
-    promptTitle: board.promptTitle || '',
-    problemText: board.problemText || '',
-    problemProvided: Boolean(board.problemText || board.problemFileName),
-    studentNickname: slot.nickname || '',
-    studentMimeType: slot.mimeType || '',
-    studentFileName: slot.fileName || '',
-  };
+  const content = [
+    { type: 'input_text', text: `board_title: ${board.title || ''}` },
+    { type: 'input_text', text: `prompt_title: ${board.promptTitle || ''}` },
+    { type: 'input_text', text: `problem_text: ${board.problemText || '(없음)'}` },
+    { type: 'input_text', text: `student_nickname: ${slot.nickname || ''}` },
+    { type: 'input_text', text: `student_file_name: ${slot.fileName || ''}` },
+    { type: 'input_text', text: `student_mime_type: ${slot.mimeType || ''}` },
+  ];
 
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+  if ((board.problemMimeType || '').startsWith('image/') && board.problemDataUrl) {
+    content.push({ type: 'input_text', text: '문제 이미지가 함께 제공됩니다.' });
+    content.push({ type: 'input_image', image_url: board.problemDataUrl });
+  } else if ((board.problemMimeType || '').includes('pdf')) {
+    content.push({ type: 'input_text', text: '문제 파일은 PDF입니다. 이미지 기반 해석에 한계가 있을 수 있습니다.' });
+  }
+  if ((slot.mimeType || '').startsWith('image/') && slot.dataUrl) {
+    content.push({ type: 'input_image', image_url: slot.dataUrl });
+  } else if ((slot.mimeType || '').includes('pdf')) {
+    content.push({ type: 'input_text', text: '학생 제출 파일은 PDF입니다. 이미지 기반 분석 정확도가 낮을 수 있습니다.' });
+  }
+
+  const resp = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
       temperature: 0.2,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: JSON.stringify(userPayload) },
+      text: { format: { type: 'json_object' } },
+      input: [
+        { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
+        { role: 'user', content },
       ],
     }),
   });
   if (!resp.ok) throw new Error(`AI HTTP ${resp.status}`);
   const data = await resp.json();
-  const text = data?.choices?.[0]?.message?.content || '{}';
+  const text = data?.output_text || '{}';
   const parsed = JSON.parse(text);
   return {
     student_feedback: parsed.student_feedback || '',
@@ -684,6 +687,7 @@ io.on('connection', (socket) => {
 
   socket.on('ai:analyze-board', async ({ className, teacherToken }, cb) => {
     if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
+    if (!process.env.OPENAI_API_KEY) return cb?.({ ok: false, message: 'AI 기능을 사용하려면 OPENAI_API_KEY 설정이 필요합니다.' });
     const state = getClassByName(className);
     if (!state) return cb?.({ ok: false, message: '수업을 찾을 수 없습니다.' });
     const board = activeBoard(state);
