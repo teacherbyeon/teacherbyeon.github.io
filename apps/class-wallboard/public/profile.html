@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학생 프로필 | 수업 벽보드</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-page="profile">
+  <main class="container">
+    <section class="panel">
+      <h1>3) 학생 프로필</h1>
+      <div class="row grid-3">
+        <label>반 <input id="classroom" /></label>
+        <label>학번 <input id="studentNo" /></label>
+        <label>이름 <input id="realName" /></label>
+        <label>별명 <input id="nickname" placeholder="벽보드 표시용" /></label>
+      </div>
+      <button id="saveProfileBtn">저장 후 벽보드로 이동</button>
+      <div class="row"><a class="link" href="./join.html">← 수업 입장으로 돌아가기</a></div>
+    </section>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

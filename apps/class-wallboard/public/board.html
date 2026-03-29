@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>벽보드 | 수업 벽보드</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-page="board">
+  <main class="container">
+    <section class="panel teacher-only hidden">
+      <h2>교사용 제어</h2>
+      <div class="row">
+        <label>새 벽보드 제목 <input id="boardTitle" placeholder="예: 1번 문항" /></label>
+        <button id="newBoardBtn">새 벽보드 시작</button>
+        <button id="clearFocusBtn" class="danger">확대 해제</button>
+        <button id="toggleThemeBtn" class="secondary">전자칠판 테마 전환</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>문항 벽보드</h2>
+      <p class="subtitle">문항별 진행 현황을 확인하고 탭으로 전환할 수 있습니다.</p>
+      <div id="historyTabs" class="history-tabs"></div>
+    </section>
+
+    <section class="panel student-only hidden">
+      <h2>손풀이 제출</h2>
+      <div class="row">
+        <label>문항 번호 <input id="questionNo" placeholder="예: 2" /></label>
+      </div>
+      <div class="row">
+        <label>모바일 촬영 전용
+          <input id="cameraInput" type="file" accept="image/*" capture="environment" />
+        </label>
+        <button id="submitCameraBtn" type="button">촬영본 제출</button>
+      </div>
+      <div class="row">
+        <label>파일 선택(이미지/PDF/기타)
+          <input id="fileInput" type="file" accept="*/*" />
+        </label>
+        <button id="submitFileBtn" type="button">파일 제출</button>
+      </div>
+      <p id="uploadStatus" class="hint"></p>
+      <small>모바일 촬영 사진은 자동 압축 후 업로드됩니다.</small>
+    </section>
+
+    <section class="panel">
+      <h2>수업: <span id="classNameLabel">-</span> / 현재 벽보드: <span id="activeBoardTitle">없음</span></h2>
+      <div class="board-progress">
+        <p id="boardProgressSummary" class="hint">업로드 현황을 계산 중입니다.</p>
+        <p id="boardRemainingList" class="hint hidden"></p>
+      </div>
+      <div id="wallboard" class="wallboard"></div>
+      <p class="hint">썸네일 클릭: 확대 / 확대 이미지(또는 Esc)로 닫기</p>
+      <div id="focusView" class="focus hidden">
+        <h3 id="focusNickname"></h3>
+        <img id="focusImage" alt="선택된 손풀이" />
+        <iframe id="focusDoc" class="hidden" style="width:100%;height:70vh;border:none;"></iframe>
+        <button id="focusDownloadBtn" type="button" class="secondary hidden">원본 다운로드</button>
+      </div>
+    </section>
+    <a class="link teacher-only hidden" href="./manage.html">→ 교사용 학생 관리 화면으로 이동</a>
+    <a class="link" href="./join.html">← 수업 코드 화면</a>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
