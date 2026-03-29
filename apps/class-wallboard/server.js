@@ -867,7 +867,18 @@ io.on('connection', (socket) => {
 
 setInterval(cleanupExpiredSessions, 1000 * 60 * 10).unref();
 
-const port = process.env.PORT || 4310;
+const defaultPort = 4310;
+const port = Number.parseInt(process.env.PORT || '', 10) || defaultPort;
+
+server.on('error', (err) => {
+  if (err?.code === 'EADDRINUSE') {
+    console.error(`[class-wallboard] Port ${port} is already in use.`);
+    console.error('[class-wallboard] Stop the other process or run with a different port, e.g. PORT=4311 node server.js');
+    process.exit(1);
+  }
+  throw err;
+});
+
 loadStore();
 server.listen(port, () => {
   console.log(`Class wallboard server running on http://localhost:${port}`);
