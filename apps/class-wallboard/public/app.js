@@ -654,6 +654,30 @@ function initProfilePage() {
     alert('수업 정보가 없습니다. 수업 입장 화면으로 이동합니다.');
     return go('./join.html');
   }
+  const ensureParticipantAuth = (done) => {
+    const pid = getParticipantId(state.className);
+    const psec = getParticipantSecret(state.className);
+    if (pid && psec) return done(true);
+    socket?.emit('class:join', {
+      className: state.className,
+      classCode: state.classCode,
+      role: 'student',
+      participantId: pid || '',
+    }, (ack = {}) => {
+      if (!ack.ok) {
+        alert(ack.message || '수업 입장 정보 확인에 실패했습니다. 다시 입장해 주세요.');
+        return done(false);
+      }
+      if (ack.participantId) setParticipantId(state.className, ack.participantId);
+      if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
+      done(true);
+    });
+  };
+
+  ensureParticipantAuth((ok) => {
+    if (!ok) go('./join.html');
+  });
+
   const p = currentProfile();
   if (p) {
     byId('classroom').value = p.classroom || '';
@@ -673,12 +697,15 @@ function initProfilePage() {
       localStorage.setItem(profileKey, JSON.stringify(profile));
       return go('./board.html');
     }
-    socket.emit('profile:upsert', { className: state.className, profile, participantId: getParticipantId(state.className), participantSecret: getParticipantSecret(state.className) }, (ack = {}) => {
-      if (!ack.ok) return alert(ack.message || '프로필 저장 실패');
-      if (ack.participantId) setParticipantId(state.className, ack.participantId);
-    if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
-      localStorage.setItem(profileKey, JSON.stringify(profile));
-      go('./board.html');
+    ensureParticipantAuth((ok) => {
+      if (!ok) return;
+      socket.emit('profile:upsert', { className: state.className, profile, participantId: getParticipantId(state.className), participantSecret: getParticipantSecret(state.className) }, (ack = {}) => {
+        if (!ack.ok) return alert(ack.message || '프로필 저장 실패');
+        if (ack.participantId) setParticipantId(state.className, ack.participantId);
+        if (ack.participantSecret) setParticipantSecret(state.className, ack.participantSecret);
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+        go('./board.html');
+      });
     });
   };
 }
