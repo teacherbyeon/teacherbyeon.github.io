@@ -168,7 +168,7 @@ function joinClassIfPossible() {
   });
 }
 
-function renderQR(className, classCode) {
+function renderQR(className, classCode, canvasId = 'qrCanvas') {
   if (!window.QRCode) return;
   const params = new URLSearchParams({ className: className || '', classCode: classCode || '' });
   const baseDir = location.pathname.replace(/[^/]*$/, '');
@@ -176,7 +176,9 @@ function renderQR(className, classCode) {
   const joinUrl = new URL('join.html', `${origin}${baseDir}`);
   joinUrl.search = params.toString();
   const target = joinUrl.toString();
-  QRCode.toCanvas(byId('qrCanvas'), target, { width: 180 }, () => {});
+  const canvas = byId(canvasId);
+  if (!canvas) return;
+  QRCode.toCanvas(canvas, target, { width: 180 }, () => {});
 }
 
 function compressImage(src, maxWidth = 1600, quality = 0.82, outputMime = 'image/jpeg') {
@@ -298,6 +300,10 @@ function renderBoardPage() {
 
   byId('classNameLabel').textContent = state.className || '-';
   byId('activeBoardTitle').textContent = activeBoard()?.title || '없음';
+  if (isTeacherAuthorized()) {
+    byId('teacherBoardClassCode') && (byId('teacherBoardClassCode').textContent = state.classCode || '-');
+    renderQR(state.className, state.classCode, 'boardQrCanvas');
+  }
   renderHistoryTabs('historyTabs');
 
   const board = activeBoard();
@@ -666,16 +672,13 @@ function initPastClassesPage() {
       deleteBtn.type = 'button';
       deleteBtn.className = 'danger';
       deleteBtn.textContent = '삭제';
-      if (c.className === state.className) {
-        deleteBtn.disabled = true;
-        deleteBtn.title = '현재 선택된 수업은 삭제할 수 없습니다.';
-      }
       deleteBtn.onclick = () => {
-        const msg = state.className === c.className
-          ? `현재 선택된 수업입니다. 정말로 \"${c.className}\" 수업을 삭제할까요?`
+        const isActive = Boolean(c.isActive);
+        const msg = isActive
+          ? `현재 활성 수업입니다. 삭제하면 즉시 비활성화됩니다. \"${c.className}\" 수업을 삭제할까요?`
           : `${c.className} 수업을 삭제할까요?`;
         if (!confirm(msg)) return;
-        socket?.emit('class:delete', { className: c.className, teacherToken: getTeacherToken() }, (ack = {}) => {
+        socket?.emit('class:delete', { className: c.className, teacherToken: getTeacherToken(), force: isActive }, (ack = {}) => {
           if (!ack.ok) return alert(ack.message || '삭제 실패');
           if (state.className === c.className) {
             chooseClass('', '');
@@ -690,10 +693,7 @@ function initPastClassesPage() {
           fetchClassList(renderPastClassList);
         });
       };
-      if (c.isActive) {
-        deleteBtn.disabled = true;
-        deleteBtn.title = '현재 활성 수업은 삭제할 수 없습니다.';
-      }
+      if (c.isActive) deleteBtn.title = '현재 활성 수업 삭제(확인 후 강제 삭제)';
       row.append(name, metaText, openBtn, selectBtn, deleteBtn);
       list.appendChild(row);
     });
