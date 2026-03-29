@@ -13,13 +13,30 @@ npm init -y
 npm i express socket.io
 ```
 
-3. 서버 실행
+3. OpenAI API 키 설정(선택: AI 분석 기능 사용 시)
+
+```bash
+# macOS / Linux
+export OPENAI_API_KEY="sk-..."
+```
+
+```bat
+:: Windows CMD
+set OPENAI_API_KEY=sk-...
+```
+
+```powershell
+# Windows PowerShell
+$env:OPENAI_API_KEY="sk-..."
+```
+
+4. 서버 실행
 
 ```bash
 node server.js
 ```
 
-4. 접속 URL
+5. 접속 URL
    - 역할 선택: `http://교사노트북IP:4310/role.html`
    - 교사 벽보드 바로접속 예: `http://교사노트북IP:4310/board.html?role=teacher`
    - 학생 벽보드 바로접속 예: `http://교사노트북IP:4310/board.html?role=student&code=수업코드`
@@ -65,6 +82,7 @@ node server.js
 - 출석/제출 현황 CSV 내보내기
 - 교사용 테마/전자칠판용 테마 전환
 - 전체 UI를 카드형 레이아웃으로 개선
+- AI 분석 기능을 사용하려면 서버 실행 전에 `OPENAI_API_KEY` 환경변수 설정 필요
 
 ## 다음 단계 제안
 
