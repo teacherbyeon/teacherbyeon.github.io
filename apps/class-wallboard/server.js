@@ -16,6 +16,38 @@ const legacyStoreFile = path.join(dataDir, 'wallboard-store.json');
 const classesDir = path.join(dataDir, 'classes');
 const uploadsDir = path.join(dataDir, 'uploads');
 
+function stripWrappingQuotes(value = '') {
+  if (value.length >= 2) {
+    const first = value[0];
+    const last = value[value.length - 1];
+    if ((first === '"' && last === '"') || (first === '\'' && last === '\'')) return value.slice(1, -1);
+  }
+  return value;
+}
+
+function loadEnvFile(envPath = path.join(__dirname, '.env')) {
+  try {
+    if (!fs.existsSync(envPath)) return;
+    const raw = fs.readFileSync(envPath, 'utf8');
+    const lines = raw.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex <= 0) continue;
+      const key = trimmed.slice(0, eqIndex).trim();
+      if (!key || Object.prototype.hasOwnProperty.call(process.env, key)) continue;
+      const value = stripWrappingQuotes(trimmed.slice(eqIndex + 1).trim());
+      process.env[key] = value;
+    }
+  } catch (err) {
+    console.error(`[class-wallboard] Failed to load .env: ${err?.message || String(err)}`);
+  }
+}
+
+loadEnvFile();
+const openAiModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+
 const classesById = new Map();
 const classIdByName = new Map();
 const teacherSessions = new Map();
@@ -152,6 +184,7 @@ async function analyzeWithAi({ board, slot }) {
     '정답을 단정하지 말고 교육적으로 짧게 코멘트하라.',
     '문제 정보가 없으면 풀이 구조/표현/점검 포인트 위주로만 평가하라.',
     '반드시 JSON으로만 답하라.',
+    '응답 형식은 정확히 다음 JSON 스키마를 따르라: {"student_feedback":"...","teacher_summary":"...","candidate_tag":"learn_from_mistake|excellent_solution|none","confidence":"low|medium|high","reasons":["...","..."]}',
   ].join(' ');
 
   const content = [
@@ -179,8 +212,7 @@ async function analyzeWithAi({ board, slot }) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
-      model: 'gpt-4.1-mini',
-      temperature: 0.2,
+      model: openAiModel,
       text: { format: { type: 'json_object' } },
       input: [
         { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
@@ -188,10 +220,37 @@ async function analyzeWithAi({ board, slot }) {
       ],
     }),
   });
-  if (!resp.ok) throw new Error(`AI HTTP ${resp.status}`);
-  const data = await resp.json();
-  const text = data?.output_text || '{}';
-  const parsed = JSON.parse(text);
+  const raw = await resp.text();
+  let data;
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    throw new Error(`OpenAI 응답 JSON 파싱 실패 (HTTP ${resp.status}): ${err?.message || String(err)}`);
+  }
+  if (!resp.ok) {
+    const apiMessage = data?.error?.message || data?.message || raw || 'unknown error';
+    throw new Error(`AI HTTP ${resp.status}: ${apiMessage}`);
+  }
+
+  let text = (data?.output_text || '').trim();
+  if (!text && Array.isArray(data?.output)) {
+    const chunks = [];
+    for (const item of data.output) {
+      const contents = Array.isArray(item?.content) ? item.content : [];
+      for (const c of contents) {
+        if (typeof c?.text === 'string' && c.text.trim()) chunks.push(c.text.trim());
+      }
+    }
+    text = chunks.join('\n').trim();
+  }
+  if (!text) throw new Error('OpenAI 응답에서 분석 텍스트를 찾지 못했습니다.');
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    throw new Error(`OpenAI JSON 파싱 실패: ${err?.message || String(err)}`);
+  }
   return {
     student_feedback: parsed.student_feedback || '',
     teacher_summary: parsed.teacher_summary || '',
@@ -882,4 +941,6 @@ server.on('error', (err) => {
 loadStore();
 server.listen(port, () => {
   console.log(`Class wallboard server running on http://localhost:${port}`);
+  console.log(`[class-wallboard] OpenAI model: ${openAiModel}`);
+  console.log(`[class-wallboard] OPENAI_API_KEY loaded: ${process.env.OPENAI_API_KEY ? 'yes' : 'no'}`);
 });
