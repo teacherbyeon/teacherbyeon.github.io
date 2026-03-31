@@ -145,6 +145,7 @@ th { background: #f8fafc; }
 }
 .focus img { width: min(100%, 760px); border-radius: 10px; }
 #studentProblemImg { width: min(100%, 680px); border-radius: 12px; }
+#teacherProblemPreviewImg { width: min(100%, 520px); border-radius: 12px; margin-top: 8px; }
 
 body.teacher-pc .container {
   max-width: min(1720px, 96vw);

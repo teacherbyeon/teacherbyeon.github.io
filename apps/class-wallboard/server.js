@@ -608,6 +608,7 @@ io.on('connection', (socket) => {
     if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
     if (currentPin !== meta.globalTeacherPin) return cb?.({ ok: false, message: '현재 PIN이 일치하지 않습니다.' });
     if (!/^\d{6}$/.test(nextPin || '')) return cb?.({ ok: false, message: '새 PIN은 6자리 숫자여야 합니다.' });
+    if (currentPin === nextPin) return cb?.({ ok: false, message: '기존 PIN과 다른 값으로 설정해 주세요.' });
     meta.globalTeacherPin = nextPin;
     saveMeta();
     cb?.({ ok: true, defaultPinInUse: meta.globalTeacherPin === defaultTeacherPin });

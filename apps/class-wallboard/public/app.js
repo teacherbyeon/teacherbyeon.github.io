@@ -591,12 +591,18 @@ function initRolePage() {
 function initTeacherAuthPage() {
   if (getRole() !== 'teacher') return go('./role.html');
   const pinInput = byId('teacherPinInput');
+  const currentPinInput = byId('currentTeacherPinInput');
+  const nextPinInput = byId('newTeacherPinInput');
   const status = byId('authStatus');
   const pinUpdateBtn = byId('teacherPinUpdateBtn');
+  const goJoinBtn = byId('goJoinAfterAuthBtn');
   if (pinUpdateBtn) pinUpdateBtn.disabled = true;
+  if (goJoinBtn) goJoinBtn.disabled = !isTeacherAuthorized();
   const transient = consumeTransientMessage();
   if (transient) status.textContent = transient;
   pinInput.value = '';
+  if (currentPinInput) currentPinInput.value = '';
+  if (nextPinInput) nextPinInput.value = '';
 
   byId('teacherAuthBtn').onclick = () => {
     const pin = pinInput.value.trim();
@@ -605,19 +611,31 @@ function initTeacherAuthPage() {
       if (!ack.ok) return alert('PIN 인증 실패');
       setTeacherToken(ack.teacherToken);
       if (pinUpdateBtn) pinUpdateBtn.disabled = false;
+      if (goJoinBtn) goJoinBtn.disabled = false;
       pinInput.value = '';
-      status.textContent = ack.defaultPinInUse ? '⚠️ 기본 PIN(123456) 사용 중입니다. 수업 전 PIN 변경을 권장합니다.' : '';
-      go('./join.html');
+      if (currentPinInput) currentPinInput.value = '';
+      status.textContent = ack.defaultPinInUse
+        ? '⚠️ 기본 PIN(123456) 사용 중입니다. 아래에서 PIN을 변경한 뒤 수업 화면으로 이동하세요.'
+        : '인증되었습니다. 필요 시 PIN을 변경하고 수업 화면으로 이동하세요.';
     });
   };
 
+  if (goJoinBtn) goJoinBtn.onclick = () => {
+    if (!isTeacherAuthorized()) return alert('먼저 교사 PIN 인증을 해주세요.');
+    go('./join.html');
+  };
+
   byId('teacherPinUpdateBtn').onclick = () => {
-    const curr = pinInput.value.trim();
-    const next = byId('newTeacherPinInput').value.trim();
+    if (!isTeacherAuthorized()) return alert('먼저 교사 PIN 인증을 해주세요.');
+    const curr = currentPinInput?.value.trim() || '';
+    const next = nextPinInput?.value.trim() || '';
+    if (!/^\d{6}$/.test(curr) || !/^\d{6}$/.test(next)) return alert('현재/새 PIN 모두 6자리 숫자여야 합니다.');
+    if (curr === next) return alert('현재 PIN과 다른 PIN으로 변경해 주세요.');
     socket?.emit('teacher:pin:update', { currentPin: curr, nextPin: next, teacherToken: getTeacherToken() }, (ack = {}) => {
       if (!ack.ok) return alert(ack.message || 'PIN 변경 실패');
       alert('PIN 변경 완료');
-      byId('newTeacherPinInput').value = '';
+      if (currentPinInput) currentPinInput.value = '';
+      if (nextPinInput) nextPinInput.value = '';
       status.textContent = ack.defaultPinInUse ? '⚠️ 기본 PIN 사용 중' : 'PIN이 안전하게 변경되었습니다.';
     });
   };
@@ -904,6 +922,42 @@ function initBoardPage() {
     const next = (localStorage.getItem(themeKey) || 'teacher') === 'teacher' ? 'projector' : 'teacher';
     applyTheme(next);
   });
+  const problemFileInput = byId('problemFileInput');
+  const teacherProblemPreview = byId('teacherProblemPreview');
+  const teacherProblemFileName = byId('teacherProblemFileName');
+  const teacherProblemPreviewImg = byId('teacherProblemPreviewImg');
+  const teacherProblemPreviewDoc = byId('teacherProblemPreviewDoc');
+  const renderProblemFilePreview = async () => {
+    const f = problemFileInput?.files?.[0];
+    if (!teacherProblemPreview || !teacherProblemFileName || !teacherProblemPreviewImg || !teacherProblemPreviewDoc) return;
+    if (!f) {
+      teacherProblemPreview.classList.add('hidden');
+      teacherProblemFileName.textContent = '';
+      teacherProblemPreviewImg.classList.add('hidden');
+      teacherProblemPreviewImg.src = '';
+      teacherProblemPreviewDoc.classList.add('hidden');
+      return;
+    }
+    teacherProblemPreview.classList.remove('hidden');
+    teacherProblemFileName.textContent = `파일명: ${f.name} (${f.type || 'application/octet-stream'})`;
+    teacherProblemPreviewDoc.textContent = 'PDF 파일이 선택되었습니다. 학생 화면에 문서로 표시됩니다.';
+    if ((f.type || '').startsWith('image/')) {
+      teacherProblemPreviewImg.src = await readFileAsDataUrl(f);
+      teacherProblemPreviewImg.classList.remove('hidden');
+      teacherProblemPreviewDoc.classList.add('hidden');
+    } else if ((f.type || '').includes('pdf')) {
+      teacherProblemPreviewImg.src = '';
+      teacherProblemPreviewImg.classList.add('hidden');
+      teacherProblemPreviewDoc.classList.remove('hidden');
+    } else {
+      teacherProblemPreviewImg.src = '';
+      teacherProblemPreviewImg.classList.add('hidden');
+      teacherProblemPreviewDoc.textContent = '지원되지 않는 형식입니다. 이미지 또는 PDF 파일을 선택해 주세요.';
+      teacherProblemPreviewDoc.classList.remove('hidden');
+    }
+  };
+  problemFileInput?.addEventListener('change', renderProblemFilePreview);
+
   byId('newBoardBtn')?.addEventListener('click', async () => {
     const f = byId('problemFileInput')?.files?.[0];
     const payload = await makeProblemPayload(f);
@@ -915,6 +969,8 @@ function initBoardPage() {
       ...payload,
       teacherToken: getTeacherToken(),
     });
+    if (problemFileInput) problemFileInput.value = '';
+    renderProblemFilePreview();
   });
   byId('runAiBtn')?.addEventListener('click', () => {
     socket?.emit('ai:analyze-board', { className: state.className, teacherToken: getTeacherToken() }, (ack = {}) => {
