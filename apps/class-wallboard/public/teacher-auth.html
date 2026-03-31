@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교사 인증 | 수업 벽보드</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-page="teacher-auth">
+  <main class="container">
+    <section class="panel">
+      <h1>교사 PIN 인증</h1>
+      <div class="row">
+        <label>교사 PIN
+          <input id="teacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="off" />
+        </label>
+        <button id="teacherAuthBtn">교사 인증 후 계속</button>
+        <button id="goJoinAfterAuthBtn" class="secondary" type="button">수업 화면으로 이동</button>
+      </div>
+      <p id="authStatus" class="hint"></p>
+      <hr />
+      <h2>PIN 변경</h2>
+      <div class="row">
+        <label>현재 PIN
+          <input id="currentTeacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="현재 6자리 PIN" autocomplete="off" />
+        </label>
+        <label>새 PIN
+          <input id="newTeacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="new-password" />
+        </label>
+        <button id="teacherPinUpdateBtn">PIN 변경</button>
+      </div>
+      <a class="link" href="./role.html">← 역할 선택으로 돌아가기</a>
+    </section>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
