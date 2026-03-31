@@ -33,6 +33,7 @@ const state = {
 };
 let manageSelectedBoardId = '';
 let submitting = false;
+let teacherProblemClipboardFile = null;
 
 function setRole(v) { localStorage.setItem(roleKey, v); }
 function getRole() { return localStorage.getItem(roleKey); }
@@ -923,12 +924,15 @@ function initBoardPage() {
     applyTheme(next);
   });
   const problemFileInput = byId('problemFileInput');
+  const problemPasteZone = byId('problemPasteZone');
+  const problemPasteHint = byId('problemPasteHint');
+  const clearPastedProblemBtn = byId('clearPastedProblemBtn');
   const teacherProblemPreview = byId('teacherProblemPreview');
   const teacherProblemFileName = byId('teacherProblemFileName');
   const teacherProblemPreviewImg = byId('teacherProblemPreviewImg');
   const teacherProblemPreviewDoc = byId('teacherProblemPreviewDoc');
   const renderProblemFilePreview = async () => {
-    const f = problemFileInput?.files?.[0];
+    const f = teacherProblemClipboardFile || problemFileInput?.files?.[0];
     if (!teacherProblemPreview || !teacherProblemFileName || !teacherProblemPreviewImg || !teacherProblemPreviewDoc) return;
     if (!f) {
       teacherProblemPreview.classList.add('hidden');
@@ -956,10 +960,43 @@ function initBoardPage() {
       teacherProblemPreviewDoc.classList.remove('hidden');
     }
   };
+  const updatePasteHint = () => {
+    if (!problemPasteHint) return;
+    if (teacherProblemClipboardFile) {
+      problemPasteHint.textContent = `붙여넣은 이미지 사용 중: ${teacherProblemClipboardFile.name}`;
+    } else {
+      problemPasteHint.textContent = 'PDF/화면에서 캡처 후 이 영역을 클릭하고 Ctrl+V(⌘+V)로 바로 붙여넣기 가능합니다.';
+    }
+  };
+  updatePasteHint();
   problemFileInput?.addEventListener('change', renderProblemFilePreview);
+  problemFileInput?.addEventListener('change', () => {
+    if (problemFileInput?.files?.[0]) teacherProblemClipboardFile = null;
+    updatePasteHint();
+  });
+  problemPasteZone?.addEventListener('click', () => problemPasteZone.focus());
+  problemPasteZone?.addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items || [];
+    const imageItem = Array.from(items).find((it) => (it.type || '').startsWith('image/'));
+    if (!imageItem) return;
+    e.preventDefault();
+    const blob = imageItem.getAsFile();
+    if (!blob) return;
+    const ext = (blob.type || 'image/png').includes('png') ? 'png' : 'jpg';
+    teacherProblemClipboardFile = new File([blob], `pasted-problem-${Date.now()}.${ext}`, { type: blob.type || 'image/png' });
+    if (problemFileInput) problemFileInput.value = '';
+    updatePasteHint();
+    renderProblemFilePreview();
+  });
+  clearPastedProblemBtn?.addEventListener('click', () => {
+    teacherProblemClipboardFile = null;
+    if (problemFileInput) problemFileInput.value = '';
+    updatePasteHint();
+    renderProblemFilePreview();
+  });
 
   byId('newBoardBtn')?.addEventListener('click', async () => {
-    const f = byId('problemFileInput')?.files?.[0];
+    const f = teacherProblemClipboardFile || byId('problemFileInput')?.files?.[0];
     const payload = await makeProblemPayload(f);
     socket?.emit('board:create', {
       className: state.className,
@@ -969,7 +1006,9 @@ function initBoardPage() {
       ...payload,
       teacherToken: getTeacherToken(),
     });
+    teacherProblemClipboardFile = null;
     if (problemFileInput) problemFileInput.value = '';
+    updatePasteHint();
     renderProblemFilePreview();
   });
   byId('runAiBtn')?.addEventListener('click', () => {

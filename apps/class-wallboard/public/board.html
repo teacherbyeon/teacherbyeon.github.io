@@ -18,6 +18,11 @@
         <label>문제 설명 파일(이미지/PDF)
           <input id="problemFileInput" type="file" accept="image/*,application/pdf" />
         </label>
+        <div id="problemPasteZone" class="board-progress" tabindex="0">
+          <strong>스크린샷 붙여넣기</strong>
+          <p id="problemPasteHint" class="hint">PDF/화면에서 캡처 후 이 영역을 클릭하고 Ctrl+V(⌘+V)로 바로 붙여넣기 가능합니다.</p>
+          <button id="clearPastedProblemBtn" type="button" class="secondary">붙여넣은 이미지 지우기</button>
+        </div>
         <div id="teacherProblemPreview" class="board-progress hidden">
           <strong>선택한 문제 파일 미리보기</strong>
           <p id="teacherProblemFileName" class="hint"></p>
