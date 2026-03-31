@@ -240,12 +240,22 @@ async function makeSubmissionPayload(file, questionNo) {
 async function makeProblemPayload(file) {
   if (!file) return { problemFileName: '', problemMimeType: '', problemDataUrl: '', problemThumb: '' };
   const raw = await readFile(file);
-  if (file.type.startsWith('image/')) {
-    const problemDataUrl = await compressImage(raw, 2200, 0.92, file.type === 'image/png' ? 'image/png' : 'image/jpeg');
+  const inferredType = (file.type || '').trim().toLowerCase();
+  const lowerName = (file.name || '').toLowerCase();
+  const isImage = inferredType.startsWith('image/')
+    || raw.startsWith('data:image/')
+    || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lowerName);
+  const isPdf = inferredType.includes('pdf') || raw.startsWith('data:application/pdf') || lowerName.endsWith('.pdf');
+  if (isImage) {
+    const outputMime = inferredType === 'image/png' || raw.startsWith('data:image/png') || lowerName.endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const problemDataUrl = await compressImage(raw, 2200, 0.92, outputMime);
     const problemThumb = await compressImage(raw, 520, 0.78, 'image/jpeg');
-    return { problemFileName: file.name || 'problem', problemMimeType: file.type, problemDataUrl, problemThumb };
+    return { problemFileName: file.name || 'problem', problemMimeType: outputMime, problemDataUrl, problemThumb };
   }
-  return { problemFileName: file.name || 'problem', problemMimeType: file.type || 'application/octet-stream', problemDataUrl: raw, problemThumb: '' };
+  if (isPdf) {
+    return { problemFileName: file.name || 'problem.pdf', problemMimeType: 'application/pdf', problemDataUrl: raw, problemThumb: '' };
+  }
+  return { problemFileName: file.name || 'problem', problemMimeType: inferredType || 'application/octet-stream', problemDataUrl: raw, problemThumb: '' };
 }
 
 function boardProgress(board) {
@@ -940,11 +950,15 @@ function initBoardPage() {
     teacherProblemPreview.classList.remove('hidden');
     teacherProblemFileName.textContent = `파일명: ${f.name} (${f.type || 'application/octet-stream'})`;
     teacherProblemPreviewDoc.textContent = 'PDF 파일이 선택되었습니다. 학생 화면에 문서로 표시됩니다.';
-    if ((f.type || '').startsWith('image/')) {
+    const fileType = (f.type || '').toLowerCase();
+    const fileName = (f.name || '').toLowerCase();
+    const isImage = fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(fileName);
+    const isPdf = fileType.includes('pdf') || fileName.endsWith('.pdf');
+    if (isImage) {
       teacherProblemPreviewImg.src = await readFileAsDataUrl(f);
       teacherProblemPreviewImg.classList.remove('hidden');
       teacherProblemPreviewDoc.classList.add('hidden');
-    } else if ((f.type || '').includes('pdf')) {
+    } else if (isPdf) {
       teacherProblemPreviewImg.src = '';
       teacherProblemPreviewImg.classList.add('hidden');
       teacherProblemPreviewDoc.classList.remove('hidden');
