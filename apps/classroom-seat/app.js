@@ -226,15 +226,23 @@
         throw new Error('xlsx.full.min.js 라이브러리 로드에 실패했습니다. 프로그램 폴더에 실제 xlsx.full.min.js 파일이 있는지 확인하세요.');
       }
       return file.arrayBuffer().then(function (buf) {
-        var wb = XLSX.read(buf, { type: 'array' });
-        var sheetName = wb.SheetNames.find(function (name) {
-          var ws = wb.Sheets[name];
-          var ref = ws && ws['!ref'];
-          return !!ref;
-        }) || wb.SheetNames[0];
-        var sheet = wb.Sheets[sheetName];
-        var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
-        return parseRows(rows);
+        try {
+          var wb = XLSX.read(buf, { type: 'array' });
+          var sheetName = wb.SheetNames.find(function (name) {
+            var ws = wb.Sheets[name];
+            var ref = ws && ws['!ref'];
+            return !!ref;
+          }) || wb.SheetNames[0];
+          var sheet = wb.Sheets[sheetName];
+          var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+          return parseRows(rows);
+        } catch (e) {
+          var msg = String((e && e.message) || e || '');
+          if (/Unknown Namespace|Unsupported|corrupt|encrypted|password/i.test(msg)) {
+            throw new Error('엑셀 파일을 읽지 못했습니다. 파일 형식(.xlsx) 확인 후 다시 시도하거나, CSV로 저장해서 불러오세요.');
+          }
+          throw new Error('엑셀 파일 읽기 실패: ' + (msg || '알 수 없는 오류'));
+        }
       });
     }
     throw new Error('지원 파일 형식: .xlsx, .csv');
@@ -649,6 +657,7 @@
 
     dom.studentFile.addEventListener('change', function (e) {
       var f = e.target.files && e.target.files[0]; if (!f) return;
+      state.msg.errors = [];
       readStudentFile(f).then(function (list) {
         state.students = list;
         state.selectedStudentNo = null;
