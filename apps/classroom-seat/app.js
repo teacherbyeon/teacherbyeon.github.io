@@ -605,7 +605,7 @@
       '.seatCell{ width:' + seatWidth + 'mm; height:' + seatHeight + 'mm; border:1px solid #666; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.12; font-size:' + seatFont + 'pt; font-weight:700; background:#fff; white-space:pre-line; }' +
       '.seatText{ transform:rotate(180deg); }' +
       '.seatCell.disabled{ background:#ddd; color:#777; font-size:11pt; }' +
-      '.desk{ position:absolute; left:50%; bottom:6mm; transform:translateX(-50%); width:72mm; height:12mm; border:1px solid #666; background:#e7ddb4; display:flex; align-items:center; justify-content:center; font-weight:800; z-index:10; }' +
+      '.desk{ position:absolute; left:50%; top:5.5mm; transform:translateX(-50%); width:72mm; height:12mm; border:1px solid #666; background:#e7ddb4; display:flex; align-items:center; justify-content:center; font-weight:800; z-index:10; }' +
       '.desk > span{ transform:rotate(180deg); }' +
       '.footer{ border:1px solid #555; padding:4mm; text-align:center; background:#fafafa; }' +
       '.footer h3{ margin:0 0 2mm; font-size:12pt; }' +
