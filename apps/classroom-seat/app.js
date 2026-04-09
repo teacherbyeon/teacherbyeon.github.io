@@ -201,11 +201,49 @@
     var ext = file.name.toLowerCase().split('.').pop();
     if (ext === 'csv') {
       return file.text().then(function (text) {
-        var rows = text.split(/\r?\n/).filter(Boolean).map(function (line) { return line.split(','); });
+        var rows = parseCsvRows(text);
         return parseRows(rows);
       });
     }
-    throw new Error('지원 파일 형식: .csv (현재 배포본은 CSV 전용)');
+    if (ext === 'xlsx') {
+      if (typeof XLSX === 'undefined' || !XLSX.read) {
+        throw new Error('xlsx.full.min.js 라이브러리 로드에 실패했습니다. 프로그램 폴더에 실제 xlsx.full.min.js 파일이 있는지 확인하세요.');
+      }
+      return file.arrayBuffer().then(function (buf) {
+        var wb = XLSX.read(buf, { type: 'array' });
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+        return parseRows(rows);
+      });
+    }
+    throw new Error('지원 파일 형식: .xlsx, .csv');
+  }
+
+  function parseCsvRows(text) {
+    var rows = [];
+    var row = [];
+    var cur = '';
+    var inQuotes = false;
+    for (var i = 0; i < text.length; i += 1) {
+      var ch = text[i];
+      var next = text[i + 1];
+      if (ch === '\"') {
+        if (inQuotes && next === '\"') { cur += '\"'; i += 1; }
+        else inQuotes = !inQuotes;
+      } else if (ch === ',' && !inQuotes) {
+        row.push(cur); cur = '';
+      } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+        if (ch === '\r' && next === '\n') i += 1;
+        row.push(cur); cur = '';
+        if (row.some(function (v) { return String(v).trim() !== ''; })) rows.push(row);
+        row = [];
+      } else {
+        cur += ch;
+      }
+    }
+    row.push(cur);
+    if (row.some(function (v) { return String(v).trim() !== ''; })) rows.push(row);
+    return rows;
   }
 
   function validateStudents() {
@@ -706,6 +744,9 @@
   syncOptions();
   bindEvents();
   state.msg.info = '오프라인 배포용으로 준비되었습니다. 학생 파일을 불러오세요.';
+  if (typeof XLSX === 'undefined' || !XLSX.read) {
+    state.msg.warnings.push('xlsx.full.min.js가 로드되지 않아 .xlsx 불러오기를 사용할 수 없습니다.');
+  }
   validateStudents();
   render();
 })();
