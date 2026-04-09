@@ -170,14 +170,30 @@
       '시력배려': '시력배려', '키큼': '키큼', '분리대상': '분리대상', '같은줄금지': '같은줄금지',
       '같은열금지': '같은열금지', '인접금지': '인접금지', '메모': '메모'
     };
-    var headers = (rows[0] || []).map(function (h) {
-      var key = String(h == null ? '' : h).trim().toLowerCase().replace(/\s+/g, '');
-      return alias[key] || String(h == null ? '' : h).trim();
-    });
-    function idx(name) { return headers.indexOf(name); }
-    if (idx('번호') < 0 || idx('이름') < 0) throw new Error('오류: 헤더에 "번호", "이름"이 반드시 있어야 합니다.');
+    function normHeader(v) {
+      return String(v == null ? '' : v)
+        .replace(/\uFEFF/g, '')
+        .replace(/\u00A0/g, ' ')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '');
+    }
 
-    return rows.slice(1).map(function (r) {
+    var headerRowIndex = -1;
+    var headers = [];
+    for (var r = 0; r < Math.min(rows.length, 15); r += 1) {
+      var candidate = (rows[r] || []).map(function (h) { return alias[normHeader(h)] || String(h == null ? '' : h).trim(); });
+      if (candidate.indexOf('번호') >= 0 && candidate.indexOf('이름') >= 0) {
+        headers = candidate;
+        headerRowIndex = r;
+        break;
+      }
+    }
+    if (headerRowIndex < 0) throw new Error('오류: 헤더에 "번호", "이름"이 반드시 있어야 합니다.');
+
+    function idx(name) { return headers.indexOf(name); }
+
+    return rows.slice(headerRowIndex + 1).map(function (r) {
       return {
         번호: normalizeNo(r[idx('번호')]),
         이름: String(r[idx('이름')] == null ? '' : r[idx('이름')]).trim(),
@@ -211,7 +227,12 @@
       }
       return file.arrayBuffer().then(function (buf) {
         var wb = XLSX.read(buf, { type: 'array' });
-        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var sheetName = wb.SheetNames.find(function (name) {
+          var ws = wb.Sheets[name];
+          var ref = ws && ws['!ref'];
+          return !!ref;
+        }) || wb.SheetNames[0];
+        var sheet = wb.Sheets[sheetName];
         var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
         return parseRows(rows);
       });
