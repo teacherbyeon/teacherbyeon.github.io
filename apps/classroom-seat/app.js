@@ -522,84 +522,103 @@
 
   function buildPrintHtml() {
     var title = state.settings.printTitle || '자리 배치표';
-    function mm(px) { return Number((px * 0.19).toFixed(2)); }
+    var footer = state.settings.printFooter || '';
+    var footerSub1 = state.settings.printFooterSub1 || '';
+    var footerSub2 = state.settings.printFooterSub2 || '';
 
     var seats = activeSeats();
-    var placedSeats = seats.filter(function (s) { return !s.deleted; });
-    var minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
-    placedSeats.forEach(function (s) {
-      minX = Math.min(minX, s.x);
-      minY = Math.min(minY, s.y);
-      maxX = Math.max(maxX, s.x + s.width);
-      maxY = Math.max(maxY, s.y + s.height);
-    });
-    if (!Number.isFinite(minX)) {
-      minX = state.desk.x; minY = state.desk.y; maxX = state.desk.x + state.desk.width; maxY = state.desk.y + state.desk.height;
+    var xVals = seats.map(function (s) { return s.x; }).sort(function (a, b) { return a - b; });
+    var yVals = seats.map(function (s) { return s.y; }).sort(function (a, b) { return a - b; });
+
+    function cluster(vals, gap) {
+      var out = [];
+      vals.forEach(function (v) {
+        if (!out.length || Math.abs(v - out[out.length - 1]) > gap) out.push(v);
+      });
+      return out;
     }
 
-    var srcW = Math.max(1, maxX - minX);
-    var srcH = Math.max(1, maxY - minY);
-    var targetW = 196; // mm
-    var targetH = 108; // mm
-    var scale = Math.min(targetW / srcW, targetH / srcH) * 0.98;
-    var offsetX = (targetW - srcW * scale) / 2;
-    var offsetY = (targetH - srcH * scale) / 2;
+    var cols = cluster(xVals, 44);
+    var rows = cluster(yVals, 44);
+    if (!cols.length) cols = [0];
+    if (!rows.length) rows = [0];
 
-    var seatBlocks = seats.map(function (s) {
-      var st = state.students.find(function (x) { return x.번호 === s.studentNo; });
-      var txt = !s.enabled ? 'X' : st ? (esc(st.번호) + '<br>' + esc(st.이름)) : esc(s.label || '');
-      var x = offsetX + (s.x - minX) * scale;
-      var y = offsetY + (s.y - minY) * scale;
-      var w = Math.max(12.5, s.width * scale);
-      var h = Math.max(11, s.height * scale);
-      var fs = Math.max(7.3, Math.min(11.8, Math.min(w, h) * 0.32));
-      return '<div class="pseat ' + (s.enabled ? '' : 'disabled') + '" style="left:' + x.toFixed(2) + 'mm;top:' + y.toFixed(2) + 'mm;width:' + w.toFixed(2) + 'mm;height:' + h.toFixed(2) + 'mm;font-size:' + fs.toFixed(2) + 'pt;"><span>' + txt + '</span></div>';
+    function nearIndex(v, list) {
+      var idx = 0;
+      for (var i = 1; i < list.length; i += 1) {
+        if (Math.abs(v - list[i]) < Math.abs(v - list[idx])) idx = i;
+      }
+      return idx;
+    }
+
+    var printGap = Math.max(0.8, Math.min(2.1, 2.6 - Math.max(cols.length, rows.length) * 0.1));
+    var usableWidth = 214;
+    var usableHeight = 116;
+    var seatWidth = Math.max(14, Math.min(44, Number(((usableWidth - printGap * Math.max(cols.length - 1, 0)) / cols.length).toFixed(2))));
+    var seatHeight = Math.max(10, Math.min(25, Number(((usableHeight - printGap * Math.max(rows.length - 1, 0)) / rows.length).toFixed(2))));
+    var seatFont = Math.max(7.4, Math.min(11.3, Number((Math.min(seatWidth, seatHeight) * 0.57).toFixed(2))));
+
+    var matrix = [];
+    for (var c = 0; c < cols.length; c += 1) {
+      matrix[c] = [];
+      for (var r = 0; r < rows.length; r += 1) matrix[c][r] = null;
+    }
+    seats.forEach(function (s) {
+      var c = nearIndex(s.x, cols);
+      var r = nearIndex(s.y, rows);
+      matrix[c][r] = s;
+    });
+
+    var seatGrid = matrix.map(function (col) {
+      var cells = col.map(function (seat) {
+        if (!seat || !seat.enabled) return '<div class="seatCell disabled"><div class="seatText">X</div></div>';
+        if (seat.studentNo == null) return '<div class="seatCell"><div class="seatText">&nbsp;</div></div>';
+        var st = state.students.find(function (x) { return x.번호 === seat.studentNo; });
+        var txt = st ? (esc(st.번호) + '<br>' + esc(st.이름)) : (esc(seat.studentNo) + '<br>&nbsp;');
+        return '<div class="seatCell"><div class="seatText">' + txt + '</div></div>';
+      }).join('');
+      return '<div class="seatCol">' + cells + '</div>';
     }).join('');
 
-    var deskX = offsetX + (state.desk.x - minX) * scale;
-    var deskY = offsetY + (state.desk.y - minY) * scale;
-    var deskW = Math.max(26, state.desk.width * scale);
-    var deskH = Math.max(10, state.desk.height * scale);
-    deskX = Math.max(0.8, Math.min(targetW - deskW - 0.8, deskX));
-    deskY = Math.max(0.8, Math.min(targetH - deskH - 0.8, deskY));
-    deskY = Math.max(deskY, targetH - deskH - 1.2);
+    var sorted = state.students.slice().sort(function (a, b) { return a.번호.localeCompare(b.번호, 'ko', { numeric: true }); });
+    var attendanceRows = Math.max(28, sorted.length);
+    var attendanceHtml = '';
+    for (var i = 0; i < attendanceRows; i += 1) {
+      var st = sorted[i];
+      var no = st ? esc(st.번호) : String(i + 1);
+      var name = st ? esc(st.이름) : '';
+      attendanceHtml += '<tr><td>' + (i + 1) + '</td><td>' + no + '</td><td>' + name + '</td><td></td></tr>';
+    }
 
-    var rosterRows = state.students.slice().sort(function (a, b) { return a.번호.localeCompare(b.번호, 'ko', { numeric: true }); }).map(function (s) {
-      return '<li><span class="n">' + esc(s.번호) + '</span><span class="nm">' + esc(s.이름) + '</span></li>';
-    }).join('');
-
-    return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>' +
-      '@page{size:A4 landscape;margin:0}' +
-      '*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:#111}' +
-      '.sheet{width:297mm;height:210mm;padding:6mm;background:linear-gradient(180deg,#fff,#f8fafc)}' +
-      '.frame{width:100%;height:100%;display:grid;grid-template-columns:1fr 52mm;grid-template-rows:1fr 44mm;gap:3mm}' +
-      '.seatBox,.listBox,.footBox{border:1.2mm solid #111;background:#fff;position:relative;overflow:hidden;border-radius:1.2mm;box-shadow:0 0.8mm 1.2mm rgba(0,0,0,.08)}' +
-      '.seatInner{position:absolute;left:4mm;top:4mm;right:4mm;bottom:4mm;border:0.55mm solid #2b313d;background:linear-gradient(180deg,#fbfdff,#f2f6fb);border-radius:1mm;overflow:hidden}' +
-      '.seatCanvas{position:absolute;left:0;top:0;width:196mm;height:108mm;transform:rotate(180deg);transform-origin:center center}' +
-      '.seatLabel{position:absolute;top:1.8mm;left:50%;transform:translateX(-50%);font-size:11pt;font-weight:700;letter-spacing:.4px}' +
-      '.desk{position:absolute;z-index:6;border:0.9mm solid #111;background:#e9d39a;display:flex;align-items:center;justify-content:center;font-size:10.5pt;font-weight:800;border-radius:1mm}' +
-      '.desk span{transform:rotate(180deg)}' +
-      '.pseat{position:absolute;z-index:3;border:0.55mm solid #222;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-weight:700;padding:0.45mm;border-radius:0.8mm}' +
-      '.pseat span{transform:rotate(180deg)}' +
-      '.disabled{background:#e1e3e8;color:#444;font-size:12pt;font-weight:800}' +
-      '.listBox h3{margin:3.6mm 0 2mm;text-align:center;font-size:11.5pt;font-weight:800}' +
-      '.roster{list-style:none;margin:0;padding:0 2.6mm 2mm;max-height:178mm;overflow:hidden;font-size:8.9pt;line-height:1.38}' +
-      '.roster li{display:grid;grid-template-columns:12mm 1fr;gap:1.4mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0.2mm 0;border-bottom:0.2mm dashed #d5dae4}' +
-      '.roster .n{font-weight:800}' +
-      '.roster .nm{overflow:hidden;text-overflow:ellipsis}' +
-      '.footBox{padding:3.8mm 5mm;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:linear-gradient(180deg,#ffffff,#f6f9ff)}' +
-      '.ftTitle{font-size:13.4pt;font-weight:900;margin-bottom:1.2mm}' +
-      '.ftLine{font-size:10.6pt;line-height:1.38}' +
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8" /><title>' + esc(title) + '</title><style>' +
+      '@page { size:A4 landscape; margin:0; }' +
+      '*{ box-sizing:border-box; } html,body{ margin:0; padding:0; } body{ font-family:"Noto Sans KR",system-ui,sans-serif; color:#111; }' +
+      '.paper{ width:297mm; height:210mm; border:1px solid #666; padding:3mm; overflow:hidden; }' +
+      '.title{ text-align:center; font-size:14pt; font-weight:800; margin:1mm 0 2.5mm; }' +
+      '.main{ display:grid; grid-template-columns:1fr 56mm; gap:3mm; height:194mm; }' +
+      '.leftCol{ display:grid; grid-template-rows:3fr 1fr; gap:3mm; }' +
+      '.classroom{ border:1px solid #555; padding:3mm; position:relative; background:#f7f7f7; }' +
+      '.classroomRot{ position:relative; height:100%; transform:rotate(180deg); transform-origin:center; }' +
+      '.inside{ border:1px solid #777; height:100%; padding:20mm 2.5mm 3.5mm; display:grid; align-items:start; justify-items:stretch; }' +
+      '.seatsWrap{ display:flex; align-items:flex-start; justify-content:space-between; gap:' + printGap + 'mm; width:100%; }' +
+      '.seatCol{ display:flex; flex-direction:column; }' +
+      '.seatCell{ width:' + seatWidth + 'mm; height:' + seatHeight + 'mm; border:1px solid #666; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.12; font-size:' + seatFont + 'pt; font-weight:700; background:#fff; white-space:pre-line; }' +
+      '.seatText{ transform:rotate(180deg); }' +
+      '.seatCell.disabled{ background:#ddd; color:#777; font-size:11pt; }' +
+      '.desk{ position:absolute; left:50%; bottom:6mm; transform:translateX(-50%); width:72mm; height:12mm; border:1px solid #666; background:#e7ddb4; display:flex; align-items:center; justify-content:center; font-weight:800; z-index:10; }' +
+      '.desk > span{ transform:rotate(180deg); }' +
+      '.footer{ border:1px solid #555; padding:4mm; text-align:center; background:#fafafa; }' +
+      '.footer h3{ margin:0 0 2mm; font-size:12pt; }' +
+      '.footer p{ margin:1mm 0; font-size:9pt; }' +
+      '.att{ border:1px solid #555; padding:1.2mm; height:100%; }' +
+      '.attTitle{ border:1px solid #555; text-align:center; font-weight:800; padding:1mm 0; margin-bottom:1.2mm; font-size:10pt; }' +
+      'table{ width:100%; border-collapse:collapse; font-size:7.4pt; }' +
+      'th,td{ border:1px solid #555; height:5.35mm; text-align:center; padding:0; } th{ background:#efefef; }' +
       '</style></head><body>' +
-      '<div class="sheet"><div class="frame">' +
-      '<div class="seatBox"><div class="seatLabel">좌석</div><div class="seatInner"><div class="seatCanvas">' +
-      seatBlocks +
-      '<div class="desk" style="left:' + deskX.toFixed(2) + 'mm;top:' + deskY.toFixed(2) + 'mm;width:' + deskW.toFixed(2) + 'mm;height:' + deskH.toFixed(2) + 'mm;"><span>교탁</span></div>' +
-      '</div>' +
-      '</div></div>' +
-      '<div class="listBox"><h3>명단</h3><ol class="roster">' + rosterRows + '</ol></div>' +
-      '<div class="footBox"><div class="ftTitle">' + esc(title) + '</div><div class="ftLine">' + esc(state.settings.printFooter || '') + '</div><div class="ftLine">' + esc(state.settings.printFooterSub1 || '') + '</div><div class="ftLine">' + esc(state.settings.printFooterSub2 || '') + '</div></div>' +
-      '<div></div>' +
+      '<div class="paper"><div class="title">' + esc(title) + '</div><div class="main">' +
+      '<div class="leftCol"><div class="classroom"><div class="classroomRot"><div class="inside"><div class="seatsWrap">' + seatGrid + '</div></div><div class="desk"><span>교탁</span></div></div></div>' +
+      '<div class="footer"><h3>' + esc(footer) + '</h3><p>' + esc(footerSub1) + '</p><p>' + esc(footerSub2) + '</p></div></div>' +
+      '<div class="att"><div class="attTitle">출석부</div><table><thead><tr><th>번</th><th>번호</th><th>이름</th><th>비고</th></tr></thead><tbody>' + attendanceHtml + '</tbody></table></div>' +
       '</div></div></body></html>';
   }
 
