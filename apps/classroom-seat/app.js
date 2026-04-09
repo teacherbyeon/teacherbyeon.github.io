@@ -205,15 +205,7 @@
         return parseRows(rows);
       });
     }
-    if (ext === 'xlsx') {
-      if (typeof XLSX === 'undefined') throw new Error('xlsx.full.min.js 파일이 없어 XLSX를 읽을 수 없습니다. 같은 폴더에 파일을 넣어주세요.');
-      return file.arrayBuffer().then(function (buf) {
-        var wb = XLSX.read(buf, { type: 'array' });
-        var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true });
-        return parseRows(rows);
-      });
-    }
-    throw new Error('지원 파일 형식: .xlsx, .csv');
+    throw new Error('지원 파일 형식: .csv (현재 배포본은 CSV 전용)');
   }
 
   function validateStudents() {
@@ -624,7 +616,7 @@
         return;
       }
 
-      if (deskHit(p.x, p.y)) {
+      if (deskHit(p.x, p.y) && state.mode === 'select') {
         state.drag = { type: 'desk', start: p };
         return;
       }
@@ -656,7 +648,9 @@
         }
       }
 
-      state.drag = { type: 'seat', id: seat.id, start: p };
+      if (state.mode === 'select') {
+        state.drag = { type: 'seat', id: seat.id, start: p };
+      }
       markDirty();
       render();
     });
