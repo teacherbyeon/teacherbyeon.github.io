@@ -525,24 +525,23 @@
     function mm(px) { return Number((px * 0.19).toFixed(2)); }
 
     var seats = activeSeats();
+    var placedSeats = seats.filter(function (s) { return !s.deleted; });
     var minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
-    seats.forEach(function (s) {
+    placedSeats.forEach(function (s) {
       minX = Math.min(minX, s.x);
       minY = Math.min(minY, s.y);
       maxX = Math.max(maxX, s.x + s.width);
       maxY = Math.max(maxY, s.y + s.height);
     });
-    minX = Math.min(minX, state.desk.x);
-    minY = Math.min(minY, state.desk.y);
-    maxX = Math.max(maxX, state.desk.x + state.desk.width);
-    maxY = Math.max(maxY, state.desk.y + state.desk.height);
-    if (!Number.isFinite(minX)) { minX = 0; minY = 0; maxX = 1200; maxY = 800; }
+    if (!Number.isFinite(minX)) {
+      minX = state.desk.x; minY = state.desk.y; maxX = state.desk.x + state.desk.width; maxY = state.desk.y + state.desk.height;
+    }
 
     var srcW = Math.max(1, maxX - minX);
     var srcH = Math.max(1, maxY - minY);
     var targetW = 196; // mm
     var targetH = 108; // mm
-    var scale = Math.min(targetW / srcW, targetH / srcH);
+    var scale = Math.min(targetW / srcW, targetH / srcH) * 0.98;
     var offsetX = (targetW - srcW * scale) / 2;
     var offsetY = (targetH - srcH * scale) / 2;
 
@@ -551,8 +550,8 @@
       var txt = !s.enabled ? 'X' : st ? (esc(st.번호) + '<br>' + esc(st.이름)) : esc(s.label || '');
       var x = offsetX + (s.x - minX) * scale;
       var y = offsetY + (s.y - minY) * scale;
-      var w = Math.max(10, s.width * scale);
-      var h = Math.max(9, s.height * scale);
+      var w = Math.max(12.5, s.width * scale);
+      var h = Math.max(11, s.height * scale);
       var fs = Math.max(7.3, Math.min(11.8, Math.min(w, h) * 0.32));
       return '<div class="pseat ' + (s.enabled ? '' : 'disabled') + '" style="left:' + x.toFixed(2) + 'mm;top:' + y.toFixed(2) + 'mm;width:' + w.toFixed(2) + 'mm;height:' + h.toFixed(2) + 'mm;font-size:' + fs.toFixed(2) + 'pt;"><span>' + txt + '</span></div>';
     }).join('');
@@ -561,6 +560,8 @@
     var deskY = offsetY + (state.desk.y - minY) * scale;
     var deskW = Math.max(26, state.desk.width * scale);
     var deskH = Math.max(10, state.desk.height * scale);
+    deskX = Math.max(0.8, Math.min(targetW - deskW - 0.8, deskX));
+    deskY = Math.max(0.8, Math.min(targetH - deskH - 0.8, deskY));
 
     var rosterRows = state.students.slice().sort(function (a, b) { return a.번호.localeCompare(b.번호, 'ko', { numeric: true }); }).map(function (s) {
       return '<li><span class="n">' + esc(s.번호) + '</span><span class="nm">' + esc(s.이름) + '</span></li>';
