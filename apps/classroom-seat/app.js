@@ -562,6 +562,7 @@
     var deskH = Math.max(10, state.desk.height * scale);
     deskX = Math.max(0.8, Math.min(targetW - deskW - 0.8, deskX));
     deskY = Math.max(0.8, Math.min(targetH - deskH - 0.8, deskY));
+    deskY = Math.max(deskY, targetH - deskH - 1.2);
 
     var rosterRows = state.students.slice().sort(function (a, b) { return a.번호.localeCompare(b.번호, 'ko', { numeric: true }); }).map(function (s) {
       return '<li><span class="n">' + esc(s.번호) + '</span><span class="nm">' + esc(s.이름) + '</span></li>';
@@ -576,9 +577,9 @@
       '.seatInner{position:absolute;left:4mm;top:4mm;right:4mm;bottom:4mm;border:0.55mm solid #2b313d;background:linear-gradient(180deg,#fbfdff,#f2f6fb);border-radius:1mm;overflow:hidden}' +
       '.seatCanvas{position:absolute;left:0;top:0;width:196mm;height:108mm;transform:rotate(180deg);transform-origin:center center}' +
       '.seatLabel{position:absolute;top:1.8mm;left:50%;transform:translateX(-50%);font-size:11pt;font-weight:700;letter-spacing:.4px}' +
-      '.desk{position:absolute;border:0.9mm solid #111;background:#e9d39a;display:flex;align-items:center;justify-content:center;font-size:10.5pt;font-weight:800;border-radius:1mm}' +
+      '.desk{position:absolute;z-index:6;border:0.9mm solid #111;background:#e9d39a;display:flex;align-items:center;justify-content:center;font-size:10.5pt;font-weight:800;border-radius:1mm}' +
       '.desk span{transform:rotate(180deg)}' +
-      '.pseat{position:absolute;border:0.55mm solid #222;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-weight:700;padding:0.45mm;border-radius:0.8mm}' +
+      '.pseat{position:absolute;z-index:3;border:0.55mm solid #222;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-weight:700;padding:0.45mm;border-radius:0.8mm}' +
       '.pseat span{transform:rotate(180deg)}' +
       '.disabled{background:#e1e3e8;color:#444;font-size:12pt;font-weight:800}' +
       '.listBox h3{margin:3.6mm 0 2mm;text-align:center;font-size:11.5pt;font-weight:800}' +
@@ -592,8 +593,8 @@
       '</style></head><body>' +
       '<div class="sheet"><div class="frame">' +
       '<div class="seatBox"><div class="seatLabel">좌석</div><div class="seatInner"><div class="seatCanvas">' +
-      '<div class="desk" style="left:' + deskX.toFixed(2) + 'mm;top:' + deskY.toFixed(2) + 'mm;width:' + deskW.toFixed(2) + 'mm;height:' + deskH.toFixed(2) + 'mm;"><span>교탁</span></div>' +
       seatBlocks +
+      '<div class="desk" style="left:' + deskX.toFixed(2) + 'mm;top:' + deskY.toFixed(2) + 'mm;width:' + deskW.toFixed(2) + 'mm;height:' + deskH.toFixed(2) + 'mm;"><span>교탁</span></div>' +
       '</div>' +
       '</div></div>' +
       '<div class="listBox"><h3>명단</h3><ol class="roster">' + rosterRows + '</ol></div>' +
