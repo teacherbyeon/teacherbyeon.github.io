@@ -522,19 +522,76 @@
 
   function buildPrintHtml() {
     var title = state.settings.printTitle || '자리 배치표';
-    function mm(px) { return Number((px * 0.22).toFixed(2)); }
-    var seatBlocks = activeSeats().map(function (s) {
+    function mm(px) { return Number((px * 0.18).toFixed(2)); }
+
+    var seats = activeSeats();
+    var minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
+    seats.forEach(function (s) {
+      minX = Math.min(minX, s.x);
+      minY = Math.min(minY, s.y);
+      maxX = Math.max(maxX, s.x + s.width);
+      maxY = Math.max(maxY, s.y + s.height);
+    });
+    minX = Math.min(minX, state.desk.x);
+    minY = Math.min(minY, state.desk.y);
+    maxX = Math.max(maxX, state.desk.x + state.desk.width);
+    maxY = Math.max(maxY, state.desk.y + state.desk.height);
+    if (!Number.isFinite(minX)) { minX = 0; minY = 0; maxX = 1200; maxY = 800; }
+
+    var srcW = Math.max(1, maxX - minX);
+    var srcH = Math.max(1, maxY - minY);
+    var targetW = 196; // mm (left seat box inner width)
+    var targetH = 108; // mm (left seat box inner height)
+    var scale = Math.min(targetW / srcW, targetH / srcH);
+    var offsetX = (targetW - srcW * scale) / 2;
+    var offsetY = (targetH - srcH * scale) / 2;
+
+    var seatBlocks = seats.map(function (s) {
       var st = state.students.find(function (x) { return x.번호 === s.studentNo; });
       var txt = !s.enabled ? 'X' : st ? (esc(st.번호) + '<br>' + esc(st.이름)) : esc(s.label || '');
-      return '<div class="pseat ' + (s.enabled ? '' : 'disabled') + '" style="left:' + mm(s.x) + 'mm;top:' + mm(s.y) + 'mm;width:' + mm(s.width) + 'mm;height:' + mm(s.height) + 'mm;">' + txt + '</div>';
+      var x = offsetX + (s.x - minX) * scale;
+      var y = offsetY + (s.y - minY) * scale;
+      var w = Math.max(8, s.width * scale);
+      var h = Math.max(8, s.height * scale);
+      return '<div class="pseat ' + (s.enabled ? '' : 'disabled') + '" style="left:' + x.toFixed(2) + 'mm;top:' + y.toFixed(2) + 'mm;width:' + w.toFixed(2) + 'mm;height:' + h.toFixed(2) + 'mm;">' + txt + '</div>';
+    }).join('');
+
+    var deskX = offsetX + (state.desk.x - minX) * scale;
+    var deskY = offsetY + (state.desk.y - minY) * scale;
+    var deskW = Math.max(20, state.desk.width * scale);
+    var deskH = Math.max(8, state.desk.height * scale);
+
+    var rosterRows = state.students.slice().sort(function (a, b) { return a.번호.localeCompare(b.번호, 'ko', { numeric: true }); }).map(function (s) {
+      return '<li>' + esc(s.번호) + '. ' + esc(s.이름) + '</li>';
     }).join('');
 
     return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>' +
-      '@page{size:A4 landscape;margin:8mm}body{font-family:system-ui,sans-serif;margin:0}.title{text-align:center;font-size:18px;font-weight:800;margin:0 0 4mm}' +
-      '.paper{height:184mm;border:1px solid #666;position:relative}.board{position:absolute;left:4mm;top:6mm;width:205mm;height:171mm;border:1px solid #999;background:#f7f7f7}.desk{position:absolute;border:1px solid #555;background:#e2d4ad;display:flex;align-items:center;justify-content:center;font-weight:700}' +
-      '.pseat{position:absolute;border:1px solid #444;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.14}.disabled{background:#ddd;font-size:18pt}.meta{position:absolute;right:4mm;top:6mm;width:70mm;border:1px solid #aaa;padding:2mm;font-size:9pt}' +
-      '</style></head><body><h1 class="title">' + esc(title) + '</h1><div class="paper"><div class="board"><div class="desk" style="left:' + mm(state.desk.x) + 'mm;top:' + mm(state.desk.y) + 'mm;width:' + mm(state.desk.width) + 'mm;height:' + mm(state.desk.height) + 'mm;">' + esc(state.desk.label) + '</div>' + seatBlocks + '</div>' +
-      '<div class="meta"><h3>문구</h3><p>' + esc(state.settings.printFooter || '') + '</p><p>' + esc(state.settings.printFooterSub1 || '') + '</p><p>' + esc(state.settings.printFooterSub2 || '') + '</p></div></div></body></html>';
+      '@page{size:A4 landscape;margin:0}' +
+      '*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:system-ui,sans-serif}' +
+      '.sheet{width:297mm;height:210mm;padding:6mm;background:#fff}' +
+      '.frame{width:100%;height:100%;display:grid;grid-template-columns:1fr 52mm;grid-template-rows:1fr 44mm;gap:3mm}' +
+      '.seatBox,.listBox,.footBox{border:1.2mm solid #000;background:#fff;position:relative;overflow:hidden}' +
+      '.seatInner{position:absolute;left:4mm;top:4mm;right:4mm;bottom:4mm;border:0.5mm solid #333}' +
+      '.seatLabel{position:absolute;top:2mm;left:50%;transform:translateX(-50%);font-size:10pt}' +
+      '.desk{position:absolute;border:1mm solid #000;background:#f5e7b8;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:700}' +
+      '.pseat{position:absolute;border:0.5mm solid #000;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.12;font-size:8.5pt;font-weight:600;padding:0.5mm}' +
+      '.disabled{background:#ddd;font-size:12pt;font-weight:800}' +
+      '.listBox h3{margin:4mm 0 2mm;text-align:center;font-size:11pt}' +
+      '.roster{list-style:none;margin:0;padding:0 3mm 2mm;max-height:178mm;overflow:hidden;font-size:8.5pt;line-height:1.35}' +
+      '.roster li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.footBox{padding:4mm 5mm;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}' +
+      '.ftTitle{font-size:12pt;font-weight:800;margin-bottom:1.5mm}' +
+      '.ftLine{font-size:9.5pt;line-height:1.45}' +
+      '</style></head><body>' +
+      '<div class="sheet"><div class="frame">' +
+      '<div class="seatBox"><div class="seatLabel">좌석</div><div class="seatInner">' +
+      '<div class="desk" style="left:' + deskX.toFixed(2) + 'mm;top:' + deskY.toFixed(2) + 'mm;width:' + deskW.toFixed(2) + 'mm;height:' + deskH.toFixed(2) + 'mm;">교탁</div>' +
+      seatBlocks +
+      '</div></div>' +
+      '<div class="listBox"><h3>명단</h3><ol class="roster">' + rosterRows + '</ol></div>' +
+      '<div class="footBox"><div class="ftTitle">' + esc(title) + '</div><div class="ftLine">' + esc(state.settings.printFooter || '') + '</div><div class="ftLine">' + esc(state.settings.printFooterSub1 || '') + '</div><div class="ftLine">' + esc(state.settings.printFooterSub2 || '') + '</div></div>' +
+      '<div></div>' +
+      '</div></div></body></html>';
   }
 
   function render() {
