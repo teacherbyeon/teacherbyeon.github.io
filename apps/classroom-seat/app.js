@@ -563,15 +563,15 @@
     var absentCount = absentees.length;
     var absentListText = absentees.map(function (s) { return s.번호 + '번 ' + s.이름; }).join(', ');
 
-    var maxNo = 0;
-    sorted.forEach(function (s) {
-      var n = Number(String(s.번호).replace(/[^\d]/g, ''));
-      if (Number.isFinite(n) && n > maxNo) maxNo = n;
-    });
-    var seenNos = new Set(sorted.map(function (s) { return String(Number(String(s.번호).replace(/[^\d]/g, ''))); }));
+    var numericNos = sorted.map(function (s) { return Number(String(s.번호).replace(/[^\d]/g, '')); })
+      .filter(function (n) { return Number.isFinite(n) && n > 0; })
+      .sort(function (a, b) { return a - b; });
+    var firstNo = numericNos.length ? numericNos[0] : 0;
+    var maxNo = numericNos.length ? numericNos[numericNos.length - 1] : 0;
+    var seenNos = new Set(numericNos.map(function (n) { return String(n); }));
     var miss = [];
-    if (maxNo > 0) {
-      for (var i = 1; i <= maxNo; i += 1) {
+    if (firstNo > 0 && maxNo >= firstNo) {
+      for (var i = firstNo; i <= maxNo; i += 1) {
         if (!seenNos.has(String(i))) miss.push(i);
       }
     }
@@ -659,10 +659,10 @@
       '@page { size:A4 landscape; margin:0; }' +
       '*{ box-sizing:border-box; } html,body{ margin:0; padding:0; } body{ font-family:"Noto Sans KR",system-ui,sans-serif; color:#111; }' +
       '.paper{ width:297mm; height:210mm; border:1px solid #666; padding:3mm; overflow:hidden; }' +
-      '.title{ text-align:center; font-size:14pt; font-weight:800; margin:1mm 0 1.5mm; }' +
-      '.sub{ text-align:center; font-size:9pt; margin:0 0 2mm; }' +
-      '.meta{ border:1px solid #555; padding:1.6mm 2mm; margin:0 0 2mm; background:#fafafa; font-size:9pt; line-height:1.45; }' +
-      '.main{ display:grid; grid-template-columns:1fr 56mm; gap:3mm; height:' + (examMode ? '181mm' : '183mm') + '; }' +
+      '.title{ text-align:center; font-size:' + (examMode ? '20pt' : '14pt') + '; font-weight:800; margin:1mm 0 1.5mm; }' +
+      '.sub{ text-align:center; font-size:' + (examMode ? '13pt' : '9pt') + '; margin:0 0 2mm; font-weight:' + (examMode ? '700' : '400') + '; }' +
+      '.meta{ border:1px solid #555; padding:' + (examMode ? '2.3mm 2.2mm' : '1.6mm 2mm') + '; margin:0 0 2mm; background:#fafafa; font-size:' + (examMode ? '12.5pt' : '9pt') + '; line-height:' + (examMode ? '1.55' : '1.45') + '; font-weight:' + (examMode ? '700' : '400') + '; }' +
+      '.main{ display:grid; grid-template-columns:1fr 56mm; gap:3mm; height:' + (examMode ? '171mm' : '183mm') + '; }' +
       '.leftCol{ display:grid; grid-template-rows:' + (examMode ? '1fr' : '3fr 1fr') + '; gap:3mm; }' +
       '.classroom{ border:1px solid #555; padding:3mm; position:relative; background:#f7f7f7; }' +
       '.classroomRot{ position:relative; height:100%; transform:' + (examMode ? 'none' : 'rotate(180deg)') + '; transform-origin:center; }' +
