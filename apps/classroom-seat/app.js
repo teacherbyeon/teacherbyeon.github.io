@@ -21,8 +21,6 @@
     swapSeatId: null,
     drag: null,
     zoom: 1,
-    snapOn: true,
-    snapGrid: 16,
     assignmentReport: null,
     settings: {
       assignBehavior: 'swap',
@@ -42,7 +40,7 @@
     modeButtons: [].slice.call(document.querySelectorAll('[data-mode]')),
     studentFile: byId('studentFile'), btnLoadPlan: byId('btnLoadPlan'), planFile: byId('planFile'), btnSavePlan: byId('btnSavePlan'),
     btnBuild: byId('btnBuild'), btnAddSeat: byId('btnAddSeat'), btnRandom: byId('btnRandom'), btnSmart: byId('btnSmart'), btnExam: byId('btnExam'), btnPrint: byId('btnPrint'), btnClear: byId('btnClear'),
-    rows: byId('rows'), cols: byId('cols'), snapOn: byId('snapOn'), snapGrid: byId('snapGrid'), zoom: byId('zoom'), zoomLabel: byId('zoomLabel'), assignBehavior: byId('assignBehavior'), smartTry: byId('smartTry'),
+    rows: byId('rows'), cols: byId('cols'), zoom: byId('zoom'), zoomLabel: byId('zoomLabel'), assignBehavior: byId('assignBehavior'), smartTry: byId('smartTry'),
     printTitle: byId('printTitle'), printFooter: byId('printFooter'), printFooterSub1: byId('printFooterSub1'), printFooterSub2: byId('printFooterSub2'),
     studentSearch: byId('studentSearch'), stats: byId('stats'), studentList: byId('studentList'),
     seatEmpty: byId('seatEmpty'), seatEditor: byId('seatEditor'), seatId: byId('seatId'), seatLabel: byId('seatLabel'), seatZone: byId('seatZone'), seatEnabled: byId('seatEnabled'), seatWidth: byId('seatWidth'), seatHeight: byId('seatHeight'),
@@ -95,8 +93,6 @@
   }
 
   function syncOptions() {
-    state.snapOn = dom.snapOn.checked;
-    state.snapGrid = Number(dom.snapGrid.value) || 16;
     state.zoom = Number(dom.zoom.value) || 1;
     dom.zoomLabel.textContent = Math.round(state.zoom * 100) + '%';
     state.settings.assignBehavior = dom.assignBehavior.value;
@@ -108,7 +104,7 @@
     dom.board.style.transform = 'scale(' + state.zoom + ')';
   }
 
-  function snap(v) { return state.snapOn ? Math.round(v / state.snapGrid) * state.snapGrid : v; }
+  function snap(v) { return v; }
   function boardPoint(ev) {
     var rect = dom.board.getBoundingClientRect();
     return { x: (ev.clientX - rect.left) / state.zoom, y: (ev.clientY - rect.top) / state.zoom };
@@ -566,12 +562,12 @@
     seats.forEach(function (s) {
       var c = nearIndex(s.x, cols);
       var r = nearIndex(s.y, rows);
-      matrix[c][r] = s;
+      if (s.enabled) matrix[c][r] = s;
     });
 
     var seatGrid = matrix.map(function (col) {
       var cells = col.map(function (seat) {
-        if (!seat || !seat.enabled) return '<div class="seatCell disabled"><div class="seatText">X</div></div>';
+        if (!seat) return '<div class="seatCell skip"></div>';
         if (seat.studentNo == null) return '<div class="seatCell"><div class="seatText">&nbsp;</div></div>';
         var st = state.students.find(function (x) { return x.번호 === seat.studentNo; });
         var txt = st ? (esc(st.번호) + '<br>' + esc(st.이름)) : (esc(seat.studentNo) + '<br>&nbsp;');
@@ -604,6 +600,7 @@
       '.seatCol{ display:flex; flex-direction:column; }' +
       '.seatCell{ width:' + seatWidth + 'mm; height:' + seatHeight + 'mm; border:1px solid #666; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.12; font-size:' + seatFont + 'pt; font-weight:700; background:#fff; white-space:pre-line; }' +
       '.seatText{ transform:rotate(180deg); }' +
+      '.seatCell.skip{ border:none; background:transparent; }' +
       '.seatCell.disabled{ background:#ddd; color:#777; font-size:11pt; }' +
       '.desk{ position:absolute; left:50%; top:5.5mm; transform:translateX(-50%); width:72mm; height:12mm; border:1px solid #666; background:#e7ddb4; display:flex; align-items:center; justify-content:center; font-weight:800; z-index:10; }' +
       '.desk > span{ transform:rotate(180deg); }' +
@@ -728,7 +725,7 @@
       setTimeout(function () { w.print(); }, 250);
     });
 
-    [dom.snapOn, dom.snapGrid, dom.zoom, dom.assignBehavior, dom.smartTry, dom.printTitle, dom.printFooter, dom.printFooterSub1, dom.printFooterSub2].forEach(function (el) {
+    [dom.zoom, dom.assignBehavior, dom.smartTry, dom.printTitle, dom.printFooter, dom.printFooterSub1, dom.printFooterSub2].forEach(function (el) {
       el.addEventListener('input', function () { syncOptions(); markDirty(); render(); });
     });
 
