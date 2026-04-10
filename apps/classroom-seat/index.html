@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>자리배치 프로그램(오프라인 배포용)</title>
+  <title>자리배치 프로그램</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header>
-    <h1>교실 자리배치 프로그램 (오프라인 배포용)</h1>
+    <h1>자리배치 프로그램</h1>
     <div id="modeBadge">현재 모드: 선택 모드</div>
     <div id="unsavedMark">저장됨</div>
   </header>
@@ -26,27 +26,26 @@
         <h3>모드 선택</h3>
         <div class="modeGrid">
           <button data-mode="select" class="active">선택 모드</button>
+          <button data-mode="assign">학생 배정 모드</button>
+          <button data-mode="swap">자리 바꾸기 모드</button>
           <button data-mode="add">좌석 추가 모드</button>
           <button data-mode="delete">좌석 삭제 모드</button>
           <button data-mode="disable">좌석 사용불가(X) 모드</button>
-          <button data-mode="assign">학생 배정 모드</button>
-          <button data-mode="swap">자리 바꾸기 모드</button>
         </div>
       </div>
 
       <div class="card">
         <h3>파일 / 작업</h3>
         <div class="grid2">
-          <input id="studentFile" type="file" accept=".xlsx,.csv" />
-          <button id="btnLoadPlan">배치 불러오기(JSON)</button>
+          <input id="studentFile" class="full" type="file" accept=".xlsx,.csv" />
           <input id="planFile" type="file" accept=".json" hidden />
-          <button id="btnSavePlan">배치 저장(JSON)</button>
-          <button id="btnBuild" class="primary">자리 다시 생성</button>
-          <button id="btnAddSeat">좌석 추가 모드 켜기</button>
+          <button id="btnSavePlan">배치 저장</button>
+          <button id="btnLoadPlan">배치 불러오기</button>
+          <button id="btnBuild" class="primary full">자리 다시 생성</button>
           <button id="btnRandom">랜덤 배정</button>
-          <button id="btnSmart">조건 반영 자동 배정</button>
           <button id="btnExam">번호순 배치(시험대형)</button>
-          <button id="btnPrint">인쇄하기(A4)</button>
+          <button id="btnSmart" class="full">조건 반영 자동 배정</button>
+          <button id="btnPrint" class="full">인쇄하기(A4)</button>
           <button id="btnClear" class="danger">배정 전체 초기화</button>
         </div>
       </div>

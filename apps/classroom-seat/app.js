@@ -39,7 +39,7 @@
     modeBadge: byId('modeBadge'), unsavedMark: byId('unsavedMark'),
     modeButtons: [].slice.call(document.querySelectorAll('[data-mode]')),
     studentFile: byId('studentFile'), btnLoadPlan: byId('btnLoadPlan'), planFile: byId('planFile'), btnSavePlan: byId('btnSavePlan'),
-    btnBuild: byId('btnBuild'), btnAddSeat: byId('btnAddSeat'), btnRandom: byId('btnRandom'), btnSmart: byId('btnSmart'), btnExam: byId('btnExam'), btnPrint: byId('btnPrint'), btnClear: byId('btnClear'),
+    btnBuild: byId('btnBuild'), btnRandom: byId('btnRandom'), btnSmart: byId('btnSmart'), btnExam: byId('btnExam'), btnPrint: byId('btnPrint'), btnClear: byId('btnClear'),
     rows: byId('rows'), cols: byId('cols'), zoom: byId('zoom'), zoomLabel: byId('zoomLabel'), assignBehavior: byId('assignBehavior'), smartTry: byId('smartTry'),
     printTitle: byId('printTitle'), printFooter: byId('printFooter'), printFooterSub1: byId('printFooterSub1'), printFooterSub2: byId('printFooterSub2'),
     studentSearch: byId('studentSearch'), stats: byId('stats'), studentList: byId('studentList'),
@@ -721,7 +721,6 @@
   function bindEvents() {
     dom.modeButtons.forEach(function (btn) { btn.addEventListener('click', function () { setMode(btn.getAttribute('data-mode')); }); });
 
-    dom.btnAddSeat.addEventListener('click', function () { setMode('add'); });
     dom.btnBuild.addEventListener('click', function () {
       if (!confirm('기존 좌석 배치와 위치가 사라집니다. 정말 다시 생성할까요?')) return;
       generateGrid(Number(dom.cols.value), Number(dom.rows.value));
@@ -885,7 +884,7 @@
   generateGrid(6, 4);
   syncOptions();
   bindEvents();
-  state.msg.info = '오프라인 배포용으로 준비되었습니다. 학생 파일을 불러오세요.';
+  state.msg.info = '준비되었습니다. 학생 파일을 불러오세요.';
   if (typeof XLSX === 'undefined' || !XLSX.read) {
     state.msg.warnings.push('xlsx.full.min.js가 로드되지 않아 .xlsx 불러오기를 사용할 수 없습니다.');
   }

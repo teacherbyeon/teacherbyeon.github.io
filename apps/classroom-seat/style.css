@@ -24,6 +24,7 @@ button{cursor:pointer}
 button.active{background:#1e4ba8;color:#fff;border-color:#1e4ba8;font-weight:700}
 button.danger{background:var(--danger);border-color:var(--danger);color:#fff;grid-column:1/-1}
 button.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:700}
+.grid2 .full{grid-column:1/-1}
 label{font-size:12px;color:#555}
 .row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
 .row input[type='text'],.row input[type='search'],.row select{flex:1}
