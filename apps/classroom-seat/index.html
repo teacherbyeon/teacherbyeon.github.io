@@ -45,6 +45,7 @@
           <button id="btnExam">번호순 배치(시험대형)</button>
           <button id="btnSmart" class="full">조건 반영 자동 배정</button>
           <button id="btnPrint" class="full">인쇄하기(A4)</button>
+          <button id="btnPrintExam" class="full">시험용 인쇄(A4)</button>
           <button id="btnClear" class="danger">배정 전체 초기화</button>
         </div>
       </div>
@@ -70,6 +71,10 @@
         <h3>학생 목록</h3>
         <div class="row"><input id="studentSearch" type="search" placeholder="번호/이름 검색"></div>
         <div id="stats" class="muted"></div>
+        <div class="row">
+          <input id="absenceSummary" type="text" readonly>
+          <button id="btnCopyAbsence">결시 현황 복사</button>
+        </div>
         <div id="studentList" class="studentList"></div>
       </div>
 
