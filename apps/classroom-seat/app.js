@@ -65,6 +65,10 @@
     if (['여', '여자', 'f', 'female'].indexOf(t) >= 0) return 'F';
     return 'U';
   }
+
+  function normalizeSeatLabel(v) {
+    return String(v == null ? '' : v).trim().replace(/[\s-]/g, '').toUpperCase();
+  }
   function parseRefList(v) {
     return String(v == null ? '' : v).split(/[;,/|\s]+/).map(normalizeNo).filter(Boolean);
   }
@@ -121,7 +125,7 @@
     for (var r = 0; r < rows; r += 1) {
       for (var c = 0; c < cols; c += 1) {
         var seat = createSeat(sx + c * (w + gx), sy + r * (h + gy));
-        seat.label = (r + 1) + '-' + (c + 1);
+        seat.label = String(r + 1) + String(c + 1);
         state.seats.push(seat);
       }
     }
@@ -275,6 +279,7 @@
     var errors = [], warnings = [];
     var seen = new Set();
     var allNos = new Set(state.students.map(function (s) { return s.번호; }));
+    var labelMap = buildSeatLabelMap();
 
     state.students.forEach(function (s, i) {
       if (!s.번호) errors.push('행 ' + (i + 2) + ': 번호 없음');
@@ -283,8 +288,9 @@
       seen.add(s.번호);
 
       if (s.고정좌석) {
-        var seat = seatById(s.고정좌석);
-        if (!seat) errors.push(s.번호 + ' ' + s.이름 + ': 고정좌석(' + s.고정좌석 + ')이 없습니다.');
+        var fixed = findSeatByFixedLabel(s.고정좌석, labelMap);
+        if (!fixed.seat) errors.push(s.번호 + ' ' + s.이름 + ': 고정좌석 라벨(' + s.고정좌석 + ')이 없거나 중복입니다.');
+        else if (!fixed.seat.enabled) errors.push(s.번호 + ' ' + s.이름 + ': 고정좌석 라벨(' + s.고정좌석 + ')이 비활성 좌석입니다.');
       }
 
       ['분리대상', '같은줄금지', '같은열금지', '인접금지'].forEach(function (k) {
@@ -322,6 +328,26 @@
     markDirty();
   }
 
+  function buildSeatLabelMap() {
+    var map = new Map();
+    state.seats.forEach(function (s) {
+      if (s.deleted) return;
+      var key = normalizeSeatLabel(s.label);
+      if (!key) return;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(s);
+    });
+    return map;
+  }
+
+  function findSeatByFixedLabel(rawLabel, labelMap) {
+    var key = normalizeSeatLabel(rawLabel);
+    if (!key) return { seat: null, reason: 'empty' };
+    var seats = (labelMap || buildSeatLabelMap()).get(key) || [];
+    if (seats.length !== 1) return { seat: null, reason: seats.length ? 'duplicate' : 'missing' };
+    return { seat: seats[0], reason: null };
+  }
+
   function seatRankInfo() {
     var seats = usableSeats();
     var ys = Array.from(new Set(seats.map(function (s) { return Math.round(s.y / 8) * 8; }))).sort(function (a, b) { return a - b; });
@@ -344,7 +370,10 @@
       var row = nearestIndex(seat.y, info.ys); var rowNorm = info.ys.length <= 1 ? 0 : row / (info.ys.length - 1);
       var dDesk = Math.hypot((seat.x + seat.width / 2) - (state.desk.x + state.desk.width / 2), (seat.y + seat.height / 2) - (state.desk.y + state.desk.height / 2));
 
-      if (st.고정좌석 && st.고정좌석 === seat.id) { r.fixedSatisfied += 1; r.score += 8; }
+      if (st.고정좌석) {
+        var fixed = findSeatByFixedLabel(st.고정좌석);
+        if (fixed.seat && fixed.seat.id === seat.id) { r.fixedSatisfied += 1; r.score += 8; }
+      }
       if (st.앞자리우선 && rowNorm <= 0.4) { r.frontSatisfied += 1; r.score += 4; } else if (st.앞자리우선) { r.score -= 2; r.unmet.push(st.번호 + ' 앞자리우선 미충족'); }
       if (st.시력배려 && (rowNorm <= 0.35 || dDesk < 220)) { r.frontSatisfied += 1; r.nearTeacherSatisfied += 1; r.score += 6; } else if (st.시력배려) { r.score -= 4; r.unmet.push(st.번호 + ' 시력배려 미충족'); }
       if (st.교탁근처우선 && dDesk < 260) { r.nearTeacherSatisfied += 1; r.score += 4; } else if (st.교탁근처우선) { r.score -= 2; }
@@ -400,6 +429,7 @@
     if (!usable.length) return false;
     var best = null;
     var tries = state.settings.smartTry;
+    var labelMap = buildSeatLabelMap();
 
     for (var t = 0; t < tries; t += 1) {
       var assignments = new Map();
@@ -416,9 +446,9 @@
         var st = order[i];
         var chosen = null;
         if (st.고정좌석) {
-          var fixed = usable.find(function (s) { return s.id === st.고정좌석; });
-          if (!fixed || used.has(fixed.id)) { impossible = true; break; }
-          chosen = fixed;
+          var fixedSeat = findSeatByFixedLabel(st.고정좌석, labelMap).seat;
+          if (!fixedSeat || !fixedSeat.enabled || used.has(fixedSeat.id)) { impossible = true; break; }
+          chosen = fixedSeat;
         } else {
           var candidates = shuffle(usable.filter(function (s) { return !used.has(s.id); }).slice())
             .map(function (seat) { return { seat: seat, score: candidateSeatScore(st, seat, seatMap) }; })
