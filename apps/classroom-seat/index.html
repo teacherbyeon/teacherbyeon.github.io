@@ -41,7 +41,6 @@
           <input id="planFile" type="file" accept=".json" hidden />
           <button id="btnSavePlan">배치 저장</button>
           <button id="btnLoadPlan">배치 불러오기</button>
-          <button id="btnBuild" class="primary full">자리 다시 생성</button>
           <button id="btnRandom">랜덤 배정</button>
           <button id="btnExam">번호순 배치(시험대형)</button>
           <button id="btnSmart" class="full">조건 반영 자동 배정</button>
@@ -53,6 +52,7 @@
       <div class="card">
         <h3>기본 설정</h3>
         <div class="row"><label>행</label><input id="rows" type="number" min="1" value="4"><label>열</label><input id="cols" type="number" min="1" value="6"></div>
+        <button id="btnBuild" class="primary">자리 다시 생성</button>
         <div class="row"><label>보드 확대</label><input id="zoom" type="range" min="0.6" max="1.6" step="0.1" value="1"><span id="zoomLabel">100%</span></div>
         <div class="row"><label>배정 클릭 동작</label><select id="assignBehavior"><option value="swap">자리 교환</option><option value="move">밀어내기 이동</option></select></div>
         <div class="row"><label>자동배정 시도</label><input id="smartTry" type="number" min="20" max="2000" value="200"></div>
