@@ -117,7 +117,9 @@
   function activeSeats() { return state.seats.filter(function (s) { return !s.deleted; }); }
   function usableSeats() { return state.seats.filter(function (s) { return !s.deleted && s.enabled; }); }
   function seatById(id) { return state.seats.find(function (s) { return s.id === id && !s.deleted; }) || null; }
-  function seatByNo(no) { return state.seats.find(function (s) { return s.studentNo === no && !s.deleted; }) || null; }
+  function sameNo(a, b) { return String(a == null ? '' : a) === String(b == null ? '' : b); }
+  function studentByNo(no) { return state.students.find(function (s) { return sameNo(s.번호, no); }) || null; }
+  function seatByNo(no) { return state.seats.find(function (s) { return sameNo(s.studentNo, no) && !s.deleted; }) || null; }
 
   function generateGrid(cols, rows) {
     state.seats = [];
@@ -530,8 +532,9 @@
     return file.text().then(function (t) {
       var d = JSON.parse(t);
       state.students = Array.isArray(d.students) ? d.students : [];
-      state.students.forEach(function (s) { s.결시 = !!s.결시; s.결시사유 = String(s.결시사유 || '').trim(); });
+      state.students.forEach(function (s) { s.번호 = normalizeNo(s.번호); s.결시 = !!s.결시; s.결시사유 = String(s.결시사유 || '').trim(); });
       state.seats = Array.isArray(d.seats) ? d.seats : [];
+      state.seats.forEach(function (s) { s.studentNo = s.studentNo == null ? null : normalizeNo(s.studentNo); });
       if (d.desk) state.desk = d.desk;
       if (d.settings) state.settings = Object.assign({}, state.settings, d.settings);
       state.assignmentReport = d.assignmentReport || null;
@@ -642,7 +645,7 @@
       var cells = col.map(function (seat) {
         if (!seat) return '<div class="seatCell skip"></div>';
         if (seat.studentNo == null) return '<div class="seatCell"><div class="seatText">&nbsp;</div></div>';
-        var st = state.students.find(function (x) { return x.번호 === seat.studentNo; });
+        var st = studentByNo(seat.studentNo);
         var txt = st ? (esc(st.번호) + '<br>' + esc(st.이름)) : (esc(seat.studentNo) + '<br>&nbsp;');
         return '<div class="seatCell"><div class="seatText">' + txt + '</div></div>';
       }).join('');
@@ -659,7 +662,7 @@
       var tds = '';
       for (var cc = 0; cc < matrix.length; cc += 1) {
         var seat = matrix[cc][rr];
-        var stExam = seat && seat.studentNo != null ? state.students.find(function (x) { return x.번호 === seat.studentNo; }) : null;
+        var stExam = seat && seat.studentNo != null ? studentByNo(seat.studentNo) : null;
         var v = '&nbsp;';
         if (stExam) {
           v = '<div class="cellNo">' + esc(stExam.번호) + '</div><div class="cellName">' + esc(stExam.이름) + '</div>' +
@@ -738,9 +741,9 @@
       '</style></head><body>' +
       '<div class="paper"><div class="title">' + esc(title) + '</div>' +
       (examMode ? '<div class="sub">[좌석배치]</div>' : '') +
-      '<div class="meta">[재적: ' + abs.total + '명] ' +
+      (examMode ? ('<div class="meta">[재적: ' + abs.total + '명] ' +
       '[결시:' + abs.absentCount + '명' + (abs.absentCount ? '(' + esc(abs.absentees.map(function (s) { return s.번호 + '번' + s.이름; }).join(', ')) + ')' : '') + '] ' +
-      '[끝번호:' + esc(abs.endNo) + '번, 결번:' + esc(abs.missText) + ']</div><div class="main">' +
+      '[끝번호:' + esc(abs.endNo) + '번, 결번:' + esc(abs.missText) + ']</div>') : '') + '<div class="main">' +
       '<div class="leftCol"><div class="classroom"><div class="classroomRot"><div class="inside"><div class="seatsWrap">' + seatGrid + '</div></div><div class="desk"><span>교탁</span></div></div></div>' +
       (examMode ? '' : ('<div class="footer"><h3>' + esc(footer) + '</h3><p>' + esc(footerSub1) + '</p><p>' + esc(footerSub2) + '</p></div>')) + '</div>' +
       '<div class="att"><div class="attTitle">출석부</div><table><thead><tr><th>번</th><th>번호</th><th>이름</th><th>비고</th></tr></thead><tbody>' + attendanceHtml + '</tbody></table></div>' +
@@ -758,7 +761,7 @@
 
     var html = '';
     activeSeats().forEach(function (s) {
-      var st = state.students.find(function (x) { return x.번호 === s.studentNo; });
+      var st = studentByNo(s.studentNo);
       html += '<div class="seat ' + (s.enabled ? '' : 'disabled') + ' ' + (st && st.결시 ? 'absent ' : '') + (state.selectedSeatId === s.id ? 'selected' : '') + ' ' + (state.swapSeatId === s.id ? 'swapPick' : '') + '" ' +
         'data-sid="' + esc(s.id) + '" style="left:' + s.x + 'px;top:' + s.y + 'px;width:' + s.width + 'px;height:' + s.height + 'px;">' +
         (s.zone ? '<div class="zone">' + esc(s.zone) + '</div>' : '') +
@@ -766,7 +769,7 @@
     });
     dom.seatLayer.innerHTML = html;
 
-    var assignedSet = new Set(state.seats.map(function (s) { return s.studentNo; }).filter(Boolean));
+    var assignedSet = new Set(state.seats.map(function (s) { return s.studentNo == null ? null : String(s.studentNo); }).filter(Boolean));
     var q = dom.studentSearch.value.trim();
     var visibleStudents = sortedStudents().filter(function (s) {
       if (!q) return true;
@@ -775,13 +778,13 @@
 
     dom.studentList.innerHTML = visibleStudents.map(function (s) {
       var sex = s.성별 === 'M' ? '남' : (s.성별 === 'F' ? '여' : '미상');
-      var assigned = assignedSet.has(s.번호) ? '배정됨' : '미배정';
+      var assigned = assignedSet.has(String(s.번호)) ? '배정됨' : '미배정';
       return '<div class="studentItem ' + (state.selectedStudentNo === s.번호 ? 'selected' : '') + ' ' + (s.결시 ? 'absent' : '') + '" data-no="' + esc(s.번호) + '">' +
         '<button class="pickStudent" data-no="' + esc(s.번호) + '"><span>' + esc(s.번호) + ' ' + esc(s.이름) + '</span> <small class="studentMeta">(' + sex + ' · ' + assigned + (s.결시 ? ' · 결시' : '') + ')</small></button>' +
         '<div class="absentTools"><label><input type="checkbox" class="absentToggle" data-no="' + esc(s.번호) + '" ' + (s.결시 ? 'checked' : '') + '>결시</label>' +
         '<input class="absentReason" data-no="' + esc(s.번호) + '" type="text" placeholder="결시 사유" value="' + esc(s.결시사유 || '') + '"></div></div>';
     }).join('');
-    var unassignedCount = state.students.filter(function (s) { return !assignedSet.has(s.번호); }).length;
+    var unassignedCount = state.students.filter(function (s) { return !assignedSet.has(String(s.번호)); }).length;
     var abs = getAbsenceInfo();
     dom.stats.textContent = '전체 ' + state.students.length + '명 / 미배정 ' + unassignedCount + '명 / 결시 ' + abs.absentCount + '명 / 사용가능 좌석 ' + usableSeats().length + '개';
     dom.absenceSummary.value = abs.summary;
@@ -897,7 +900,7 @@
       var toggle = e.target.closest('.absentToggle');
       if (!toggle) return;
       var no = toggle.getAttribute('data-no');
-      var st = state.students.find(function (x) { return x.번호 === no; });
+      var st = studentByNo(no);
       if (!st) return;
       st.결시 = !!toggle.checked;
       markDirty();
@@ -908,7 +911,7 @@
       var reason = e.target.closest('.absentReason');
       if (!reason) return;
       var no = reason.getAttribute('data-no');
-      var st = state.students.find(function (x) { return x.번호 === no; });
+      var st = studentByNo(no);
       if (!st) return;
       st.결시사유 = reason.value.trim();
       markDirty();
