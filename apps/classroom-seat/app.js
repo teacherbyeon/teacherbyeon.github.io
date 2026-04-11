@@ -660,7 +660,11 @@
       for (var cc = 0; cc < matrix.length; cc += 1) {
         var seat = matrix[cc][rr];
         var stExam = seat && seat.studentNo != null ? state.students.find(function (x) { return x.번호 === seat.studentNo; }) : null;
-        var v = stExam ? esc(stExam.번호) : '&nbsp;';
+        var v = '&nbsp;';
+        if (stExam) {
+          v = '<div class="cellNo">' + esc(stExam.번호) + '</div><div class="cellName">' + esc(stExam.이름) + '</div>' +
+            (stExam.결시 ? '<div class="cellReason">결시' + (stExam.결시사유 ? ' (' + esc(stExam.결시사유) + ')' : '') + '</div>' : '');
+        }
         tds += '<td>' + v + '</td>';
       }
       examTableRows += '<tr>' + tds + '</tr>';
@@ -685,8 +689,9 @@
         '.meta{ font-size:21pt; line-height:1.7; margin:0 0 12mm; }' +
         '.seatTitle{ font-size:20pt; margin:0 0 4mm; }' +
         '.tableWrap{ width:62%; }' +
-        'table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:21pt; }' +
-        'td{ border:1px solid #333; text-align:center; height:15.5mm; }' +
+        'table{ width:100%; border-collapse:collapse; table-layout:fixed; }' +
+        'td{ border:1px solid #333; text-align:center; height:17mm; padding:1.2mm 0.8mm; vertical-align:middle; }' +
+        '.cellNo{ font-size:15pt; font-weight:700; line-height:1.1; } .cellName{ font-size:11pt; line-height:1.15; } .cellReason{ font-size:9pt; color:#7a2222; line-height:1.1; }' +
         '.corner{ position:absolute; width:6mm; height:6mm; border-color:#bfbfbf; }' +
         '.c1{ left:7mm; top:7mm; border-left:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
         '.c2{ right:7mm; top:7mm; border-right:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
@@ -882,20 +887,20 @@
 
     dom.studentSearch.addEventListener('input', render);
     dom.studentList.addEventListener('click', function (e) {
-      var toggle = e.target.closest('.absentToggle');
-      if (toggle) {
-        var no = toggle.getAttribute('data-no');
-        var st = state.students.find(function (x) { return x.번호 === no; });
-        if (st) {
-          st.결시 = !!toggle.checked;
-          markDirty();
-          render();
-        }
-        return;
-      }
       var item = e.target.closest('.pickStudent');
       if (!item) return;
       state.selectedStudentNo = item.getAttribute('data-no');
+      render();
+    });
+
+    dom.studentList.addEventListener('change', function (e) {
+      var toggle = e.target.closest('.absentToggle');
+      if (!toggle) return;
+      var no = toggle.getAttribute('data-no');
+      var st = state.students.find(function (x) { return x.번호 === no; });
+      if (!st) return;
+      st.결시 = !!toggle.checked;
+      markDirty();
       render();
     });
 
@@ -907,6 +912,7 @@
       if (!st) return;
       st.결시사유 = reason.value.trim();
       markDirty();
+      if (st.결시) render();
     });
 
     dom.studentFile.addEventListener('change', function (e) {
