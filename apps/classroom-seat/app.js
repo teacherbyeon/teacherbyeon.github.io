@@ -69,6 +69,11 @@
   function normalizeSeatLabel(v) {
     return String(v == null ? '' : v).trim().replace(/[\s-]/g, '').toUpperCase();
   }
+  var ABSENCE_TYPES = ['병결', '인정결', '미인정'];
+  function normalizeAbsenceType(v) {
+    var t = String(v == null ? '' : v).trim();
+    return ABSENCE_TYPES.indexOf(t) >= 0 ? t : '';
+  }
   function parseRefList(v) {
     return String(v == null ? '' : v).split(/[;,/|\s]+/).map(normalizeNo).filter(Boolean);
   }
@@ -120,6 +125,12 @@
   function sameNo(a, b) { return String(a == null ? '' : a) === String(b == null ? '' : b); }
   function studentByNo(no) { return state.students.find(function (s) { return sameNo(s.번호, no); }) || null; }
   function seatByNo(no) { return state.seats.find(function (s) { return sameNo(s.studentNo, no) && !s.deleted; }) || null; }
+  function absenceTypeOf(st) {
+    var t = normalizeAbsenceType(st && st.결시구분);
+    if (t) return t;
+    if (st && st.결시) return st.결시사유 ? st.결시사유 : '결시';
+    return '';
+  }
 
   function generateGrid(cols, rows) {
     state.seats = [];
@@ -171,7 +182,9 @@
       '앞자리우선': '앞자리우선', '뒤자리우선': '뒤자리우선', '교탁근처우선': '교탁근처우선',
       '시력배려': '시력배려', '키큼': '키큼', '분리대상': '분리대상', '같은줄금지': '같은줄금지',
       '같은열금지': '같은열금지', '인접금지': '인접금지', '메모': '메모',
-      '결시': '결시', '결석': '결시', 'absent': '결시', '결시사유': '결시사유', '결석사유': '결시사유', 'absentreason': '결시사유'
+      '결시': '결시', '결석': '결시', 'absent': '결시',
+      '결시사유': '결시사유', '결석사유': '결시사유', 'absentreason': '결시사유',
+      '결시구분': '결시구분', '결석구분': '결시구분', '결시종류': '결시구분'
     };
     function normHeader(v) {
       return String(v == null ? '' : v)
@@ -213,7 +226,8 @@
         인접금지: parseRefList(idx('인접금지') >= 0 ? r[idx('인접금지')] : ''),
         메모: String(idx('메모') >= 0 ? (r[idx('메모')] == null ? '' : r[idx('메모')]) : '').trim(),
         결시: asBool(idx('결시') >= 0 ? r[idx('결시')] : ''),
-        결시사유: String(idx('결시사유') >= 0 ? (r[idx('결시사유')] == null ? '' : r[idx('결시사유')]) : '').trim()
+        결시사유: String(idx('결시사유') >= 0 ? (r[idx('결시사유')] == null ? '' : r[idx('결시사유')]) : '').trim(),
+        결시구분: normalizeAbsenceType(idx('결시구분') >= 0 ? r[idx('결시구분')] : '')
       };
     }).filter(function (s) { return s.번호 || s.이름; });
   }
@@ -532,7 +546,12 @@
     return file.text().then(function (t) {
       var d = JSON.parse(t);
       state.students = Array.isArray(d.students) ? d.students : [];
-      state.students.forEach(function (s) { s.번호 = normalizeNo(s.번호); s.결시 = !!s.결시; s.결시사유 = String(s.결시사유 || '').trim(); });
+      state.students.forEach(function (s) {
+        s.번호 = normalizeNo(s.번호);
+        s.결시 = !!s.결시;
+        s.결시사유 = String(s.결시사유 || '').trim();
+        s.결시구분 = normalizeAbsenceType(s.결시구분);
+      });
       state.seats = Array.isArray(d.seats) ? d.seats : [];
       state.seats.forEach(function (s) { s.studentNo = s.studentNo == null ? null : normalizeNo(s.studentNo); });
       if (d.desk) state.desk = d.desk;
@@ -563,11 +582,12 @@
 
   function getAbsenceInfo() {
     var sorted = sortedStudents();
-    var absentees = sorted.filter(function (s) { return !!s.결시; });
+    var absentees = sorted.filter(function (s) { return !!absenceTypeOf(s); });
     var total = sorted.length;
     var absentCount = absentees.length;
     var absentListText = absentees.map(function (s) {
-      return s.번호 + '번 ' + s.이름 + (s.결시사유 ? '(' + s.결시사유 + ')' : '');
+      var t = absenceTypeOf(s);
+      return s.번호 + '번 ' + s.이름 + (t ? '(' + t + ')' : '');
     }).join(', ');
 
     var numericNos = sorted.map(function (s) { return Number(String(s.번호).replace(/[^\d]/g, '')); })
@@ -665,8 +685,9 @@
         var stExam = seat && seat.studentNo != null ? studentByNo(seat.studentNo) : null;
         var v = '&nbsp;';
         if (stExam) {
+          var examAbsType = absenceTypeOf(stExam);
           v = '<div class="cellNo">' + esc(stExam.번호) + '</div><div class="cellName">' + esc(stExam.이름) + '</div>' +
-            (stExam.결시 ? '<div class="cellReason">결시' + (stExam.결시사유 ? ' (' + esc(stExam.결시사유) + ')' : '') + '</div>' : '');
+            (examAbsType ? '<div class="cellReason">결시 (' + esc(examAbsType) + ')</div>' : '');
         }
         tds += '<td>' + v + '</td>';
       }
@@ -704,7 +725,7 @@
         '<div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>' +
         '<div class="title">' + esc(title) + '</div>' +
         '<div class="meta">재적: ' + abs.total + '명<br>결시: ' + abs.absentCount + '명' +
-        (abs.absentCount ? ' 결시자: ' + esc(abs.absentees.map(function (s) { return s.번호 + '번 ' + s.이름 + (s.결시사유 ? '(' + s.결시사유 + ')' : ''); }).join(', ')) : '') +
+        (abs.absentCount ? ' 결시자: ' + esc(abs.absentees.map(function (s) { return s.번호 + '번 ' + s.이름 + '(' + absenceTypeOf(s) + ')'; }).join(', ')) : '') +
         '<br>결번: ' + esc(abs.missText.replace(/번$/, '')) + '</div>' +
         '<div class="seatTitle">좌석배치:' + esc(seatLayoutText) + '</div>' +
         '<div class="tableWrap"><table><tbody>' + examTableRows + '</tbody></table></div>' +
@@ -762,10 +783,11 @@
     var html = '';
     activeSeats().forEach(function (s) {
       var st = studentByNo(s.studentNo);
-      html += '<div class="seat ' + (s.enabled ? '' : 'disabled') + ' ' + (st && st.결시 ? 'absent ' : '') + (state.selectedSeatId === s.id ? 'selected' : '') + ' ' + (state.swapSeatId === s.id ? 'swapPick' : '') + '" ' +
+      var seatAbsType = absenceTypeOf(st);
+      html += '<div class="seat ' + (s.enabled ? '' : 'disabled') + ' ' + (seatAbsType ? 'absent ' : '') + (state.selectedSeatId === s.id ? 'selected' : '') + ' ' + (state.swapSeatId === s.id ? 'swapPick' : '') + '" ' +
         'data-sid="' + esc(s.id) + '" style="left:' + s.x + 'px;top:' + s.y + 'px;width:' + s.width + 'px;height:' + s.height + 'px;">' +
         (s.zone ? '<div class="zone">' + esc(s.zone) + '</div>' : '') +
-        (s.enabled ? (st ? (esc(st.번호) + '<br>' + esc(st.이름) + (st.결시 ? '<br>(결시)' : '')) : esc(s.label || '빈자리')) : 'X') + '</div>';
+        (s.enabled ? (st ? (esc(st.번호) + '<br>' + esc(st.이름) + (seatAbsType ? '<br>(' + esc(seatAbsType) + ')' : '')) : esc(s.label || '빈자리')) : 'X') + '</div>';
     });
     dom.seatLayer.innerHTML = html;
 
@@ -779,10 +801,14 @@
     dom.studentList.innerHTML = visibleStudents.map(function (s) {
       var sex = s.성별 === 'M' ? '남' : (s.성별 === 'F' ? '여' : '미상');
       var assigned = assignedSet.has(String(s.번호)) ? '배정됨' : '미배정';
-      return '<div class="studentItem ' + (state.selectedStudentNo === s.번호 ? 'selected' : '') + ' ' + (s.결시 ? 'absent' : '') + '" data-no="' + esc(s.번호) + '">' +
-        '<button class="pickStudent" data-no="' + esc(s.번호) + '"><span>' + esc(s.번호) + ' ' + esc(s.이름) + '</span> <small class="studentMeta">(' + sex + ' · ' + assigned + (s.결시 ? ' · 결시' : '') + ')</small></button>' +
-        '<div class="absentTools"><label><input type="checkbox" class="absentToggle" data-no="' + esc(s.번호) + '" ' + (s.결시 ? 'checked' : '') + '>결시</label>' +
-        '<input class="absentReason" data-no="' + esc(s.번호) + '" type="text" placeholder="결시 사유" value="' + esc(s.결시사유 || '') + '"></div></div>';
+      var absType = absenceTypeOf(s);
+      return '<div class="studentItem ' + (state.selectedStudentNo === s.번호 ? 'selected' : '') + ' ' + (absType ? 'absent' : '') + '" data-no="' + esc(s.번호) + '">' +
+        '<button class="pickStudent" data-no="' + esc(s.번호) + '"><span>' + esc(s.번호) + ' ' + esc(s.이름) + '</span> <small class="studentMeta">(' + sex + ' · ' + assigned + (absType ? (' · 결시:' + absType) : '') + ')</small></button>' +
+        '<div class="absentTools">' +
+        ABSENCE_TYPES.map(function (t) {
+          return '<label><input type="checkbox" class="absentTypeToggle" data-no="' + esc(s.번호) + '" data-type="' + esc(t) + '" ' + (absType === t ? 'checked' : '') + '>' + esc(t) + '</label>';
+        }).join('') +
+        '</div></div>';
     }).join('');
     var unassignedCount = state.students.filter(function (s) { return !assignedSet.has(String(s.번호)); }).length;
     var abs = getAbsenceInfo();
@@ -897,25 +923,18 @@
     });
 
     dom.studentList.addEventListener('change', function (e) {
-      var toggle = e.target.closest('.absentToggle');
+      var toggle = e.target.closest('.absentTypeToggle');
       if (!toggle) return;
       var no = toggle.getAttribute('data-no');
       var st = studentByNo(no);
       if (!st) return;
-      st.결시 = !!toggle.checked;
+      var t = toggle.getAttribute('data-type');
+      if (toggle.checked) st.결시구분 = t;
+      else if (normalizeAbsenceType(st.결시구분) === t) st.결시구분 = '';
+      st.결시 = !!st.결시구분;
+      st.결시사유 = st.결시구분;
       markDirty();
       render();
-    });
-
-    dom.studentList.addEventListener('input', function (e) {
-      var reason = e.target.closest('.absentReason');
-      if (!reason) return;
-      var no = reason.getAttribute('data-no');
-      var st = studentByNo(no);
-      if (!st) return;
-      st.결시사유 = reason.value.trim();
-      markDirty();
-      if (st.결시) render();
     });
 
     dom.studentFile.addEventListener('change', function (e) {

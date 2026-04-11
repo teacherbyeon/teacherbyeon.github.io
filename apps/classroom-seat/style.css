@@ -36,7 +36,7 @@ label{font-size:12px;color:#555}
 .studentItem.absent .pickStudent{background:#fff0f0;border-color:#e2a1a1}
 .studentMeta{font-size:11px;color:#666}
 .absentTools{display:flex;align-items:center;gap:4px}
-.absentTools .absentReason{width:110px;padding:5px;font-size:12px}
+.absentTools label{font-size:12px;white-space:nowrap}
 .muted{font-size:12px;color:#666}
 #status{white-space:pre-wrap;font-size:12px;margin:0;min-height:58px}
 #report{font-size:12px;line-height:1.5}
