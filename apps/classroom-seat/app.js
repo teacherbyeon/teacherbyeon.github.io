@@ -168,7 +168,8 @@
       '성별': '성별', 'gender': '성별', '고정좌석': '고정좌석', 'fixedseat': '고정좌석',
       '앞자리우선': '앞자리우선', '뒤자리우선': '뒤자리우선', '교탁근처우선': '교탁근처우선',
       '시력배려': '시력배려', '키큼': '키큼', '분리대상': '분리대상', '같은줄금지': '같은줄금지',
-      '같은열금지': '같은열금지', '인접금지': '인접금지', '메모': '메모', '결시': '결시', '결석': '결시', 'absent': '결시'
+      '같은열금지': '같은열금지', '인접금지': '인접금지', '메모': '메모',
+      '결시': '결시', '결석': '결시', 'absent': '결시', '결시사유': '결시사유', '결석사유': '결시사유', 'absentreason': '결시사유'
     };
     function normHeader(v) {
       return String(v == null ? '' : v)
@@ -209,7 +210,8 @@
         같은열금지: parseRefList(idx('같은열금지') >= 0 ? r[idx('같은열금지')] : ''),
         인접금지: parseRefList(idx('인접금지') >= 0 ? r[idx('인접금지')] : ''),
         메모: String(idx('메모') >= 0 ? (r[idx('메모')] == null ? '' : r[idx('메모')]) : '').trim(),
-        결시: asBool(idx('결시') >= 0 ? r[idx('결시')] : '')
+        결시: asBool(idx('결시') >= 0 ? r[idx('결시')] : ''),
+        결시사유: String(idx('결시사유') >= 0 ? (r[idx('결시사유')] == null ? '' : r[idx('결시사유')]) : '').trim()
       };
     }).filter(function (s) { return s.번호 || s.이름; });
   }
@@ -528,7 +530,7 @@
     return file.text().then(function (t) {
       var d = JSON.parse(t);
       state.students = Array.isArray(d.students) ? d.students : [];
-      state.students.forEach(function (s) { s.결시 = !!s.결시; });
+      state.students.forEach(function (s) { s.결시 = !!s.결시; s.결시사유 = String(s.결시사유 || '').trim(); });
       state.seats = Array.isArray(d.seats) ? d.seats : [];
       if (d.desk) state.desk = d.desk;
       if (d.settings) state.settings = Object.assign({}, state.settings, d.settings);
@@ -561,7 +563,9 @@
     var absentees = sorted.filter(function (s) { return !!s.결시; });
     var total = sorted.length;
     var absentCount = absentees.length;
-    var absentListText = absentees.map(function (s) { return s.번호 + '번 ' + s.이름; }).join(', ');
+    var absentListText = absentees.map(function (s) {
+      return s.번호 + '번 ' + s.이름 + (s.결시사유 ? '(' + s.결시사유 + ')' : '');
+    }).join(', ');
 
     var numericNos = sorted.map(function (s) { return Number(String(s.번호).replace(/[^\d]/g, '')); })
       .filter(function (n) { return Number.isFinite(n) && n > 0; })
@@ -645,6 +649,23 @@
       return '<div class="seatCol">' + cells + '</div>';
     }).join('');
 
+    var seatCounts = matrix.map(function (col) {
+      return col.filter(function (seat) { return !!seat; }).length;
+    }).filter(function (n) { return n > 0; });
+    var seatLayoutText = seatCounts.length ? seatCounts.join('-') : '-';
+    var maxRows = matrix.reduce(function (m, col) { return Math.max(m, col.length); }, 0);
+    var examTableRows = '';
+    for (var rr = 0; rr < maxRows; rr += 1) {
+      var tds = '';
+      for (var cc = 0; cc < matrix.length; cc += 1) {
+        var seat = matrix[cc][rr];
+        var stExam = seat && seat.studentNo != null ? state.students.find(function (x) { return x.번호 === seat.studentNo; }) : null;
+        var v = stExam ? esc(stExam.번호) : '&nbsp;';
+        tds += '<td>' + v + '</td>';
+      }
+      examTableRows += '<tr>' + tds + '</tr>';
+    }
+
     var sorted = sortedStudents();
     var attendanceRows = Math.max(28, sorted.length);
     var attendanceHtml = '';
@@ -653,6 +674,33 @@
       var no = st ? esc(st.번호) : String(i + 1);
       var name = st ? esc(st.이름) : '';
       attendanceHtml += '<tr><td>' + (i + 1) + '</td><td>' + no + '</td><td>' + name + '</td><td></td></tr>';
+    }
+
+    if (examMode) {
+      return '<!doctype html><html lang="ko"><head><meta charset="utf-8" /><title>' + esc(title) + '</title><style>' +
+        '@page { size:A4 landscape; margin:0; }' +
+        '*{ box-sizing:border-box; } html,body{ margin:0; padding:0; } body{ font-family:"Noto Serif KR","Noto Sans KR",serif; color:#111; }' +
+        '.paper{ width:297mm; height:210mm; padding:16mm 20mm; position:relative; }' +
+        '.title{ text-align:center; font-size:22pt; font-weight:700; margin:0 0 14mm; letter-spacing:1px; }' +
+        '.meta{ font-size:21pt; line-height:1.7; margin:0 0 12mm; }' +
+        '.seatTitle{ font-size:20pt; margin:0 0 4mm; }' +
+        '.tableWrap{ width:62%; }' +
+        'table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:21pt; }' +
+        'td{ border:1px solid #333; text-align:center; height:15.5mm; }' +
+        '.corner{ position:absolute; width:6mm; height:6mm; border-color:#bfbfbf; }' +
+        '.c1{ left:7mm; top:7mm; border-left:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
+        '.c2{ right:7mm; top:7mm; border-right:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
+        '.c3{ left:7mm; bottom:7mm; border-left:1px solid #bfbfbf; border-bottom:1px solid #bfbfbf; }' +
+        '.c4{ right:7mm; bottom:7mm; border-right:1px solid #bfbfbf; border-bottom:1px solid #bfbfbf; }' +
+        '</style></head><body><div class="paper">' +
+        '<div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>' +
+        '<div class="title">' + esc(title) + '</div>' +
+        '<div class="meta">재적: ' + abs.total + '명<br>결시: ' + abs.absentCount + '명' +
+        (abs.absentCount ? ' 결시자: ' + esc(abs.absentees.map(function (s) { return s.번호 + '번 ' + s.이름 + (s.결시사유 ? '(' + s.결시사유 + ')' : ''); }).join(', ')) : '') +
+        '<br>결번: ' + esc(abs.missText.replace(/번$/, '')) + '</div>' +
+        '<div class="seatTitle">좌석배치:' + esc(seatLayoutText) + '</div>' +
+        '<div class="tableWrap"><table><tbody>' + examTableRows + '</tbody></table></div>' +
+        '</div></body></html>';
     }
 
     return '<!doctype html><html lang="ko"><head><meta charset="utf-8" /><title>' + esc(title) + '</title><style>' +
@@ -725,7 +773,8 @@
       var assigned = assignedSet.has(s.번호) ? '배정됨' : '미배정';
       return '<div class="studentItem ' + (state.selectedStudentNo === s.번호 ? 'selected' : '') + ' ' + (s.결시 ? 'absent' : '') + '" data-no="' + esc(s.번호) + '">' +
         '<button class="pickStudent" data-no="' + esc(s.번호) + '"><span>' + esc(s.번호) + ' ' + esc(s.이름) + '</span> <small class="studentMeta">(' + sex + ' · ' + assigned + (s.결시 ? ' · 결시' : '') + ')</small></button>' +
-        '<label><input type="checkbox" class="absentToggle" data-no="' + esc(s.번호) + '" ' + (s.결시 ? 'checked' : '') + '>결시</label></div>';
+        '<div class="absentTools"><label><input type="checkbox" class="absentToggle" data-no="' + esc(s.번호) + '" ' + (s.결시 ? 'checked' : '') + '>결시</label>' +
+        '<input class="absentReason" data-no="' + esc(s.번호) + '" type="text" placeholder="결시 사유" value="' + esc(s.결시사유 || '') + '"></div></div>';
     }).join('');
     var unassignedCount = state.students.filter(function (s) { return !assignedSet.has(s.번호); }).length;
     var abs = getAbsenceInfo();
@@ -848,6 +897,16 @@
       if (!item) return;
       state.selectedStudentNo = item.getAttribute('data-no');
       render();
+    });
+
+    dom.studentList.addEventListener('input', function (e) {
+      var reason = e.target.closest('.absentReason');
+      if (!reason) return;
+      var no = reason.getAttribute('data-no');
+      var st = state.students.find(function (x) { return x.번호 === no; });
+      if (!st) return;
+      st.결시사유 = reason.value.trim();
+      markDirty();
     });
 
     dom.studentFile.addEventListener('change', function (e) {
