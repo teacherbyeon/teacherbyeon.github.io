@@ -1008,6 +1008,7 @@
     });
 
     window.addEventListener('pointerup', function () {
+      if (!state.drag) return;
       state.drag = null;
       state.msg.warnings = state.msg.warnings.filter(function (w) { return w.indexOf('좌석 겹침') !== 0; }).concat(detectSeatOverlapWarnings());
       render();
