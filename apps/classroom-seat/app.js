@@ -56,31 +56,21 @@
     cards.forEach(function (card) {
       var title = card.querySelector('h3');
       if (!title || card.dataset.collapsibleDone === '1') return;
-      var header = document.createElement('div');
-      header.className = 'cardHeader';
-      title.parentNode.insertBefore(header, title);
-      header.appendChild(title);
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'cardToggle';
-      btn.textContent = '접기';
-      header.appendChild(btn);
-
       var body = document.createElement('div');
       body.className = 'cardBody';
-      while (header.nextSibling) body.appendChild(header.nextSibling);
+      while (title.nextSibling) body.appendChild(title.nextSibling);
       card.appendChild(body);
 
       card.classList.add('collapsible');
+      title.classList.add('cardTitleToggle');
       function setCollapsed(v) {
         card.classList.toggle('collapsed', !!v);
-        btn.textContent = v ? '펼치기' : '접기';
+        title.textContent = title.dataset.baseTitle + (v ? ' ▸' : ' ▾');
       }
-      header.addEventListener('click', function (e) {
-        if (e.target && e.target.tagName === 'INPUT') return;
+      title.dataset.baseTitle = title.textContent;
+      title.addEventListener('click', function () {
         setCollapsed(!card.classList.contains('collapsed'));
       });
-      btn.addEventListener('click', function (e) { e.stopPropagation(); });
       setCollapsed(false);
       card.dataset.collapsibleDone = '1';
     });
