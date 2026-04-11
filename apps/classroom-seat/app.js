@@ -51,6 +51,40 @@
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (m) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]; }); }
   function uid() { return 'S' + Math.random().toString(36).slice(2, 7) + Date.now().toString(36).slice(-4); }
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function setupCollapsibleCards() {
+    var cards = [].slice.call(document.querySelectorAll('.right .card'));
+    cards.forEach(function (card) {
+      var title = card.querySelector('h3');
+      if (!title || card.dataset.collapsibleDone === '1') return;
+      var header = document.createElement('div');
+      header.className = 'cardHeader';
+      title.parentNode.insertBefore(header, title);
+      header.appendChild(title);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cardToggle';
+      btn.textContent = '접기';
+      header.appendChild(btn);
+
+      var body = document.createElement('div');
+      body.className = 'cardBody';
+      while (header.nextSibling) body.appendChild(header.nextSibling);
+      card.appendChild(body);
+
+      card.classList.add('collapsible');
+      function setCollapsed(v) {
+        card.classList.toggle('collapsed', !!v);
+        btn.textContent = v ? '펼치기' : '접기';
+      }
+      header.addEventListener('click', function (e) {
+        if (e.target && e.target.tagName === 'INPUT') return;
+        setCollapsed(!card.classList.contains('collapsed'));
+      });
+      btn.addEventListener('click', function (e) { e.stopPropagation(); });
+      setCollapsed(false);
+      card.dataset.collapsibleDone = '1';
+    });
+  }
   function asBool(v) { var t = String(v == null ? '' : v).trim().toLowerCase(); return ['1', 'y', 'yes', 'true', 't', 'on', '예', '네'].indexOf(t) >= 0; }
   function normalizeNo(v) {
     var raw = String(v == null ? '' : v).trim();
@@ -1055,6 +1089,7 @@
 
   generateGrid(6, 4);
   syncOptions();
+  setupCollapsibleCards();
   bindEvents();
   state.msg.info = '준비되었습니다. 학생 파일을 불러오세요.';
   if (typeof XLSX === 'undefined' || !XLSX.read) {
