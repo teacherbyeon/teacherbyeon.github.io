@@ -732,17 +732,23 @@
       var absentSummaryShort = abs.absentees.map(function (s) { return s.번호 + '(' + absenceTypeOf(s) + ')'; }).join(', ');
       var metaFont = absentSummaryShort.length > 120 ? '12pt' : (absentSummaryShort.length > 70 ? '14pt' : '21pt');
       var metaLine = absentSummaryShort.length > 120 ? '1.35' : (absentSummaryShort.length > 70 ? '1.45' : '1.7');
+      var rowHeight = maxRows >= 8 ? '9.4mm' : (maxRows === 7 ? '10.8mm' : (maxRows === 6 ? '12.8mm' : '17mm'));
+      var noFont = maxRows >= 8 ? '10pt' : (maxRows === 7 ? '11pt' : (maxRows === 6 ? '13pt' : '15pt'));
+      var nameFont = maxRows >= 8 ? '8.2pt' : (maxRows === 7 ? '9pt' : (maxRows === 6 ? '10pt' : '11pt'));
+      var reasonFont = maxRows >= 8 ? '7pt' : (maxRows === 7 ? '7.6pt' : (maxRows === 6 ? '8.2pt' : '9pt'));
+      var metaMargin = maxRows >= 7 ? '6mm' : '12mm';
+      var titleMargin = maxRows >= 7 ? '8mm' : '14mm';
       return '<!doctype html><html lang="ko"><head><meta charset="utf-8" /><title>' + esc(title) + '</title><style>' +
         '@page { size:A4 landscape; margin:0; }' +
         '*{ box-sizing:border-box; } html,body{ margin:0; padding:0; } body{ font-family:"Noto Serif KR","Noto Sans KR",serif; color:#111; }' +
         '.paper{ width:297mm; height:210mm; padding:16mm 20mm; position:relative; }' +
-        '.title{ text-align:center; font-size:22pt; font-weight:700; margin:0 0 14mm; letter-spacing:1px; }' +
-        '.meta{ font-size:' + metaFont + '; line-height:' + metaLine + '; margin:0 0 12mm; }' +
+        '.title{ text-align:center; font-size:22pt; font-weight:700; margin:0 0 ' + titleMargin + '; letter-spacing:1px; }' +
+        '.meta{ font-size:' + metaFont + '; line-height:' + metaLine + '; margin:0 0 ' + metaMargin + '; }' +
         '.seatTitle{ font-size:20pt; margin:0 0 4mm; }' +
         '.tableWrap{ width:62%; }' +
         'table{ width:100%; border-collapse:collapse; table-layout:fixed; }' +
-        'td{ border:1px solid #333; text-align:center; height:17mm; padding:1.2mm 0.8mm; vertical-align:middle; }' +
-        '.cellNo{ font-size:15pt; font-weight:700; line-height:1.1; } .cellName{ font-size:11pt; line-height:1.15; } .cellReason{ font-size:9pt; color:#7a2222; line-height:1.1; }' +
+        'td{ border:1px solid #333; text-align:center; height:' + rowHeight + '; padding:1mm 0.7mm; vertical-align:middle; }' +
+        '.cellNo{ font-size:' + noFont + '; font-weight:700; line-height:1.08; } .cellName{ font-size:' + nameFont + '; line-height:1.12; } .cellReason{ font-size:' + reasonFont + '; color:#7a2222; line-height:1.08; }' +
         '.corner{ position:absolute; width:6mm; height:6mm; border-color:#bfbfbf; }' +
         '.c1{ left:7mm; top:7mm; border-left:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
         '.c2{ right:7mm; top:7mm; border-right:1px solid #bfbfbf; border-top:1px solid #bfbfbf; }' +
