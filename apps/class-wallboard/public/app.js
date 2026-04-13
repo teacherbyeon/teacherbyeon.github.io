@@ -918,6 +918,7 @@ function initBoardPage() {
     alert('입장 정보가 없어 프로필 화면으로 이동합니다.');
     return go('./profile.html');
   }
+  fetchNetworkInfo().then(renderBoardPage).catch(() => {});
   registerSocket(renderBoardPage);
   bindSocketStatus('boardStatus', { connecting: '서버 연결 중...', connected: '수업 입장 완료', reconnecting: '재연결 시도 중...', failed: '재연결 실패. 다시 접속해 주세요.' });
   window.addEventListener('resize', renderBoardPage);
