@@ -333,6 +333,23 @@ function renderBoardPage() {
   if (isTeacherAuthorized()) {
     byId('teacherBoardClassCode') && (byId('teacherBoardClassCode').textContent = state.classCode || '-');
     renderQR(state.className, state.classCode, 'boardQrCanvas');
+    const joinUrlEl = byId('studentJoinUrlDisplay');
+    const params = new URLSearchParams({ role: 'student', className: state.className || '', classCode: state.classCode || '' });
+    const joinUrl = `${location.origin}/board.html?${params.toString()}`;
+    if (joinUrlEl) joinUrlEl.textContent = state.className && state.classCode ? joinUrl : '수업 코드가 준비되면 URL이 표시됩니다.';
+    const copyBtn = byId('copyJoinUrlBtn');
+    if (copyBtn) {
+      copyBtn.disabled = !(state.className && state.classCode);
+      copyBtn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(joinUrl);
+          copyBtn.textContent = '복사 완료';
+          setTimeout(() => { copyBtn.textContent = 'URL 복사'; }, 1200);
+        } catch {
+          alert('URL 복사에 실패했습니다. 수동으로 복사해 주세요.');
+        }
+      };
+    }
   }
   renderHistoryTabs('historyTabs');
 

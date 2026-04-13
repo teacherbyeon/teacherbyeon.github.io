@@ -9,7 +9,7 @@ body {
     linear-gradient(180deg, #f8fbff 0%, #f3f6ff 60%, #fdf8ff 100%);
   color: #0f172a;
 }
-.container { max-width: 1040px; margin: 0 auto; }
+.container { max-width: 1180px; margin: 0 auto; }
 .panel {
   background: rgba(255,255,255,.96);
   border-radius: 22px;
@@ -42,6 +42,7 @@ body {
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 input, button {
+  min-height: 42px;
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
@@ -66,6 +67,94 @@ button.secondary { background: linear-gradient(135deg, #22c55e, #14b8a6); }
 button.secondary:hover { filter: brightness(1.04); }
 button.danger { background: linear-gradient(135deg, #fb7185, #ef4444); }
 button.danger:hover { filter: brightness(1.03); }
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+}
+.teacher-control-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 14px;
+}
+.teacher-control-main,
+.join-guide-card {
+  border: 1px solid #dbe7ff;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  border-radius: 14px;
+  padding: 14px;
+}
+.teacher-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #1e3a8a;
+}
+.teacher-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.teacher-form-grid label:nth-child(2) { grid-column: 1 / -1; }
+.capture-zone {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1.5px dashed #93c5fd;
+  background: #f0f7ff;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: text;
+}
+.capture-zone:focus { outline: 2px solid #2563eb; outline-offset: 2px; }
+.teacher-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.join-guide-card { display: flex; flex-direction: column; gap: 10px; }
+.join-guide-code {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #eef2ff;
+}
+.join-guide-code strong {
+  font-size: clamp(26px, 4vw, 34px);
+  letter-spacing: 2px;
+  color: #1d4ed8;
+}
+.join-guide-url {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+}
+.join-guide-url p {
+  margin: 6px 0 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  word-break: break-all;
+  color: #0f172a;
+}
+.join-guide-qr {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+}
+.join-guide-qr canvas {
+  width: min(100%, 220px);
+  height: auto;
+}
 .grid-3 > label { min-width: 140px; }
 .hidden { display: none; }
 .link { color: #1d4ed8; text-decoration: none; font-weight: 600; }
@@ -148,6 +237,11 @@ th { background: #f8fafc; }
 #teacherProblemPreviewImg { width: min(100%, 520px); border-radius: 12px; margin-top: 8px; }
 #problemPasteZone { cursor: text; }
 #problemPasteZone:focus { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+@media (max-width: 980px) {
+  .teacher-control-grid { grid-template-columns: 1fr; }
+  .teacher-form-grid { grid-template-columns: 1fr; }
+}
 
 body.teacher-pc .container {
   max-width: min(1720px, 96vw);

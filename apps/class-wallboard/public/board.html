@@ -10,36 +10,60 @@
   <main class="container">
     <section class="panel teacher-only hidden">
       <h2>교사용 제어</h2>
-      <div class="row">
-        <label>새 벽보드 제목 <input id="boardTitle" placeholder="예: 1번 문항" /></label>
-        <label>문제 설명
-          <textarea id="problemText" placeholder="문제 텍스트(선택)"></textarea>
-        </label>
-        <label>문제 설명 파일(이미지/PDF)
-          <input id="problemFileInput" type="file" accept="image/*,application/pdf" />
-        </label>
-        <div id="problemPasteZone" class="board-progress" tabindex="0">
-          <strong>스크린샷 붙여넣기</strong>
-          <p id="problemPasteHint" class="hint">PDF/화면에서 캡처 후 이 영역을 클릭하고 Ctrl+V(⌘+V)로 바로 붙여넣기 가능합니다.</p>
-          <button id="clearPastedProblemBtn" type="button" class="secondary">붙여넣은 이미지 지우기</button>
+      <p class="subtitle">문항 생성, 실행, 학생 접속 안내를 한 곳에서 관리하세요.</p>
+
+      <div class="teacher-control-grid">
+        <div class="teacher-control-main">
+          <div class="teacher-section-title">문항 생성 / 문제 등록</div>
+          <div class="teacher-form-grid">
+            <label>새 벽보드 제목
+              <input id="boardTitle" placeholder="예: 1번 문항" />
+            </label>
+            <label>문제 설명
+              <textarea id="problemText" placeholder="문제 텍스트(선택)"></textarea>
+            </label>
+            <label>문제 설명 파일(이미지/PDF)
+              <input id="problemFileInput" type="file" accept="image/*,application/pdf" />
+            </label>
+          </div>
+          <div id="problemPasteZone" class="capture-zone" tabindex="0">
+            <strong>스크린샷 붙여넣기 (Ctrl+V / ⌘+V)</strong>
+            <p id="problemPasteHint" class="hint">PDF/화면 캡처를 파일 저장 없이 바로 붙여넣어 문제로 등록할 수 있습니다.</p>
+            <button id="clearPastedProblemBtn" type="button" class="secondary">붙여넣은 이미지 지우기</button>
+          </div>
+
+          <div id="teacherProblemPreview" class="board-progress hidden">
+            <strong>선택한 문제 파일 미리보기</strong>
+            <p id="teacherProblemFileName" class="hint"></p>
+            <img id="teacherProblemPreviewImg" class="hidden" alt="문제 파일 미리보기" />
+            <p id="teacherProblemPreviewDoc" class="hint hidden">PDF 파일이 선택되었습니다. 학생 화면에 문서로 표시됩니다.</p>
+          </div>
+
+          <div class="teacher-actions">
+            <label class="check-inline"><input id="aiAnalysisEnabled" type="checkbox" /> AI 분석 사용</label>
+            <button id="newBoardBtn">새 벽보드 시작</button>
+            <button id="runAiBtn" class="secondary">AI 분석 실행</button>
+            <button id="clearFocusBtn" class="danger">확대 해제</button>
+            <button id="toggleThemeBtn" class="secondary">전자칠판 테마 전환</button>
+          </div>
         </div>
-        <div id="teacherProblemPreview" class="board-progress hidden">
-          <strong>선택한 문제 파일 미리보기</strong>
-          <p id="teacherProblemFileName" class="hint"></p>
-          <img id="teacherProblemPreviewImg" class="hidden" alt="문제 파일 미리보기" />
-          <p id="teacherProblemPreviewDoc" class="hint hidden">PDF 파일이 선택되었습니다. 학생 화면에 문서로 표시됩니다.</p>
-        </div>
-        <label><input id="aiAnalysisEnabled" type="checkbox" /> AI 분석 사용</label>
-        <button id="newBoardBtn">새 벽보드 시작</button>
-        <button id="runAiBtn" class="secondary">AI 분석 실행</button>
-        <button id="clearFocusBtn" class="danger">확대 해제</button>
-        <button id="toggleThemeBtn" class="secondary">전자칠판 테마 전환</button>
-      </div>
-      <div class="row">
-        <strong>현재 접속 코드: <span id="teacherBoardClassCode">-</span></strong>
-      </div>
-      <div class="row">
-        <canvas id="boardQrCanvas" width="180" height="180"></canvas>
+
+        <aside class="join-guide-card">
+          <div class="teacher-section-title">학생 접속 안내</div>
+          <p class="hint">수업 시작 시 아래 URL/코드/QR을 그대로 안내하세요.</p>
+          <div class="join-guide-code">
+            <small>현재 접속 코드</small>
+            <strong id="teacherBoardClassCode">-</strong>
+          </div>
+          <div class="join-guide-url">
+            <small>학생 접속 URL</small>
+            <p id="studentJoinUrlDisplay">생성 중...</p>
+            <button id="copyJoinUrlBtn" type="button" class="secondary">URL 복사</button>
+          </div>
+          <div class="join-guide-qr">
+            <canvas id="boardQrCanvas" width="220" height="220"></canvas>
+          </div>
+        </aside>
       </div>
     </section>
 
