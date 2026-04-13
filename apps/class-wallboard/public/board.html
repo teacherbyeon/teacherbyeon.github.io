@@ -52,13 +52,15 @@
           <div class="teacher-section-title">학생 접속 안내</div>
           <p class="hint">수업 시작 시 아래 URL/코드/QR을 그대로 안내하세요.</p>
           <div class="join-guide-code">
+            <small>수업명</small>
+            <strong id="teacherGuideClassName">-</strong>
             <small>현재 접속 코드</small>
             <strong id="teacherBoardClassCode">-</strong>
           </div>
           <div class="join-guide-url">
-            <small>학생 접속 URL</small>
+            <small>학생 접속 주소 (짧은 주소)</small>
             <p id="studentJoinUrlDisplay">생성 중...</p>
-            <button id="copyJoinUrlBtn" type="button" class="secondary">URL 복사</button>
+            <button id="copyJoinUrlBtn" type="button" class="secondary">주소 복사</button>
           </div>
           <div class="join-guide-qr">
             <canvas id="boardQrCanvas" width="220" height="220"></canvas>

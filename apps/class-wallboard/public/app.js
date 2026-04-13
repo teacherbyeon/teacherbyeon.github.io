@@ -188,14 +188,17 @@ function joinClassIfPossible() {
   });
 }
 
-function renderQR(className, classCode, canvasId = 'qrCanvas') {
+function renderQR(className, classCode, canvasId = 'qrCanvas', targetOverride = '') {
   if (!window.QRCode) return;
-  const params = new URLSearchParams({ className: className || '', classCode: classCode || '' });
-  const baseDir = location.pathname.replace(/[^/]*$/, '');
-  const origin = state.preferredOrigin || location.origin;
-  const joinUrl = new URL('join.html', `${origin}${baseDir}`);
-  joinUrl.search = params.toString();
-  const target = joinUrl.toString();
+  let target = targetOverride || '';
+  if (!target) {
+    const params = new URLSearchParams({ className: className || '', classCode: classCode || '' });
+    const baseDir = location.pathname.replace(/[^/]*$/, '');
+    const origin = state.preferredOrigin || location.origin;
+    const joinUrl = new URL('join.html', `${origin}${baseDir}`);
+    joinUrl.search = params.toString();
+    target = joinUrl.toString();
+  }
   const canvas = byId(canvasId);
   if (!canvas) return;
   QRCode.toCanvas(canvas, target, { width: 180 }, () => {});
@@ -331,20 +334,22 @@ function renderBoardPage() {
   byId('classNameLabel').textContent = state.className || '-';
   byId('activeBoardTitle').textContent = activeBoard()?.title || '없음';
   if (isTeacherAuthorized()) {
+    byId('teacherGuideClassName') && (byId('teacherGuideClassName').textContent = state.className || '-');
     byId('teacherBoardClassCode') && (byId('teacherBoardClassCode').textContent = state.classCode || '-');
-    renderQR(state.className, state.classCode, 'boardQrCanvas');
+    const baseDir = location.pathname.replace(/[^/]*$/, '');
+    const origin = state.preferredOrigin || location.origin;
+    const shortJoinUrl = new URL('join.html', `${origin}${baseDir}`).toString();
+    renderQR(state.className, state.classCode, 'boardQrCanvas', shortJoinUrl);
     const joinUrlEl = byId('studentJoinUrlDisplay');
-    const params = new URLSearchParams({ role: 'student', className: state.className || '', classCode: state.classCode || '' });
-    const joinUrl = `${location.origin}/board.html?${params.toString()}`;
-    if (joinUrlEl) joinUrlEl.textContent = state.className && state.classCode ? joinUrl : '수업 코드가 준비되면 URL이 표시됩니다.';
+    if (joinUrlEl) joinUrlEl.textContent = shortJoinUrl;
     const copyBtn = byId('copyJoinUrlBtn');
     if (copyBtn) {
-      copyBtn.disabled = !(state.className && state.classCode);
+      copyBtn.disabled = false;
       copyBtn.onclick = async () => {
         try {
-          await navigator.clipboard.writeText(joinUrl);
+          await navigator.clipboard.writeText(shortJoinUrl);
           copyBtn.textContent = '복사 완료';
-          setTimeout(() => { copyBtn.textContent = 'URL 복사'; }, 1200);
+          setTimeout(() => { copyBtn.textContent = '주소 복사'; }, 1200);
         } catch {
           alert('URL 복사에 실패했습니다. 수동으로 복사해 주세요.');
         }
