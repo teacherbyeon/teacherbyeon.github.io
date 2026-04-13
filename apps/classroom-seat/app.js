@@ -697,7 +697,7 @@
     }).join('');
 
     var seatCounts = matrix.map(function (col) {
-      return col.filter(function (seat) { return !!seat; }).length;
+      return col.filter(function (seat) { return seat && seat.studentNo != null; }).length;
     }).filter(function (n) { return n > 0; });
     var seatLayoutText = seatCounts.length ? seatCounts.join('-') : '-';
     var maxRows = matrix.reduce(function (m, col) { return Math.max(m, col.length); }, 0);
