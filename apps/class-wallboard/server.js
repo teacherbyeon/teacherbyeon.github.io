@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const os = require('os');
+const multer = require('multer');
+const sharp = require('sharp');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +17,9 @@ const metaFile = path.join(dataDir, 'meta.json');
 const legacyStoreFile = path.join(dataDir, 'wallboard-store.json');
 const classesDir = path.join(dataDir, 'classes');
 const uploadsDir = path.join(dataDir, 'uploads');
+const uploadTmpDir = path.join(dataDir, 'tmp');
+const maxUploadBytes = 10 * 1024 * 1024;
+const allowedMimes = new Set(['image/png', 'image/jpeg', 'image/webp', 'application/pdf']);
 
 function stripWrappingQuotes(value = '') {
   if (value.length >= 2) {
@@ -72,6 +77,37 @@ function ensureDir(dir) {
 function safeName(v = '') {
   return String(v).replace(/[^a-zA-Z0-9가-힣_-]/g, '_');
 }
+function safeExt(v = '') {
+  return String(v).toLowerCase().replace(/[^a-z0-9.]/g, '');
+}
+function mimeByExt(ext = '') {
+  const e = ext.toLowerCase();
+  if (e === '.png') return 'image/png';
+  if (e === '.jpg' || e === '.jpeg') return 'image/jpeg';
+  if (e === '.webp') return 'image/webp';
+  if (e === '.pdf') return 'application/pdf';
+  return '';
+}
+function extByMime(mime = '') {
+  if (mime === 'image/png') return '.png';
+  if (mime === 'image/jpeg') return '.jpg';
+  if (mime === 'image/webp') return '.webp';
+  if (mime === 'application/pdf') return '.pdf';
+  return '';
+}
+function ensureAllowedFile(file = {}) {
+  const ext = safeExt(path.extname(file.originalname || ''));
+  const byExt = mimeByExt(ext);
+  if (!allowedMimes.has(file.mimetype) || !byExt || byExt !== file.mimetype) {
+    const err = new Error('허용되지 않는 파일 형식입니다. PNG/JPG/WEBP/PDF만 업로드할 수 있습니다.');
+    err.status = 400;
+    throw err;
+  }
+}
+function removeFileSafe(filePath = '') {
+  if (!filePath) return;
+  try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch {}
+}
 
 function classFilePath(classId) {
   return path.join(classesDir, `${classId}.json`);
@@ -79,6 +115,27 @@ function classFilePath(classId) {
 function classUploadDir(classId) {
   return path.join(uploadsDir, classId);
 }
+function relativeFromRoot(absPath = '') {
+  return path.relative(__dirname, absPath).replace(/\\/g, '/');
+}
+function absoluteFromRoot(relPath = '') {
+  return path.join(__dirname, relPath);
+}
+function makeUploadFilename(prefix, mime) {
+  return `${safeName(prefix)}-${Date.now()}-${crypto.randomBytes(5).toString('hex')}${extByMime(mime) || ''}`;
+}
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      ensureDir(uploadTmpDir);
+      cb(null, uploadTmpDir);
+    },
+    filename: (_req, file, cb) => {
+      cb(null, `${Date.now()}-${crypto.randomBytes(5).toString('hex')}${safeExt(path.extname(file.originalname || '')) || '.bin'}`);
+    },
+  }),
+  limits: { fileSize: maxUploadBytes, files: 1 },
+});
 
 function cleanupExpiredSessions() {
   const now = Date.now();
@@ -111,6 +168,17 @@ function readPayloadFile(relPath) {
     const abs = path.join(__dirname, relPath);
     if (!fs.existsSync(abs)) return '';
     return fs.readFileSync(abs, 'utf8');
+  } catch {
+    return '';
+  }
+}
+function readDataUrlFromFile(relPath, mimeType = 'application/octet-stream') {
+  if (!relPath) return '';
+  try {
+    const abs = absoluteFromRoot(relPath);
+    if (!fs.existsSync(abs)) return '';
+    const b = fs.readFileSync(abs);
+    return `data:${mimeType};base64,${b.toString('base64')}`;
   } catch {
     return '';
   }
@@ -159,8 +227,6 @@ function createSlotFromParticipant(participant) {
     questionNo: '',
     fileName: '',
     mimeType: '',
-    dataUrl: '',
-    thumb: '',
     dataPath: '',
     thumbPath: '',
     submittedAt: '',
@@ -196,14 +262,17 @@ async function analyzeWithAi({ board, slot }) {
     { type: 'input_text', text: `student_mime_type: ${slot.mimeType || ''}` },
   ];
 
-  if ((board.problemMimeType || '').startsWith('image/') && board.problemDataUrl) {
+  const problemDataUrl = readDataUrlFromFile(board.problemPath, board.problemMimeType || 'application/octet-stream');
+  const slotDataUrl = readDataUrlFromFile(slot.dataPath, slot.mimeType || 'application/octet-stream');
+
+  if ((board.problemMimeType || '').startsWith('image/') && problemDataUrl) {
     content.push({ type: 'input_text', text: '문제 이미지가 함께 제공됩니다.' });
-    content.push({ type: 'input_image', image_url: board.problemDataUrl });
+    content.push({ type: 'input_image', image_url: problemDataUrl });
   } else if ((board.problemMimeType || '').includes('pdf')) {
     content.push({ type: 'input_text', text: '문제 파일은 PDF입니다. 이미지 기반 해석에 한계가 있을 수 있습니다.' });
   }
-  if ((slot.mimeType || '').startsWith('image/') && slot.dataUrl) {
-    content.push({ type: 'input_image', image_url: slot.dataUrl });
+  if ((slot.mimeType || '').startsWith('image/') && slotDataUrl) {
+    content.push({ type: 'input_image', image_url: slotDataUrl });
   } else if ((slot.mimeType || '').includes('pdf')) {
     content.push({ type: 'input_text', text: '학생 제출 파일은 PDF입니다. 이미지 기반 분석 정확도가 낮을 수 있습니다.' });
   }
@@ -316,8 +385,8 @@ function migrateClassState(raw) {
         participantId,
         participantKey: undefined,
         nickname: s.nickname || participants.find((p) => p.participantId === participantId)?.nickname || '익명',
-        dataUrl: s.dataUrl || readPayloadFile(s.dataPath),
-        thumb: s.thumb || readPayloadFile(s.thumbPath),
+        dataPath: s.dataPath || '',
+        thumbPath: s.thumbPath || '',
       };
     }),
   }));
@@ -333,6 +402,16 @@ function migrateClassState(raw) {
   };
 }
 
+function thumbUrl(state, board, slot) {
+  if (!state?.className || !state?.classCode || !board?.id || !slot?.id || !slot?.thumbPath) return '';
+  return `/api/classes/${encodeURIComponent(state.className)}/assets/thumb/${encodeURIComponent(board.id)}/${encodeURIComponent(slot.id)}?code=${encodeURIComponent(state.classCode)}`;
+}
+
+function problemUrl(state, board) {
+  if (!state?.className || !state?.classCode || !board?.id || !board?.problemPath) return '';
+  return `/api/classes/${encodeURIComponent(state.className)}/assets/problem/${encodeURIComponent(board.id)}/_?code=${encodeURIComponent(state.classCode)}`;
+}
+
 function sanitizeStateForStudent(state) {
   return {
     classId: state.classId,
@@ -344,20 +423,21 @@ function sanitizeStateForStudent(state) {
       problemText: b.problemText || '',
       problemFileName: b.problemFileName || '',
       problemMimeType: b.problemMimeType || '',
-      problemDataUrl: b.problemDataUrl || '',
+      problemUrl: problemUrl(state, b),
       aiAnalysisEnabled: Boolean(b.aiAnalysisEnabled),
       slots: (b.slots || []).map((s) => ({
         id: s.id,
         participantId: s.participantId,
         nickname: s.nickname || '익명',
-        thumb: s.thumb || '',
-        hasSubmission: Boolean(s.thumb),
+        thumbUrl: thumbUrl(state, b, s),
+        hasSubmission: Boolean(s.thumbPath),
         aiFeedbackForStudent: s.aiFeedbackForStudent || '',
         aiStatus: s.aiStatus || 'idle',
       })),
     })),
     activeBoardId: state.activeBoardId,
     selectedSubmissionId: state.selectedSubmissionId,
+    classCode: state.classCode,
     participantCount: (state.participants || []).length,
   };
 }
@@ -384,7 +464,7 @@ function sanitizeStateForTeacher(state) {
       problemText: b.problemText || '',
       problemFileName: b.problemFileName || '',
       problemMimeType: b.problemMimeType || '',
-      problemDataUrl: b.problemDataUrl || '',
+      problemUrl: problemUrl(state, b),
       aiAnalysisEnabled: Boolean(b.aiAnalysisEnabled),
       aiTopLearnCandidateIds: b.aiTopLearnCandidateIds || [],
       aiTopExcellentCandidateIds: b.aiTopExcellentCandidateIds || [],
@@ -399,9 +479,9 @@ function sanitizeStateForTeacher(state) {
         questionNo: s.questionNo || '',
         fileName: s.fileName || '',
         mimeType: s.mimeType || '',
-        thumb: s.thumb || '',
+        thumbUrl: thumbUrl(state, b, s),
         submittedAt: s.submittedAt || '',
-        hasDetail: Boolean(s.dataUrl || s.dataPath),
+        hasDetail: Boolean(s.dataPath),
         aiFeedbackForStudent: s.aiFeedbackForStudent || '',
         aiTeacherSummary: s.aiTeacherSummary || '',
         aiCandidateTag: s.aiCandidateTag || 'none',
@@ -430,24 +510,7 @@ function saveMeta() {
 }
 
 function serializeClassForFile(state) {
-  return {
-    ...state,
-    boards: (state.boards || []).map((b) => ({
-      ...b,
-      slots: (b.slots || []).map((s) => {
-        const out = { ...s };
-        if (out.dataUrl) {
-          out.dataPath = writePayloadFile(state.classId, b.id, s.id, 'data', out.dataUrl);
-          out.dataUrl = '';
-        }
-        if (out.thumb) {
-          out.thumbPath = writePayloadFile(state.classId, b.id, s.id, 'thumb', out.thumb);
-          out.thumb = '';
-        }
-        return out;
-      }),
-    })),
-  };
+  return state;
 }
 
 function saveClassState(classId) {
@@ -583,6 +646,116 @@ app.get('/api/network-info', (_req, res) => {
   });
 });
 
+function withApiError(res, err) {
+  if (err?.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ ok: false, message: '파일 용량이 너무 큽니다. 10MB 이하로 업로드해 주세요.' });
+  return res.status(err?.status || 500).json({ ok: false, message: err?.message || '업로드 처리 중 오류가 발생했습니다.' });
+}
+
+app.post('/api/classes/:className/submissions', upload.single('file'), async (req, res) => {
+  try {
+    const className = req.params.className;
+    const { participantId, participantSecret, questionNo } = req.body || {};
+    const state = getClassByName(className);
+    if (!state) throw Object.assign(new Error('수업을 찾을 수 없습니다.'), { status: 404 });
+    const participant = state.participants.find((p) => p.participantId === participantId);
+    if (!participant || participant.participantSecret !== participantSecret) throw Object.assign(new Error('학생 인증 정보가 유효하지 않습니다.'), { status: 401 });
+    const board = activeBoard(state);
+    if (!board) throw Object.assign(new Error('활성 문항이 없습니다.'), { status: 400 });
+    if (!req.file) throw Object.assign(new Error('업로드 파일이 없습니다.'), { status: 400 });
+    ensureAllowedFile(req.file);
+
+    const slot = ensureSlot(board, participant);
+    const uDir = classUploadDir(state.classId);
+    ensureDir(uDir);
+    const originalAbs = path.join(uDir, makeUploadFilename(`${board.id}-${slot.id}-orig`, req.file.mimetype));
+    fs.renameSync(req.file.path, originalAbs);
+
+    let thumbRel = '';
+    if (req.file.mimetype.startsWith('image/')) {
+      const thumbAbs = path.join(uDir, makeUploadFilename(`${board.id}-${slot.id}-thumb`, 'image/jpeg'));
+      await sharp(originalAbs).rotate().resize({ width: 420, height: 420, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 78 }).toFile(thumbAbs);
+      thumbRel = relativeFromRoot(thumbAbs);
+    } else {
+      const svg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"260\"><rect width=\"100%\" height=\"100%\" fill=\"#eef2ff\"/><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"#334155\" font-size=\"24\">PDF</text></svg>';
+      const thumbAbs = path.join(uDir, makeUploadFilename(`${board.id}-${slot.id}-thumb`, 'image/png'));
+      await sharp(Buffer.from(svg)).png().toFile(thumbAbs);
+      thumbRel = relativeFromRoot(thumbAbs);
+    }
+
+    removeFileSafe(absoluteFromRoot(slot.dataPath));
+    removeFileSafe(absoluteFromRoot(slot.thumbPath));
+    slot.questionNo = questionNo || '';
+    slot.fileName = req.file.originalname || 'submission';
+    slot.mimeType = req.file.mimetype;
+    slot.dataPath = relativeFromRoot(originalAbs);
+    slot.thumbPath = thumbRel;
+    slot.submittedAt = new Date().toISOString();
+
+    saveClassState(state.classId);
+    emitAllState(state.classId);
+    res.json({ ok: true, submittedAt: slot.submittedAt });
+  } catch (err) {
+    removeFileSafe(req.file?.path);
+    withApiError(res, err);
+  }
+});
+
+app.post('/api/classes/:className/problem-file', upload.single('file'), async (req, res) => {
+  try {
+    const className = req.params.className;
+    const { teacherToken } = req.body || {};
+    if (!authorizeTeacher(teacherToken)) throw Object.assign(new Error('교사 인증이 필요합니다.'), { status: 401 });
+    const state = getClassByName(className);
+    if (!state) throw Object.assign(new Error('수업을 찾을 수 없습니다.'), { status: 404 });
+    if (!req.file) throw Object.assign(new Error('업로드 파일이 없습니다.'), { status: 400 });
+    ensureAllowedFile(req.file);
+
+    const uDir = classUploadDir(state.classId);
+    ensureDir(uDir);
+    const originalAbs = path.join(uDir, makeUploadFilename(`problem`, req.file.mimetype));
+    fs.renameSync(req.file.path, originalAbs);
+    let thumbRel = '';
+    if (req.file.mimetype.startsWith('image/')) {
+      const thumbAbs = path.join(uDir, makeUploadFilename(`problem-thumb`, 'image/jpeg'));
+      await sharp(originalAbs).rotate().resize({ width: 520, height: 520, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 78 }).toFile(thumbAbs);
+      thumbRel = relativeFromRoot(thumbAbs);
+    }
+    res.json({
+      ok: true,
+      problemFileName: req.file.originalname || 'problem',
+      problemMimeType: req.file.mimetype,
+      problemPath: relativeFromRoot(originalAbs),
+      problemThumbPath: thumbRel,
+    });
+  } catch (err) {
+    removeFileSafe(req.file?.path);
+    withApiError(res, err);
+  }
+});
+
+app.get('/api/classes/:className/assets/:type/:boardId/:slotId', (req, res) => {
+  const state = getClassByName(req.params.className);
+  if (!state) return res.status(404).end();
+  const teacherOk = authorizeTeacher(req.query.teacherToken || '');
+  const codeOk = req.query.code && String(req.query.code) === String(state.classCode);
+  if (!teacherOk && !codeOk) return res.status(401).end();
+  const board = (state.boards || []).find((b) => b.id === req.params.boardId);
+  if (!board) return res.status(404).end();
+  let rel = '';
+  if (req.params.type === 'problem') rel = board.problemPath || '';
+  if (req.params.type === 'problem-thumb') rel = board.problemThumbPath || '';
+  if (req.params.type === 'thumb' || req.params.type === 'original') {
+    const slot = (board.slots || []).find((s) => s.id === req.params.slotId);
+    if (!slot) return res.status(404).end();
+    rel = req.params.type === 'thumb' ? slot.thumbPath : slot.dataPath;
+    if (req.params.type === 'original' && !teacherOk) return res.status(403).end();
+  }
+  if (!rel) return res.status(404).end();
+  const abs = absoluteFromRoot(rel);
+  if (!fs.existsSync(abs)) return res.status(404).end();
+  res.sendFile(abs);
+});
+
 io.on('connection', (socket) => {
   socket.on('classes:list', (payload = {}, cb) => {
     const role = payload.role || 'student';
@@ -712,7 +885,7 @@ io.on('connection', (socket) => {
     socket.emit('state:update', sanitizeStateForStudent(state));
   });
 
-  socket.on('board:create', ({ className, title, teacherToken, problemText, problemFileName, problemMimeType, problemDataUrl, problemThumb, aiAnalysisEnabled }, cb) => {
+  socket.on('board:create', ({ className, title, teacherToken, problemText, problemFileName, problemMimeType, problemPath, problemThumbPath, aiAnalysisEnabled }, cb) => {
     if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
     const state = getClassByName(className);
     if (!state) return cb?.({ ok: false, message: '수업을 찾을 수 없습니다.' });
@@ -725,8 +898,8 @@ io.on('connection', (socket) => {
       problemText: problemText || '',
       problemFileName: problemFileName || '',
       problemMimeType: problemMimeType || '',
-      problemDataUrl: problemDataUrl || '',
-      problemThumb: problemThumb || '',
+      problemPath: problemPath || '',
+      problemThumbPath: problemThumbPath || '',
       aiAnalysisEnabled: Boolean(aiAnalysisEnabled),
       aiTopLearnCandidateIds: [],
       aiTopExcellentCandidateIds: [],
@@ -752,7 +925,7 @@ io.on('connection', (socket) => {
     if (!state) return cb?.({ ok: false, message: '수업을 찾을 수 없습니다.' });
     const board = activeBoard(state);
     if (!board) return cb?.({ ok: false, message: '활성 문항이 없습니다.' });
-    const submitted = (board.slots || []).filter((s) => Boolean(s.thumb));
+    const submitted = (board.slots || []).filter((s) => Boolean(s.thumbPath));
     if (!submitted.length) return cb?.({ ok: false, message: '분석할 제출물이 없습니다.' });
 
     for (const slot of submitted) {
@@ -831,33 +1004,10 @@ io.on('connection', (socket) => {
     cb?.({ ok: true, participantId: participant.participantId, participantSecret: participant.participantSecret });
   });
 
-  socket.on('submission:upsert', ({ className, participantId, participantSecret, questionNo, fileName, mimeType, dataUrl, thumb }, cb) => {
+  socket.on('submission:upsert', ({ className, participantId, participantSecret }, cb) => {
     const state = getClassByName(className);
-    if (!state || !participantId || !participantSecret || !dataUrl || !thumb) return cb?.({ ok: false, message: '제출 데이터가 올바르지 않습니다.' });
-
-    const participant = state.participants.find((p) => p.participantId === participantId);
-    if (!participant) return cb?.({ ok: false, message: '프로필 저장 후 제출해 주세요.' });
-    if (participant.participantSecret !== participantSecret) return cb?.({ ok: false, message: '참여자 인증이 유효하지 않습니다. 다시 입장해 주세요.' });
-
-    const board = activeBoard(state);
-    if (!board) return cb?.({ ok: false, message: '활성 문항이 없습니다.' });
-
-    const slot = ensureSlot(board, participant);
-    slot.questionNo = questionNo || '';
-    slot.fileName = fileName || 'submission';
-    slot.mimeType = mimeType || 'application/octet-stream';
-    slot.dataUrl = dataUrl;
-    slot.thumb = thumb;
-    slot.dataPath = '';
-    slot.thumbPath = '';
-    slot.submittedAt = new Date().toISOString();
-
-    const metaClass = meta.classes.find((c) => c.classId === state.classId);
-    if (metaClass) metaClass.lastUsedAt = new Date().toISOString();
-    saveClassState(state.classId);
-    saveMeta();
-    emitAllState(state.classId);
-    cb?.({ ok: true, submittedAt: slot.submittedAt });
+    if (!state || !participantId || !participantSecret) return cb?.({ ok: false, message: '제출 요청 정보가 올바르지 않습니다.' });
+    cb?.({ ok: false, message: '제출 방식이 변경되었습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.' });
   });
 
   socket.on('submission:delete', ({ className, slotId, teacherToken }, cb) => {
@@ -873,8 +1023,8 @@ io.on('connection', (socket) => {
     slot.questionNo = '';
     slot.fileName = '';
     slot.mimeType = '';
-    slot.dataUrl = '';
-    slot.thumb = '';
+    removeFileSafe(absoluteFromRoot(slot.dataPath));
+    removeFileSafe(absoluteFromRoot(slot.thumbPath));
     slot.dataPath = '';
     slot.thumbPath = '';
     slot.submittedAt = '';
@@ -899,7 +1049,7 @@ io.on('connection', (socket) => {
         slotId: slot.id,
         fileName: slot.fileName || 'submission',
         mimeType: slot.mimeType || 'application/octet-stream',
-        dataUrl: slot.dataUrl || readPayloadFile(slot.dataPath),
+        dataUrl: readDataUrlFromFile(slot.dataPath, slot.mimeType || 'application/octet-stream'),
       },
     });
   });

@@ -225,43 +225,32 @@ function readFile(file) {
   });
 }
 
-async function makeSubmissionPayload(file, questionNo) {
-  const raw = await readFile(file);
-  const isImage = file.type.startsWith('image/');
-  const preferPng = file.type === 'image/png';
-  const displayMime = preferPng ? 'image/png' : 'image/jpeg';
-  const dataUrl = isImage ? await compressImage(raw, 3000, 0.94, displayMime) : raw;
-  const thumb = isImage
-    ? await compressImage(raw, 420, 0.76, 'image/jpeg')
-    : `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260"><rect width="100%" height="100%" fill="#eef2ff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#334155" font-size="24">FILE</text></svg>')}`;
-  return { questionNo, fileName: file.name || 'submission', mimeType: isImage ? displayMime : (file.type || 'application/octet-stream'), dataUrl, thumb };
+async function uploadSubmissionFile(file, participantId, participantSecret) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('participantId', participantId);
+  fd.append('participantSecret', participantSecret);
+  const r = await fetch(`/api/classes/${encodeURIComponent(state.className)}/submissions`, { method: 'POST', body: fd });
+  const ack = await r.json().catch(() => ({ ok: false, message: '업로드 응답을 처리하지 못했습니다.' }));
+  if (!r.ok || !ack.ok) throw new Error(ack.message || '업로드 실패');
+  return ack;
 }
 
-async function makeProblemPayload(file) {
-  if (!file) return { problemFileName: '', problemMimeType: '', problemDataUrl: '', problemThumb: '' };
-  const raw = await readFile(file);
-  const inferredType = (file.type || '').trim().toLowerCase();
-  const lowerName = (file.name || '').toLowerCase();
-  const isImage = inferredType.startsWith('image/')
-    || raw.startsWith('data:image/')
-    || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(lowerName);
-  const isPdf = inferredType.includes('pdf') || raw.startsWith('data:application/pdf') || lowerName.endsWith('.pdf');
-  if (isImage) {
-    const outputMime = inferredType === 'image/png' || raw.startsWith('data:image/png') || lowerName.endsWith('.png') ? 'image/png' : 'image/jpeg';
-    const problemDataUrl = await compressImage(raw, 2200, 0.92, outputMime);
-    const problemThumb = await compressImage(raw, 520, 0.78, 'image/jpeg');
-    return { problemFileName: file.name || 'problem', problemMimeType: outputMime, problemDataUrl, problemThumb };
-  }
-  if (isPdf) {
-    return { problemFileName: file.name || 'problem.pdf', problemMimeType: 'application/pdf', problemDataUrl: raw, problemThumb: '' };
-  }
-  return { problemFileName: file.name || 'problem', problemMimeType: inferredType || 'application/octet-stream', problemDataUrl: raw, problemThumb: '' };
+async function uploadProblemFile(file) {
+  if (!file) return { problemFileName: '', problemMimeType: '', problemPath: '', problemThumbPath: '' };
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('teacherToken', getTeacherToken());
+  const r = await fetch(`/api/classes/${encodeURIComponent(state.className)}/problem-file`, { method: 'POST', body: fd });
+  const ack = await r.json().catch(() => ({ ok: false, message: '문제 파일 업로드 응답을 처리하지 못했습니다.' }));
+  if (!r.ok || !ack.ok) throw new Error(ack.message || '문제 파일 업로드 실패');
+  return ack;
 }
 
 function boardProgress(board) {
   const total = (state.participants || []).length || Number(state.participantCount || 0);
   if (!total) return { total: 0, submitted: 0, remaining: [] };
-  const submittedIds = new Set((board?.slots || []).filter((s) => Boolean(s.thumb)).map((s) => s.participantId));
+  const submittedIds = new Set((board?.slots || []).filter((s) => Boolean(s.thumbUrl)).map((s) => s.participantId));
   const list = state.participants || [];
   const remaining = list.filter((p) => !submittedIds.has(p.participantId)).map((p) => p.nickname || '익명');
   const submitted = list.length ? (total - remaining.length) : submittedIds.size;
@@ -300,9 +289,9 @@ function createSlotCard(slot) {
   title.textContent = slot.nickname || '익명';
   card.appendChild(title);
 
-  if (slot.thumb) {
+  if (slot.thumbUrl) {
     const img = document.createElement('img');
-    img.src = slot.thumb;
+    img.src = slot.thumbUrl;
     img.alt = slot.nickname || '제출물';
     card.appendChild(img);
   } else {
@@ -311,7 +300,7 @@ function createSlotCard(slot) {
     card.appendChild(empty);
   }
 
-  if (slot.thumb && isTeacherAuthorized()) {
+  if (slot.thumbUrl && isTeacherAuthorized()) {
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'slot-remove-btn';
@@ -368,11 +357,11 @@ function renderBoardPage() {
   if (studentProblemImg && studentProblemDoc) {
     studentProblemImg.classList.add('hidden');
     studentProblemDoc.classList.add('hidden');
-    if ((board.problemMimeType || '').startsWith('image/') && board.problemDataUrl) {
-      studentProblemImg.src = board.problemDataUrl;
+    if ((board.problemMimeType || '').startsWith('image/') && board.problemUrl) {
+      studentProblemImg.src = board.problemUrl;
       studentProblemImg.classList.remove('hidden');
-    } else if ((board.problemMimeType || '').includes('pdf') && board.problemDataUrl) {
-      studentProblemDoc.src = board.problemDataUrl;
+    } else if ((board.problemMimeType || '').includes('pdf') && board.problemUrl) {
+      studentProblemDoc.src = board.problemUrl;
       studentProblemDoc.classList.remove('hidden');
     }
   }
@@ -411,7 +400,7 @@ function renderBoardPage() {
     const slots = board.slots || [];
     const learn = (board.aiTopLearnCandidateIds || []).map((id) => slots.find((s) => s.id === id)).filter(Boolean);
     const excellent = (board.aiTopExcellentCandidateIds || []).map((id) => slots.find((s) => s.id === id)).filter(Boolean);
-    aiHint.textContent = slots.filter((s) => s.thumb).length < 2 ? '제출이 2개 미만이면 후보 추천이 제한됩니다.' : 'AI 추천 후보 (최종 선택은 교사)';
+    aiHint.textContent = slots.filter((s) => s.thumbUrl).length < 2 ? '제출이 2개 미만이면 후보 추천이 제한됩니다.' : 'AI 추천 후보 (최종 선택은 교사)';
     const addList = (title, arr, wrap) => {
       const h = document.createElement('h4'); h.textContent = title; wrap.appendChild(h);
       if (!arr.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = '추천 후보 없음'; wrap.appendChild(p); return; }
@@ -429,7 +418,7 @@ function renderBoardPage() {
 
   const focus = byId('focusView');
   const selected = (board.slots || []).find((s) => s.id === state.selectedSubmissionId);
-  if (!selected?.thumb) return focus.classList.add('hidden');
+  if (!selected?.thumbUrl) return focus.classList.add('hidden');
 
   byId('focusNickname').textContent = `${selected.nickname || '익명'} 풀이`;
   const focusImage = byId('focusImage');
@@ -438,7 +427,7 @@ function renderBoardPage() {
   if (focusDoc) focusDoc.classList.add('hidden');
   if (focusDownloadBtn) focusDownloadBtn.classList.add('hidden');
   focusImage.classList.remove('hidden');
-  focusImage.src = selected.thumb;
+  focusImage.src = selected.thumbUrl;
   if (isTeacherAuthorized()) {
     socket?.emit('submission:get-detail', { className: state.className, slotId: selected.id, teacherToken: getTeacherToken() }, (ack = {}) => {
       if (!ack.ok || !ack.detail?.dataUrl) return;
@@ -891,20 +880,14 @@ async function submitFileFromInput(inputId) {
   submitting = true;
   setUploadUi(true, '업로드 중...');
   try {
-    const payload = await makeSubmissionPayload(file, '');
-    socket?.emit('submission:upsert', { className: state.className, participantId, participantSecret, ...payload }, (ack = {}) => {
-      submitting = false;
-      if (!ack.ok) {
-        setUploadUi(false, ack.message || '업로드 실패');
-        return;
-      }
-      const typeLabel = file.type?.startsWith('image/') ? '이미지' : '파일';
-      setUploadUi(false, `${typeLabel} 업로드 완료 (${new Date(ack.submittedAt || Date.now()).toLocaleTimeString()})`);
-      setTimeout(() => setUploadUi(false, ''), 1200);
-    });
-  } catch {
+    const ack = await uploadSubmissionFile(file, participantId, participantSecret);
     submitting = false;
-    setUploadUi(false, '업로드 실패');
+    const typeLabel = file.type?.startsWith('image/') ? '이미지' : '파일';
+    setUploadUi(false, `${typeLabel} 업로드 완료 (${new Date(ack.submittedAt || Date.now()).toLocaleTimeString()})`);
+    setTimeout(() => setUploadUi(false, ''), 1200);
+  } catch (err) {
+    submitting = false;
+    setUploadUi(false, err.message || '업로드 실패');
   }
 }
 
@@ -1006,15 +989,20 @@ function initBoardPage() {
 
   byId('newBoardBtn')?.addEventListener('click', async () => {
     const f = teacherProblemClipboardFile || byId('problemFileInput')?.files?.[0];
-    const payload = await makeProblemPayload(f);
-    socket?.emit('board:create', {
-      className: state.className,
-      title: byId('boardTitle').value.trim(),
-      problemText: byId('problemText')?.value?.trim() || '',
-      aiAnalysisEnabled: Boolean(byId('aiAnalysisEnabled')?.checked),
-      ...payload,
-      teacherToken: getTeacherToken(),
-    });
+    try {
+      const payload = await uploadProblemFile(f);
+      socket?.emit('board:create', {
+        className: state.className,
+        title: byId('boardTitle').value.trim(),
+        problemText: byId('problemText')?.value?.trim() || '',
+        aiAnalysisEnabled: Boolean(byId('aiAnalysisEnabled')?.checked),
+        ...payload,
+        teacherToken: getTeacherToken(),
+      });
+    } catch (err) {
+      alert(err.message || '문제 파일 업로드 실패');
+      return;
+    }
     teacherProblemClipboardFile = null;
     if (problemFileInput) problemFileInput.value = '';
     updatePasteHint();

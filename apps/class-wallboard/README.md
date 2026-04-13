@@ -10,7 +10,7 @@
 ```bash
 cd apps/class-wallboard
 npm init -y
-npm i express socket.io
+npm i express socket.io multer sharp
 ```
 
 3. OpenAI API 키 설정(선택: AI 분석 기능 사용 시)
