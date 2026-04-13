@@ -729,12 +729,15 @@
     }
 
     if (examMode) {
+      var absentSummaryShort = abs.absentees.map(function (s) { return s.번호 + '(' + absenceTypeOf(s) + ')'; }).join(', ');
+      var metaFont = absentSummaryShort.length > 120 ? '12pt' : (absentSummaryShort.length > 70 ? '14pt' : '21pt');
+      var metaLine = absentSummaryShort.length > 120 ? '1.35' : (absentSummaryShort.length > 70 ? '1.45' : '1.7');
       return '<!doctype html><html lang="ko"><head><meta charset="utf-8" /><title>' + esc(title) + '</title><style>' +
         '@page { size:A4 landscape; margin:0; }' +
         '*{ box-sizing:border-box; } html,body{ margin:0; padding:0; } body{ font-family:"Noto Serif KR","Noto Sans KR",serif; color:#111; }' +
         '.paper{ width:297mm; height:210mm; padding:16mm 20mm; position:relative; }' +
         '.title{ text-align:center; font-size:22pt; font-weight:700; margin:0 0 14mm; letter-spacing:1px; }' +
-        '.meta{ font-size:21pt; line-height:1.7; margin:0 0 12mm; }' +
+        '.meta{ font-size:' + metaFont + '; line-height:' + metaLine + '; margin:0 0 12mm; }' +
         '.seatTitle{ font-size:20pt; margin:0 0 4mm; }' +
         '.tableWrap{ width:62%; }' +
         'table{ width:100%; border-collapse:collapse; table-layout:fixed; }' +
@@ -749,7 +752,7 @@
         '<div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>' +
         '<div class="title">' + esc(title) + '</div>' +
         '<div class="meta">재적: ' + abs.total + '명<br>결시: ' + abs.absentCount + '명' +
-        (abs.absentCount ? ' 결시자: ' + esc(abs.absentees.map(function (s) { return s.번호 + '번 ' + s.이름 + '(' + absenceTypeOf(s) + ')'; }).join(', ')) : '') +
+        (abs.absentCount ? ' 결시자: ' + esc(absentSummaryShort) : '') +
         '<br>결번: ' + esc(abs.missText.replace(/번$/, '')) + '</div>' +
         '<div class="seatTitle">좌석배치:' + esc(seatLayoutText) + '</div>' +
         '<div class="tableWrap"><table><tbody>' + examTableRows + '</tbody></table></div>' +
