@@ -430,14 +430,14 @@ function renderBoardPage() {
   focusImage.src = selected.thumbUrl;
   if (isTeacherAuthorized()) {
     socket?.emit('submission:get-detail', { className: state.className, slotId: selected.id, teacherToken: getTeacherToken() }, (ack = {}) => {
-      if (!ack.ok || !ack.detail?.dataUrl) return;
+      if (!ack.ok || !ack.detail?.originalUrl) return;
       const detail = ack.detail;
       if ((detail.mimeType || '').startsWith('image/')) {
-        focusImage.src = detail.dataUrl;
+        focusImage.src = detail.originalUrl;
       } else if ((detail.mimeType || '').includes('pdf')) {
         focusImage.classList.add('hidden');
         if (focusDoc) {
-          focusDoc.src = detail.dataUrl;
+          focusDoc.src = detail.originalUrl;
           focusDoc.classList.remove('hidden');
         }
       } else {
@@ -447,7 +447,7 @@ function renderBoardPage() {
         focusDownloadBtn.classList.remove('hidden');
         focusDownloadBtn.onclick = () => {
           const a = document.createElement('a');
-          a.href = detail.dataUrl;
+          a.href = detail.downloadUrl || detail.originalUrl;
           a.download = detail.fileName || 'submission';
           a.click();
         };
@@ -545,9 +545,9 @@ function renderManagePage() {
       a.onclick = (e) => {
         e.preventDefault();
         socket?.emit('submission:get-detail', { className: state.className, slotId: slot.id, teacherToken: getTeacherToken() }, (ack = {}) => {
-          if (!ack.ok || !ack.detail?.dataUrl) return alert(ack.message || '다운로드 파일을 불러오지 못했습니다.');
+          if (!ack.ok || !ack.detail?.originalUrl) return alert(ack.message || '다운로드 파일을 불러오지 못했습니다.');
           const x = document.createElement('a');
-          x.href = ack.detail.dataUrl;
+          x.href = ack.detail.downloadUrl || ack.detail.originalUrl;
           x.download = ack.detail.fileName || 'submission';
           x.click();
         });

@@ -753,6 +753,12 @@ app.get('/api/classes/:className/assets/:type/:boardId/:slotId', (req, res) => {
   if (!rel) return res.status(404).end();
   const abs = absoluteFromRoot(rel);
   if (!fs.existsSync(abs)) return res.status(404).end();
+  if (req.query.download === '1') {
+    const downloadName = (req.params.type === 'original' && (board.slots || []).find((s) => s.id === req.params.slotId)?.fileName)
+      || (req.params.type === 'problem' && board.problemFileName)
+      || path.basename(abs);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(downloadName)}`);
+  }
   res.sendFile(abs);
 });
 
@@ -1049,7 +1055,8 @@ io.on('connection', (socket) => {
         slotId: slot.id,
         fileName: slot.fileName || 'submission',
         mimeType: slot.mimeType || 'application/octet-stream',
-        dataUrl: readDataUrlFromFile(slot.dataPath, slot.mimeType || 'application/octet-stream'),
+        originalUrl: `/api/classes/${encodeURIComponent(state.className)}/assets/original/${encodeURIComponent(board.id)}/${encodeURIComponent(slot.id)}?teacherToken=${encodeURIComponent(teacherToken)}`,
+        downloadUrl: `/api/classes/${encodeURIComponent(state.className)}/assets/original/${encodeURIComponent(board.id)}/${encodeURIComponent(slot.id)}?teacherToken=${encodeURIComponent(teacherToken)}&download=1`,
       },
     });
   });
