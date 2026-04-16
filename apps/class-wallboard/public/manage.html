@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>학생 관리 | 수업 벽보드</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-page="manage">
+  <main class="container">
+    <section class="panel">
+      <h2>교사 전용 학생 관리</h2>
+      <p>수업: <strong id="manageClassName">-</strong> / 벽보드: <strong id="manageBoardTitle">-</strong></p>
+      <div id="manageHistoryTabs" class="history-tabs"></div>
+      <div class="row">
+        <button id="exportCsvBtn">출석/제출 현황 CSV 내보내기</button>
+      </div>
+      <div class="table-wrap">
+        <table id="studentTable">
+          <thead>
+            <tr>
+              <th>반</th>
+              <th>학번</th>
+              <th>실명</th>
+              <th>별명</th>
+              <th>문항</th>
+              <th>마지막 제출</th>
+              <th>자료형식</th>
+              <th>다운로드</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <a class="link" href="./board.html">← 벽보드 화면으로 돌아가기</a>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
