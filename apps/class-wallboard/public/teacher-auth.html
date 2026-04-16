@@ -7,19 +7,22 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body data-page="teacher-auth">
-  <main class="container">
-    <section class="panel">
+  <main class="container narrow">
+    <section class="panel auth-panel">
       <h1>교사 PIN 인증</h1>
-      <div class="row">
-        <label>교사 PIN
-          <input id="teacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="off" />
-        </label>
-        <button id="teacherAuthBtn">교사 인증 후 계속</button>
+      <div class="auth-top-card">
+        <div class="auth-illust" aria-hidden="true">🔐</div>
+        <div class="auth-fields">
+          <label>교사 PIN
+            <input id="teacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6자리 숫자" autocomplete="off" />
+          </label>
+          <button id="teacherAuthBtn">교사 인증 후 계속</button>
+        </div>
       </div>
       <p id="authStatus" class="hint"></p>
       <hr />
       <h2>PIN 변경</h2>
-      <div class="row">
+      <div class="row auth-change-row">
         <label>현재 PIN
           <input id="currentTeacherPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="현재 6자리 PIN" autocomplete="off" />
         </label>
