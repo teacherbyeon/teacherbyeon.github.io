@@ -1014,14 +1014,32 @@ io.on('connection', (socket) => {
     if (!authorizeTeacher(teacherToken)) return rejectTeacherAction(socket, cb);
     const state = getClassByName(className);
     if (!state || !participantId) return cb?.({ ok: false, message: '강퇴 대상이 없습니다.' });
+    const exists = (state.participants || []).some((p) => p.participantId === participantId);
+    if (!exists) return cb?.({ ok: false, message: '해당 학생을 찾을 수 없습니다.' });
     const set = participantSockets.get(participantId);
-    if (!set || !set.size) return cb?.({ ok: false, message: '현재 접속 중인 학생이 아닙니다.' });
-    for (const sid of [...set]) {
-      const target = io.sockets.sockets.get(sid);
-      if (!target) continue;
-      target.emit('participant:kicked', { message: '교사에 의해 수업에서 퇴장되었습니다. 다시 입장해 주세요.' });
-      target.leave(roomStudents(state.classId));
-      target.disconnect(true);
+
+    state.participants = (state.participants || []).filter((p) => p.participantId !== participantId);
+    (state.boards || []).forEach((b) => {
+      const removedSlots = (b.slots || []).filter((s) => s.participantId === participantId);
+      removedSlots.forEach((s) => {
+        removeFileSafe(absoluteFromRoot(s.dataPath));
+        removeFileSafe(absoluteFromRoot(s.thumbPath));
+        if (state.selectedSubmissionId === s.id) state.selectedSubmissionId = null;
+      });
+      b.slots = (b.slots || []).filter((s) => s.participantId !== participantId);
+    });
+
+    saveClassState(state.classId);
+    emitAllState(state.classId);
+
+    if (set && set.size) {
+      for (const sid of [...set]) {
+        const target = io.sockets.sockets.get(sid);
+        if (!target) continue;
+        target.emit('participant:kicked', { message: '교사에 의해 수업에서 퇴장되었습니다. 다시 입장해 주세요.' });
+        target.leave(roomStudents(state.classId));
+        target.disconnect(true);
+      }
     }
     participantSockets.delete(participantId);
     cb?.({ ok: true });
