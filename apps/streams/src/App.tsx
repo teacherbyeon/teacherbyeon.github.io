@@ -55,6 +55,7 @@ export function App() {
     socket.on('host:login:error', ({ message }) => setError(message));
     socket.on('state:host', (s) => {
       setHostState(s);
+      if (s.game.settings) setSettings(s.game.settings);
       setRole('host-game');
     });
     socket.on('state:participant', (s) => {
@@ -136,6 +137,7 @@ export function App() {
       {role === 'host-setup' && (
         <section className="panel">
           <h2>게임 설정 (20칸 고정)</h2>
+          <h3>조커 포함 여부</h3>
           <label>
             <input
               type="checkbox"
@@ -180,6 +182,13 @@ export function App() {
           <h2>진행자 화면</h2>
           <p>라운드: {hostState.game.round} / {hostState.game.totalRounds}</p>
           <p>조커 옵션: {hostState.game.settings?.includeJoker ? '포함' : '미포함'}</p>
+          <label>
+            <input
+              type="checkbox"
+              checked={settings.includeJoker}
+              onChange={(e) => setSettings((p) => ({ ...p, includeJoker: e.target.checked }))}
+            /> 다음 새 게임에 조커 포함
+          </label>
           <p className="big">{tileLabel(hostState.game.currentNumber) || '대기'}</p>
           <p>남은 숫자: {hostState.game.remainingDraws}</p>
 
