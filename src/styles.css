@@ -1,0 +1,171 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: linear-gradient(120deg, #eef2ff, #ecfeff);
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.panel {
+  width: min(1100px, 100%);
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  padding: 24px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.host-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 980px) {
+  .host-grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #e2e8f0;
+}
+
+.btn.primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn.danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input, select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.board {
+  display: grid;
+  gap: 8px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  background: #fff;
+}
+
+button.cell {
+  cursor: pointer;
+}
+
+.cell.filled {
+  background: #eff6ff;
+}
+
+.cell.marked {
+  background: #16a34a;
+  color: #fff;
+}
+
+.called-big {
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+  color: #1d4ed8;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.called-box {
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+}
+
+.qr-wrap {
+  margin: 12px 0;
+  display: inline-flex;
+  border: 1px solid #cbd5e1;
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 0;
+}
+
+.muted {
+  color: #475569;
+  font-size: 14px;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.ready {
+  color: #0f766e;
+  font-weight: 700;
+}
