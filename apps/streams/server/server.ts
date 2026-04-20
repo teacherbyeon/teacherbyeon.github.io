@@ -125,6 +125,7 @@ const makeDeck = (settings: GameSettings): TileValue[] => {
     const value = Number(k);
     if (Number.isFinite(value)) for (let i = 0; i < count; i += 1) deck.push(value);
   });
+
   for (let i = deck.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -132,6 +133,14 @@ const makeDeck = (settings: GameSettings): TileValue[] => {
   return deck.slice(0, settings.boardSize);
 };
 
+const normalizeSettings = (settings: GameSettings): GameSettings => ({
+  ...settings,
+  boardSize: 20,
+  deckConfig: {
+    ...settings.deckConfig,
+    J: settings.includeJoker ? Math.max(0, Number(settings.deckConfig.J) || 0) : 0
+  }
+});
 const scoreFromLength = (length: number): number => SCORE_BY_LENGTH[length] ?? 0;
 
 const computeScore = (board: BoardCell[]): number => {
@@ -295,8 +304,13 @@ io.on('connection', (socket) => {
     if (!room) return socket.emit('server:error', { message: '방이 없습니다.' });
     room.game = newGameState();
     room.game.inProgress = true;
-    room.game.settings = { ...settings, boardSize: 20 };
+    room.game.settings = normalizeSettings(settings);
     room.game.drawSequence = makeDeck(room.game.settings);
+    if (room.game.drawSequence.length < 20) {
+      room.game = newGameState();
+      emitState(room);
+      return socket.emit('server:error', { message: '덱 카드 수가 부족합니다. 20장 이상으로 설정하세요.' });
+    }
     for (const p of room.participants.values()) {
       p.board = Array(20).fill(null);
       p.tempPlacementIndex = null;
@@ -311,8 +325,13 @@ io.on('connection', (socket) => {
     if (!room) return;
     room.game = newGameState();
     room.game.inProgress = true;
-    room.game.settings = { ...settings, boardSize: 20 };
+    room.game.settings = normalizeSettings(settings);
     room.game.drawSequence = makeDeck(room.game.settings);
+    if (room.game.drawSequence.length < 20) {
+      room.game = newGameState();
+      emitState(room);
+      return socket.emit('server:error', { message: '덱 카드 수가 부족합니다. 20장 이상으로 설정하세요.' });
+    }
     room.participants.forEach((p) => {
       p.board = Array(20).fill(null);
       p.tempPlacementIndex = null;

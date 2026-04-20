@@ -79,9 +79,11 @@ export function App() {
   }, [socket]);
 
   const participantsDeckTotal = useMemo(
-    () => Object.entries(settings.deckConfig).reduce((sum, [, count]) => sum + Math.max(0, count),
-      0),
-    [settings.deckConfig]
+    () => Object.entries(settings.deckConfig).reduce((sum, [key, count]) => {
+      if (key === 'J' && !settings.includeJoker) return sum;
+      return sum + Math.max(0, count);
+    }, 0),
+    [settings.deckConfig, settings.includeJoker]
   );
 
   const qrImageUrl = useMemo(() => {
@@ -159,6 +161,7 @@ export function App() {
                   type="number"
                   min={0}
                   value={settings.deckConfig[k]}
+                  disabled={k === 'J' && !settings.includeJoker}
                   onChange={(e) => setSettings((p) => ({
                     ...p,
                     deckConfig: { ...p.deckConfig, [k]: Math.max(0, Number(e.target.value) || 0) }
@@ -167,7 +170,7 @@ export function App() {
               </label>
             ))}
           </div>
-          <p>덱 수: {participantsDeckTotal}</p>
+          <p>실제 사용 덱 수: {participantsDeckTotal} {settings.includeJoker ? '(조커 포함 가능)' : '(조커 제외)'}</p>
           <button onClick={() => startHostGame(false)}>게임 시작</button>
         </section>
       )}
