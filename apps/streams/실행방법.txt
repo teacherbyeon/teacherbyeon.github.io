@@ -1,0 +1,27 @@
+[Streams 실행 방법]
+
+1) 폴더 이동
+cd apps/streams
+
+2) 패키지 설치
+npm install
+
+3) 개발 실행(클라이언트+서버 동시 실행)
+npm run dev
+
+4) 접속 주소
+- 진행자/참가자 공통 접속: http://<노트북IP>:5173
+- 소켓 서버: http://<노트북IP>:3000
+
+5) 진행자 로그인
+- PIN 입력 후 로그인
+- .env 또는 실행 환경변수로 변경 가능: STREAMS_HOST_PIN
+
+6) 참가자 접속
+- 동일 URL 접속 후 참가자 선택
+- 별명 입력 후 바로 입장
+
+7) 배포(프로덕션)
+npm run build
+npm run start
+- 접속: http://<노트북IP>:3000

@@ -9,7 +9,6 @@ import type {
   ClientEventMap
 } from './types';
 
-const HOST_PIN = '1234';
 const defaultDeckConfig: Record<string, number> = (() => {
   const cfg: Record<string, number> = {};
   for (let i = 1; i <= 10; i += 1) cfg[String(i)] = 1;
@@ -37,7 +36,6 @@ export function App() {
   const [socket] = useState(getSocket);
   const [role, setRole] = useState<Role>('select');
   const [pin, setPin] = useState('');
-  const [roomCode, setRoomCode] = useState('');
   const [nickname, setNickname] = useState('');
   const [participantId, setParticipantId] = useState(localStorage.getItem('streams_pid') ?? '');
   const [settings, setSettings] = useState<GameSettings>(emptySettings);
@@ -46,8 +44,7 @@ export function App() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    socket.on('host:login:ok', ({ roomCode: code }) => {
-      setRoomCode(code);
+    socket.on('host:login:ok', () => {
       setRole('host-setup');
       setError('');
     });
@@ -58,7 +55,6 @@ export function App() {
     });
     socket.on('state:participant', (s) => {
       setParticipantState(s);
-      setRoomCode(s.roomCode);
       setRole('participant-game');
     });
     socket.on('participant:join:ok', ({ participantId: id }) => {
@@ -71,14 +67,11 @@ export function App() {
       setHostState(null);
       setParticipantState(null);
       setRole('select');
-      setRoomCode('');
-      setError('방이 종료되었습니다.');
+      setError('게임이 종료되었습니다.');
     });
     socket.on('server:error', ({ message }) => setError(message));
 
-    return () => {
-      socket.removeAllListeners();
-    };
+    return () => socket.removeAllListeners();
   }, [socket]);
 
   const participantsDeckTotal = useMemo(
@@ -88,18 +81,17 @@ export function App() {
 
   const handleHostLogin = () => {
     setError('');
-    socket.emit('host:login', { pin: pin || HOST_PIN });
+    socket.emit('host:login', { pin });
   };
 
   const startHostGame = (isNew = false) => {
-    const payload = { roomCode, settings };
-    if (isNew) socket.emit('host:new-game', payload);
-    else socket.emit('host:start-game', payload);
+    if (isNew) socket.emit('host:new-game', { settings });
+    else socket.emit('host:start-game', { settings });
   };
 
   const joinParticipant = () => {
     setError('');
-    socket.emit('participant:join', { roomCode, nickname, participantId: participantId || undefined });
+    socket.emit('participant:join', { nickname, participantId: participantId || undefined });
   };
 
   const tileLabel = (v: TileValue | null) => (v === null ? '' : v === 'J' ? '🃏' : String(v));
@@ -119,7 +111,7 @@ export function App() {
       {role === 'host-login' && (
         <section className="panel">
           <h2>진행자 PIN 로그인</h2>
-          <input value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN 입력" />
+          <input type="password" value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN 입력" />
           <div className="row">
             <button onClick={handleHostLogin}>로그인</button>
             <button className="ghost" onClick={() => setRole('select')}>뒤로</button>
@@ -130,7 +122,6 @@ export function App() {
       {role === 'host-setup' && (
         <section className="panel">
           <h2>게임 설정 (20칸 고정)</h2>
-          <p>방 코드: <b>{roomCode}</b></p>
           <label><input type="checkbox" checked={settings.includeJoker} onChange={(e) => setSettings((p) => ({ ...p, includeJoker: e.target.checked }))} /> 조커 포함</label>
           <label><input type="checkbox" checked={settings.animationOn} onChange={(e) => setSettings((p) => ({ ...p, animationOn: e.target.checked }))} /> 숫자 뽑기 애니메이션 ON</label>
           <label><input type="checkbox" checked={settings.soundOn} onChange={(e) => setSettings((p) => ({ ...p, soundOn: e.target.checked }))} /> 숫자 뽑기 사운드 ON</label>
@@ -157,15 +148,14 @@ export function App() {
       {role === 'host-game' && hostState && (
         <section className="panel">
           <h2>진행자 화면</h2>
-          <p>방 코드: <b>{hostState.roomCode}</b></p>
           <p>라운드: {hostState.game.round} / {hostState.game.totalRounds}</p>
           <p className="big">{tileLabel(hostState.game.currentNumber) || '대기'}</p>
           <p>남은 숫자: {hostState.game.remainingDraws}</p>
           <div className="row">
-            <button onClick={() => socket.emit('host:draw', { roomCode: hostState.roomCode })}>뽑기</button>
-            <button onClick={() => socket.emit('host:rewind', { roomCode: hostState.roomCode })}>되감기</button>
+            <button onClick={() => socket.emit('host:draw')}>뽑기</button>
+            <button onClick={() => socket.emit('host:rewind')}>되감기</button>
             <button onClick={() => startHostGame(true)}>새 게임 시작</button>
-            <button className="danger" onClick={() => socket.emit('host:end-room', { roomCode: hostState.roomCode })}>게임 끝</button>
+            <button className="danger" onClick={() => socket.emit('host:end-room')}>게임 끝</button>
           </div>
           <h3>접속자 목록</h3>
           <table>
@@ -186,7 +176,6 @@ export function App() {
       {role === 'participant-join' && (
         <section className="panel">
           <h2>참가자 입장</h2>
-          <input value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase())} placeholder="방 코드" />
           <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="별명" />
           <div className="row">
             <button onClick={joinParticipant}>입장</button>
@@ -202,15 +191,16 @@ export function App() {
           <p>남은 칸 수: {participantState.game.remainingSlots}</p>
           <p>라운드: {participantState.game.round}/{participantState.game.totalRounds}</p>
           <p>연결 상태: {participantState.connected ? '연결됨' : '재접속 중'}</p>
-          <p>상태: {participantState.game.submitted ? '배치 완료' : participantState.game.hasOwnProperty('tempPlacementIndex') && participantState.game.tempPlacementIndex !== null ? '임시 배치 중' : '대기'}</p>
+          <p>상태: {participantState.game.submitted ? '배치 완료' : participantState.game.tempPlacementIndex !== null ? '임시 배치 중' : '대기'}</p>
           <div className="board">
             {participantState.game.board.map((value, index) => (
               <button
                 className={`cell ${participantState.game.tempPlacementIndex === index ? 'temp' : ''}`}
                 key={index}
-                onClick={() => socket.emit('participant:place-temp', { roomCode: participantState.roomCode, participantId: participantState.participantId, index })}
+                onClick={() => socket.emit('participant:place-temp', { participantId: participantState.participantId, index })}
               >
-                {tileLabel(value)}
+                <span className="cell-index">{index + 1}</span>
+                <span className="cell-value">{tileLabel(value)}</span>
               </button>
             ))}
           </div>

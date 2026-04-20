@@ -21,5 +21,16 @@ input { background: #0f1634; color: #f3f5ff; margin-right: 8px; }
 table { width: 100%; border-collapse: collapse; }
 th, td { border-bottom: 1px solid #35417a; text-align: left; padding: 6px; font-size: 14px; }
 .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.cell { min-height: 64px; background: #25306a; font-size: 28px; font-weight: 700; border-radius: 12px; }
+.cell {
+  min-height: 74px;
+  background: #25306a;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
 .cell.temp { outline: 3px solid #f2be40; }
+.cell-index { font-size: 12px; opacity: 0.8; }
+.cell-value { font-size: 28px; font-weight: 700; line-height: 1; }

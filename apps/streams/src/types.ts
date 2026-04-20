@@ -6,7 +6,7 @@ export interface ParticipantSummary {
   connected: boolean;
   reconnectCount: number;
   lastSeenAt: number;
-  score: number;
+ score: number;
   submitted: boolean;
   hasTempPlacement: boolean;
 }
@@ -21,7 +21,6 @@ export interface GameSettings {
 
 export interface HostStateView {
   role: 'host';
-  roomCode: string;
   hostConnected: boolean;
   participants: ParticipantSummary[];
   game: {
@@ -39,7 +38,6 @@ export interface ParticipantStateView {
   role: 'participant';
   participantId: string;
   nickname: string;
-  roomCode: string;
   connected: boolean;
   participantsCount: number;
   game: {
@@ -58,17 +56,17 @@ export interface ParticipantStateView {
 
 export type ClientEventMap = {
   'host:login': (payload: { pin: string }) => void;
-  'host:start-game': (payload: { roomCode: string; settings: GameSettings }) => void;
-  'host:draw': (payload: { roomCode: string }) => void;
-  'host:rewind': (payload: { roomCode: string }) => void;
-  'host:new-game': (payload: { roomCode: string; settings: GameSettings }) => void;
-  'host:end-room': (payload: { roomCode: string }) => void;
-  'participant:join': (payload: { roomCode: string; nickname: string; participantId?: string }) => void;
-  'participant:place-temp': (payload: { roomCode: string; participantId: string; index: number }) => void;
+  'host:start-game': (payload: { settings: GameSettings }) => void;
+  'host:draw': () => void;
+  'host:rewind': () => void;
+  'host:new-game': (payload: { settings: GameSettings }) => void;
+  'host:end-room': () => void;
+  'participant:join': (payload: { nickname: string; participantId?: string }) => void;
+  'participant:place-temp': (payload: { participantId: string; index: number }) => void;
 };
 
 export type ServerEventMap = {
-  'host:login:ok': (payload: { roomCode: string }) => void;
+  'host:login:ok': () => void;
   'host:login:error': (payload: { message: string }) => void;
   'participant:join:ok': (payload: { participantId: string }) => void;
   'participant:join:error': (payload: { message: string }) => void;

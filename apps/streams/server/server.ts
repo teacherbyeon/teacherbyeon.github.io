@@ -47,7 +47,6 @@ interface Snapshot {
 }
 
 interface RoomState {
-  roomCode: string;
   hostSocketId: string | null;
   hostConnected: boolean;
   participants: Map<string, Participant>;
@@ -55,8 +54,9 @@ interface RoomState {
 }
 
 const HOST_PIN = process.env.STREAMS_HOST_PIN ?? '1234';
-const rooms = new Map<string, RoomState>();
-const socketRole = new Map<string, { type: 'host' | 'participant'; roomCode: string; participantId?: string }>();
+const ROOM_KEY = 'CLASSROOM';
+let room: RoomState | null = null;
+const socketRole = new Map<string, { type: 'host' | 'participant'; participantId?: string }>();
 
 const app = express();
 app.use(cors());
@@ -71,7 +71,29 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 const randomId = () => Math.random().toString(36).slice(2, 10);
-const randomRoomCode = () => Math.random().toString(36).slice(2, 6).toUpperCase();
+
+const SCORE_BY_LENGTH: Record<number, number> = {
+  1: 0,
+  2: 1,
+  3: 3,
+  4: 5,
+  5: 7,
+  6: 9,
+  7: 11,
+  8: 15,
+  9: 20,
+  10: 25,
+  11: 30,
+  12: 35,
+  13: 40,
+  14: 50,
+  15: 60,
+  16: 70,
+  17: 85,
+  18: 100,
+  19: 150,
+  20: 300
+};
 
 const newGameState = (): GameState => ({
   inProgress: false,
@@ -81,6 +103,13 @@ const newGameState = (): GameState => ({
   round: 0,
   currentNumber: null,
   history: []
+});
+
+const newRoom = (): RoomState => ({
+  hostSocketId: null,
+  hostConnected: false,
+  participants: new Map(),
+  game: newGameState()
 });
 
 const cloneBoard = (board: BoardCell[]) => [...board];
@@ -103,29 +132,49 @@ const makeDeck = (settings: GameSettings): TileValue[] => {
   return deck.slice(0, settings.boardSize);
 };
 
+const scoreFromLength = (length: number): number => SCORE_BY_LENGTH[length] ?? 0;
+
 const computeScore = (board: BoardCell[]): number => {
-  let best = 0;
+  let total = 0;
+  let segmentLength = 0;
+  let prevKnown = Number.NEGATIVE_INFINITY;
+
+  const flush = () => {
+    total += scoreFromLength(segmentLength);
+    segmentLength = 0;
+    prevKnown = Number.NEGATIVE_INFINITY;
+  };
+
   for (let i = 0; i < board.length; i += 1) {
-    let prevKnown = Number.NEGATIVE_INFINITY;
-    for (let j = i; j < board.length; j += 1) {
-      const cell = board[j];
-      if (cell === null) break;
-      if (cell !== 'J') {
-        if (cell < prevKnown) break;
-        prevKnown = cell;
-      }
-      best = Math.max(best, j - i + 1);
+    const cell = board[i];
+    if (cell === null) {
+      flush();
+      continue;
     }
+
+    if (cell === 'J') {
+      segmentLength += 1;
+      continue;
+    }
+
+    if (segmentLength > 0 && cell < prevKnown) {
+      flush();
+    }
+
+    segmentLength += 1;
+    prevKnown = cell;
   }
-  return best;
+
+  flush();
+  return total;
 };
 
-const snapshot = (room: RoomState): Snapshot => ({
-  round: room.game.round,
-  currentNumber: room.game.currentNumber,
-  drawHistory: [...room.game.drawHistory],
+const snapshot = (state: RoomState): Snapshot => ({
+  round: state.game.round,
+  currentNumber: state.game.currentNumber,
+  drawHistory: [...state.game.drawHistory],
   participants: Object.fromEntries(
-    [...room.participants.values()].map((p) => [
+    [...state.participants.values()].map((p) => [
       p.id,
       {
         board: cloneBoard(p.board),
@@ -137,61 +186,59 @@ const snapshot = (room: RoomState): Snapshot => ({
   )
 });
 
-const emitState = (room: RoomState) => {
-  const participantsSummary = [...room.participants.values()].map((p) => ({
+const emitState = (state: RoomState) => {
+  const participantsSummary = [...state.participants.values()].map((p) => ({
     id: p.id,
     nickname: p.nickname,
     connected: p.connected,
     reconnectCount: p.reconnectCount,
     lastSeenAt: p.lastSeenAt,
     score: p.score,
-    submitted: p.submittedRound === room.game.round,
+    submitted: p.submittedRound === state.game.round,
     hasTempPlacement: p.tempPlacementIndex !== null
   }));
 
-  if (room.hostSocketId) {
-    io.to(room.hostSocketId).emit('state:host', {
+  if (state.hostSocketId) {
+    io.to(state.hostSocketId).emit('state:host', {
       role: 'host',
-      roomCode: room.roomCode,
-      hostConnected: room.hostConnected,
+      hostConnected: state.hostConnected,
       participants: participantsSummary,
       game: {
-        inProgress: room.game.inProgress,
-        settings: room.game.settings,
-        round: room.game.round,
-        totalRounds: room.game.settings?.boardSize ?? 20,
-        remainingDraws: Math.max(0, (room.game.settings?.boardSize ?? 20) - room.game.drawHistory.length),
-        currentNumber: room.game.currentNumber,
-        drawHistory: room.game.drawHistory
+        inProgress: state.game.inProgress,
+        settings: state.game.settings,
+        round: state.game.round,
+        totalRounds: state.game.settings?.boardSize ?? 20,
+        remainingDraws: Math.max(0, (state.game.settings?.boardSize ?? 20) - state.game.drawHistory.length),
+        currentNumber: state.game.currentNumber,
+        drawHistory: state.game.drawHistory
       }
     });
   }
 
-  [...room.participants.values()].forEach((p) => {
+  [...state.participants.values()].forEach((p) => {
     if (!p.socketId) return;
     const boardView = cloneBoard(p.board);
-    if (p.tempPlacementIndex !== null && room.game.currentNumber !== null) boardView[p.tempPlacementIndex] = room.game.currentNumber;
+    if (p.tempPlacementIndex !== null && state.game.currentNumber !== null) boardView[p.tempPlacementIndex] = state.game.currentNumber;
     io.to(p.socketId).emit('state:participant', {
       role: 'participant',
       participantId: p.id,
       nickname: p.nickname,
-      roomCode: room.roomCode,
       connected: p.connected,
-      participantsCount: room.participants.size,
+      participantsCount: state.participants.size,
       game: {
-        inProgress: room.game.inProgress,
-        round: room.game.round,
-        totalRounds: room.game.settings?.boardSize ?? 20,
+        inProgress: state.game.inProgress,
+        round: state.game.round,
+        totalRounds: state.game.settings?.boardSize ?? 20,
         remainingSlots: boardView.filter((v) => v === null).length,
-        currentNumber: room.game.currentNumber,
+        currentNumber: state.game.currentNumber,
         board: boardView,
         tempPlacementIndex: p.tempPlacementIndex,
         score: p.score,
-        submitted: p.submittedRound === room.game.round,
-        message: room.game.inProgress
-          ? room.game.currentNumber === null
+        submitted: p.submittedRound === state.game.round,
+        message: state.game.inProgress
+          ? state.game.currentNumber === null
             ? '진행자가 숫자를 뽑는 중입니다.'
-            : p.submittedRound === room.game.round
+            : p.submittedRound === state.game.round
               ? '이번 턴 배치 완료'
               : '현재 숫자를 빈 칸에 배치하세요.'
           : '게임 대기 중입니다.'
@@ -200,23 +247,23 @@ const emitState = (room: RoomState) => {
   });
 };
 
-const finalizeRound = (room: RoomState) => {
-  for (const p of room.participants.values()) {
-    if (p.tempPlacementIndex !== null && room.game.currentNumber !== null && p.board[p.tempPlacementIndex] === null) {
-      p.board[p.tempPlacementIndex] = room.game.currentNumber;
-      p.submittedRound = room.game.round;
+const finalizeRound = (state: RoomState) => {
+  for (const p of state.participants.values()) {
+    if (p.tempPlacementIndex !== null && state.game.currentNumber !== null && p.board[p.tempPlacementIndex] === null) {
+      p.board[p.tempPlacementIndex] = state.game.currentNumber;
+      p.submittedRound = state.game.round;
       p.tempPlacementIndex = null;
       p.score = computeScore(p.board);
     }
   }
 };
 
-const restoreSnapshot = (room: RoomState, snap: Snapshot) => {
-  room.game.round = snap.round;
-  room.game.currentNumber = snap.currentNumber;
-  room.game.drawHistory = [...snap.drawHistory];
+const restoreSnapshot = (state: RoomState, snap: Snapshot) => {
+  state.game.round = snap.round;
+  state.game.currentNumber = snap.currentNumber;
+  state.game.drawHistory = [...snap.drawHistory];
 
-  room.participants.forEach((participant, id) => {
+  state.participants.forEach((participant, id) => {
     const s = snap.participants[id];
     if (!s) return;
     participant.board = [...s.board];
@@ -232,24 +279,18 @@ io.on('connection', (socket) => {
       socket.emit('host:login:error', { message: 'PIN이 올바르지 않습니다.' });
       return;
     }
-    const roomCode = randomRoomCode();
-    const room: RoomState = {
-      roomCode,
-      hostSocketId: socket.id,
-      hostConnected: true,
-      participants: new Map(),
-      game: newGameState()
-    };
-    rooms.set(roomCode, room);
-    socketRole.set(socket.id, { type: 'host', roomCode });
-    socket.join(roomCode);
-    socket.emit('host:login:ok', { roomCode });
+
+    room = room ?? newRoom();
+    room.hostSocketId = socket.id;
+    room.hostConnected = true;
+    socketRole.set(socket.id, { type: 'host' });
+    socket.join(ROOM_KEY);
+    socket.emit('host:login:ok');
     emitState(room);
   });
 
-  socket.on('host:start-game', ({ roomCode, settings }: { roomCode: string; settings: GameSettings }) => {
-    const room = rooms.get(roomCode);
-    if (!room) return socket.emit('server:error', { message: '방을 찾을 수 없습니다.' });
+  socket.on('host:start-game', ({ settings }: { settings: GameSettings }) => {
+    if (!room) return socket.emit('server:error', { message: '방이 없습니다.' });
     room.game = newGameState();
     room.game.inProgress = true;
     room.game.settings = { ...settings, boardSize: 20 };
@@ -264,8 +305,7 @@ io.on('connection', (socket) => {
     emitState(room);
   });
 
-  socket.on('host:new-game', ({ roomCode, settings }: { roomCode: string; settings: GameSettings }) => {
-    const room = rooms.get(roomCode);
+  socket.on('host:new-game', ({ settings }: { settings: GameSettings }) => {
     if (!room) return;
     room.game = newGameState();
     room.game.inProgress = true;
@@ -281,8 +321,7 @@ io.on('connection', (socket) => {
     emitState(room);
   });
 
-  socket.on('host:draw', ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+  socket.on('host:draw', () => {
     if (!room || !room.game.inProgress) return;
     finalizeRound(room);
     const next = room.game.drawSequence[room.game.round];
@@ -294,8 +333,7 @@ io.on('connection', (socket) => {
     emitState(room);
   });
 
-  socket.on('host:rewind', ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+  socket.on('host:rewind', () => {
     if (!room || room.game.history.length <= 1) return;
     room.game.history.pop();
     const prev = room.game.history[room.game.history.length - 1];
@@ -303,22 +341,20 @@ io.on('connection', (socket) => {
     emitState(room);
   });
 
-  socket.on('host:end-room', ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+  socket.on('host:end-room', () => {
     if (!room) return;
     for (const p of room.participants.values()) {
       if (p.socketId) io.to(p.socketId).emit('room:ended');
     }
     if (room.hostSocketId) io.to(room.hostSocketId).emit('room:ended');
-    rooms.delete(roomCode);
+    room = null;
   });
 
-  socket.on('participant:join', ({ roomCode, nickname, participantId }: { roomCode: string; nickname: string; participantId?: string }) => {
-    const room = rooms.get(roomCode);
-    if (!room) return socket.emit('participant:join:error', { message: '방 코드가 없습니다.' });
+  socket.on('participant:join', ({ nickname, participantId }: { nickname: string; participantId?: string }) => {
+    if (!room) return socket.emit('participant:join:error', { message: '진행자가 아직 방을 열지 않았습니다.' });
 
     const trimmed = nickname.trim();
-    if (!trimmed) return socket.emit('participant:join:error', { message: '별명을 입력하세요.' });
+    if (!trimmed && !participantId) return socket.emit('participant:join:error', { message: '별명을 입력하세요.' });
 
     let participant = participantId ? room.participants.get(participantId) : undefined;
     if (!participant) {
@@ -348,35 +384,29 @@ io.on('connection', (socket) => {
       socket.emit('participant:join:ok', { participantId: participant.id });
     }
 
-    socketRole.set(socket.id, { type: 'participant', roomCode, participantId: participant.id });
-    socket.join(roomCode);
+    socketRole.set(socket.id, { type: 'participant', participantId: participant.id });
+    socket.join(ROOM_KEY);
     emitState(room);
   });
 
-  socket.on(
-    'participant:place-temp',
-    ({ roomCode, participantId, index }: { roomCode: string; participantId: string; index: number }) => {
-      const room = rooms.get(roomCode);
-      if (!room || !room.game.inProgress || room.game.currentNumber === null) return;
-      const participant = room.participants.get(participantId);
-      if (!participant) return;
-      if (index < 0 || index >= 20) return;
-      if (participant.board[index] !== null) return;
-      participant.tempPlacementIndex = index;
-      participant.submittedRound = room.game.round;
-      const boardPreview = [...participant.board];
-      boardPreview[index] = room.game.currentNumber;
-      participant.score = computeScore(boardPreview);
-      participant.lastSeenAt = Date.now();
-      emitState(room);
-    }
-  );
+  socket.on('participant:place-temp', ({ participantId, index }: { participantId: string; index: number }) => {
+    if (!room || !room.game.inProgress || room.game.currentNumber === null) return;
+    const participant = room.participants.get(participantId);
+    if (!participant) return;
+    if (index < 0 || index >= 20) return;
+    if (participant.board[index] !== null) return;
+    participant.tempPlacementIndex = index;
+    participant.submittedRound = room.game.round;
+    const boardPreview = [...participant.board];
+    boardPreview[index] = room.game.currentNumber;
+    participant.score = computeScore(boardPreview);
+    participant.lastSeenAt = Date.now();
+    emitState(room);
+  });
 
   socket.on('disconnect', () => {
     const role = socketRole.get(socket.id);
-    if (!role) return;
-    const room = rooms.get(role.roomCode);
-    if (!room) return;
+    if (!role || !room) return;
 
     if (role.type === 'host') {
       room.hostConnected = false;
