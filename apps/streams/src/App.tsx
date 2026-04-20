@@ -32,12 +32,16 @@ const socketUrl = import.meta.env.VITE_SOCKET_URL || `http://${window.location.h
 const getSocket = (): Socket<ServerEventMap, ClientEventMap> =>
   io(socketUrl, { transports: ['websocket'], autoConnect: true, reconnection: true });
 
+const isNumericHost = /^\d+\.\d+\.\d+\.\d+$/.test(window.location.hostname);
+const defaultJoinUrl = localStorage.getItem('streams_join_url') ?? (isNumericHost ? window.location.origin : '');
+
 export function App() {
   const [socket] = useState(getSocket);
   const [role, setRole] = useState<Role>('select');
   const [pin, setPin] = useState('');
   const [nickname, setNickname] = useState('');
   const [participantId, setParticipantId] = useState(localStorage.getItem('streams_pid') ?? '');
+  const [joinUrl, setJoinUrl] = useState(defaultJoinUrl);
   const [settings, setSettings] = useState<GameSettings>(emptySettings);
   const [hostState, setHostState] = useState<HostStateView | null>(null);
   const [participantState, setParticipantState] = useState<ParticipantStateView | null>(null);
@@ -75,9 +79,16 @@ export function App() {
   }, [socket]);
 
   const participantsDeckTotal = useMemo(
-    () => Object.entries(settings.deckConfig).reduce((sum, [, count]) => sum + Math.max(0, count), 0),
+    () => Object.entries(settings.deckConfig).reduce((sum, [, count]) => sum + Math.max(0, count),
+      0),
     [settings.deckConfig]
   );
+
+  const qrImageUrl = useMemo(() => {
+    const safe = joinUrl.trim();
+    if (!safe) return '';
+    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(safe)}`;
+  }, [joinUrl]);
 
   const handleHostLogin = () => {
     setError('');
@@ -85,6 +96,7 @@ export function App() {
   };
 
   const startHostGame = (isNew = false) => {
+    localStorage.setItem('streams_join_url', joinUrl.trim());
     if (isNew) socket.emit('host:new-game', { settings });
     else socket.emit('host:start-game', { settings });
   };
@@ -122,9 +134,24 @@ export function App() {
       {role === 'host-setup' && (
         <section className="panel">
           <h2>게임 설정 (20칸 고정)</h2>
-          <label><input type="checkbox" checked={settings.includeJoker} onChange={(e) => setSettings((p) => ({ ...p, includeJoker: e.target.checked }))} /> 조커 포함</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={settings.includeJoker}
+              onChange={(e) => setSettings((p) => ({ ...p, includeJoker: e.target.checked }))}
+            /> 조커 포함 (기본 ON)
+          </label>
           <label><input type="checkbox" checked={settings.animationOn} onChange={(e) => setSettings((p) => ({ ...p, animationOn: e.target.checked }))} /> 숫자 뽑기 애니메이션 ON</label>
           <label><input type="checkbox" checked={settings.soundOn} onChange={(e) => setSettings((p) => ({ ...p, soundOn: e.target.checked }))} /> 숫자 뽑기 사운드 ON</label>
+
+          <h3>참가자 접속 URL (숫자 IP 권장)</h3>
+          <input
+            value={joinUrl}
+            onChange={(e) => setJoinUrl(e.target.value)}
+            placeholder="예: http://192.168.0.15:5173"
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+
           <div className="deck-grid">
             {Object.keys(settings.deckConfig).map((k) => (
               <label key={k}>{k}
@@ -149,15 +176,25 @@ export function App() {
         <section className="panel">
           <h2>진행자 화면</h2>
           <p>라운드: {hostState.game.round} / {hostState.game.totalRounds}</p>
+          <p>조커 옵션: {hostState.game.settings?.includeJoker ? '포함' : '미포함'}</p>
           <p className="big">{tileLabel(hostState.game.currentNumber) || '대기'}</p>
           <p>남은 숫자: {hostState.game.remainingDraws}</p>
+
+          <div className="qr-wrap">
+            <div>
+              <strong>학생 접속 URL</strong>
+              <p>{joinUrl || '숫자 IP URL을 설정하세요.'}</p>
+            </div>
+            {qrImageUrl && <img src={qrImageUrl} alt="학생 접속 QR 코드" width={220} height={220} />}
+          </div>
+
           <div className="row">
             <button onClick={() => socket.emit('host:draw')}>뽑기</button>
             <button onClick={() => socket.emit('host:rewind')}>되감기</button>
             <button onClick={() => startHostGame(true)}>새 게임 시작</button>
             <button className="danger" onClick={() => socket.emit('host:end-room')}>게임 끝</button>
           </div>
-          <h3>접속자 목록</h3>
+          <h3>접속자 목록 (점수 높은 순)</h3>
           <table>
             <thead><tr><th>닉네임</th><th>점수</th><th>연결</th><th>배치</th><th>재접속</th><th>최근활동</th></tr></thead>
             <tbody>

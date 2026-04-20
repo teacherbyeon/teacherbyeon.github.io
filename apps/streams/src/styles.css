@@ -34,3 +34,6 @@ th, td { border-bottom: 1px solid #35417a; text-align: left; padding: 6px; font-
 .cell.temp { outline: 3px solid #f2be40; }
 .cell-index { font-size: 12px; opacity: 0.8; }
 .cell-value { font-size: 28px; font-weight: 700; line-height: 1; }
+
+.qr-wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
+.qr-wrap img { border-radius: 12px; background: white; padding: 6px; }

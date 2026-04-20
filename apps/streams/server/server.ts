@@ -187,16 +187,18 @@ const snapshot = (state: RoomState): Snapshot => ({
 });
 
 const emitState = (state: RoomState) => {
-  const participantsSummary = [...state.participants.values()].map((p) => ({
-    id: p.id,
-    nickname: p.nickname,
-    connected: p.connected,
-    reconnectCount: p.reconnectCount,
-    lastSeenAt: p.lastSeenAt,
-    score: p.score,
-    submitted: p.submittedRound === state.game.round,
-    hasTempPlacement: p.tempPlacementIndex !== null
-  }));
+  const participantsSummary = [...state.participants.values()]
+    .map((p) => ({
+      id: p.id,
+      nickname: p.nickname,
+      connected: p.connected,
+      reconnectCount: p.reconnectCount,
+      lastSeenAt: p.lastSeenAt,
+      score: p.score,
+      submitted: p.submittedRound === state.game.round,
+      hasTempPlacement: p.tempPlacementIndex !== null
+    }))
+    .sort((a, b) => b.score - a.score || a.nickname.localeCompare(b.nickname, 'ko'));
 
   if (state.hostSocketId) {
     io.to(state.hostSocketId).emit('state:host', {
