@@ -1,25 +1,12 @@
+import cors from 'cors';
 import express from 'express';
 import http from 'http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import cors from 'cors';
-import { Server } from 'socket.io';
+import { Server, type Socket } from 'socket.io';
 
 type TileValue = number | 'J';
 type BoardCell = TileValue | null;
-
-interface Participant {
-  id: string;
-  nickname: string;
-  connected: boolean;
-  reconnectCount: number;
-  lastSeenAt: number;
-  socketId: string | null;
-  board: BoardCell[];
-  tempPlacementIndex: number | null;
-  score: number;
-  submittedRound: number;
-}
 
 interface GameSettings {
   boardSize: 20;
@@ -27,6 +14,25 @@ interface GameSettings {
   animationOn: boolean;
   soundOn: boolean;
   deckConfig: Record<string, number>;
+}
+
+interface StudentState {
+  studentKey: string;
+  nickname: string;
+  board: BoardCell[];
+  score: number;
+  connected: boolean;
+  reconnectCount: number;
+  lastSeenAt: number;
+  socketIds: Set<string>;
+  placedRound: number;
+}
+
+interface Snapshot {
+  round: number;
+  currentNumber: TileValue | null;
+  drawHistory: TileValue[];
+  students: Record<string, { board: BoardCell[]; score: number; placedRound: number }>;
 }
 
 interface GameState {
@@ -39,38 +45,31 @@ interface GameState {
   history: Snapshot[];
 }
 
-interface Snapshot {
-  round: number;
-  currentNumber: TileValue | null;
-  drawHistory: TileValue[];
-  participants: Record<string, Pick<Participant, 'board' | 'tempPlacementIndex' | 'score' | 'submittedRound'>>;
-}
-
 interface RoomState {
-  hostSocketId: string | null;
-  hostConnected: boolean;
-  participants: Map<string, Participant>;
+  teacherSocketId: string | null;
+  teacherConnected: boolean;
+  students: Map<string, StudentState>;
   game: GameState;
 }
 
 const HOST_PIN = process.env.STREAMS_HOST_PIN ?? '1234';
-const ROOM_KEY = 'CLASSROOM';
-let room: RoomState | null = null;
-const socketRole = new Map<string, { type: 'host' | 'participant'; participantId?: string }>();
-
-const app = express();
-app.use(cors());
+const TEACHER_ROOM = 'room:teacher';
+const STUDENT_ROOM = 'room:students';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const distDir = path.resolve(rootDir, 'dist');
+
+const app = express();
+app.use(cors());
 app.use(express.static(distDir));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
-
-const randomId = () => Math.random().toString(36).slice(2, 10);
+const io = new Server(server, {
+  cors: { origin: '*' },
+  pingTimeout: 60000
+});
 
 const SCORE_BY_LENGTH: Record<number, number> = {
   1: 0,
@@ -95,6 +94,8 @@ const SCORE_BY_LENGTH: Record<number, number> = {
   20: 300
 };
 
+const socketMeta = new Map<string, { role: 'teacher' | 'student'; studentKey?: string }>();
+
 const newGameState = (): GameState => ({
   inProgress: false,
   settings: null,
@@ -105,42 +106,13 @@ const newGameState = (): GameState => ({
   history: []
 });
 
-const newRoom = (): RoomState => ({
-  hostSocketId: null,
-  hostConnected: false,
-  participants: new Map(),
+const room: RoomState = {
+  teacherSocketId: null,
+  teacherConnected: false,
+  students: new Map(),
   game: newGameState()
-});
-
-const cloneBoard = (board: BoardCell[]) => [...board];
-
-const makeDeck = (settings: GameSettings): TileValue[] => {
-  const deck: TileValue[] = [];
-  Object.entries(settings.deckConfig).forEach(([k, cnt]) => {
-    const count = Math.max(0, Number(cnt) || 0);
-    if (k === 'J') {
-      if (settings.includeJoker) for (let i = 0; i < count; i += 1) deck.push('J');
-      return;
-    }
-    const value = Number(k);
-    if (Number.isFinite(value)) for (let i = 0; i < count; i += 1) deck.push(value);
-  });
-
-  for (let i = deck.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck.slice(0, settings.boardSize);
 };
 
-const normalizeSettings = (settings: GameSettings): GameSettings => ({
-  ...settings,
-  boardSize: 20,
-  deckConfig: {
-    ...settings.deckConfig,
-    J: settings.includeJoker ? Math.max(0, Number(settings.deckConfig.J) || 0) : 0
-  }
-});
 const scoreFromLength = (length: number): number => SCORE_BY_LENGTH[length] ?? 0;
 
 const computeScore = (board: BoardCell[]): number => {
@@ -154,8 +126,7 @@ const computeScore = (board: BoardCell[]): number => {
     prevKnown = Number.NEGATIVE_INFINITY;
   };
 
-  for (let i = 0; i < board.length; i += 1) {
-    const cell = board[i];
+  for (const cell of board) {
     if (cell === null) {
       flush();
       continue;
@@ -166,9 +137,7 @@ const computeScore = (board: BoardCell[]): number => {
       continue;
     }
 
-    if (segmentLength > 0 && cell < prevKnown) {
-      flush();
-    }
+    if (segmentLength > 0 && cell < prevKnown) flush();
 
     segmentLength += 1;
     prevKnown = cell;
@@ -178,271 +147,380 @@ const computeScore = (board: BoardCell[]): number => {
   return total;
 };
 
-const snapshot = (state: RoomState): Snapshot => ({
-  round: state.game.round,
-  currentNumber: state.game.currentNumber,
-  drawHistory: [...state.game.drawHistory],
-  participants: Object.fromEntries(
-    [...state.participants.values()].map((p) => [
-      p.id,
+const normalizeSettings = (settings: GameSettings): GameSettings => ({
+  ...settings,
+  boardSize: 20,
+  deckConfig: {
+    ...settings.deckConfig,
+    J: settings.includeJoker ? Math.max(0, Number(settings.deckConfig.J) || 0) : 0
+  }
+});
+
+const makeDeck = (settings: GameSettings): TileValue[] => {
+  const deck: TileValue[] = [];
+  Object.entries(settings.deckConfig).forEach(([key, countRaw]) => {
+    const count = Math.max(0, Number(countRaw) || 0);
+    if (key === 'J') {
+      if (settings.includeJoker) {
+        for (let i = 0; i < count; i += 1) deck.push('J');
+      }
+      return;
+    }
+    const value = Number(key);
+    if (!Number.isFinite(value)) return;
+    for (let i = 0; i < count; i += 1) deck.push(value);
+  });
+
+  for (let i = deck.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  return deck.slice(0, settings.boardSize);
+};
+
+const teacherStudentsView = () =>
+  [...room.students.values()]
+    .map((student) => ({
+      studentKey: student.studentKey,
+      nickname: student.nickname,
+      connected: student.connected,
+      reconnectCount: student.reconnectCount,
+      lastSeenAt: student.lastSeenAt,
+      score: student.score,
+      placed: student.placedRound === room.game.round
+    }))
+    .sort((a, b) => b.score - a.score || a.nickname.localeCompare(b.nickname, 'ko'));
+
+const emitTeacherState = () => {
+  if (!room.teacherSocketId) return;
+  io.to(room.teacherSocketId).emit('teacherStateInit', {
+    teacherConnected: room.teacherConnected,
+    game: {
+      inProgress: room.game.inProgress,
+      round: room.game.round,
+      totalRounds: room.game.settings?.boardSize ?? 20,
+      remainingDraws: Math.max(0, (room.game.settings?.boardSize ?? 20) - room.game.drawHistory.length),
+      currentNumber: room.game.currentNumber,
+      drawHistory: room.game.drawHistory,
+      settings: room.game.settings
+    },
+    students: teacherStudentsView()
+  });
+};
+
+const emitStudentState = (student: StudentState) => {
+  io.to(`student:${student.studentKey}`).emit('studentInit', {
+    studentKey: student.studentKey,
+    nickname: student.nickname,
+    round: room.game.round,
+    totalRounds: room.game.settings?.boardSize ?? 20,
+    currentNumber: room.game.currentNumber,
+    board: student.board,
+    score: student.score,
+    placed: student.placedRound === room.game.round,
+    connected: student.connected
+  });
+};
+
+const emitNumberDrawn = () => {
+  const payload = {
+    round: room.game.round,
+    totalRounds: room.game.settings?.boardSize ?? 20,
+    currentNumber: room.game.currentNumber,
+    remainingDraws: Math.max(0, (room.game.settings?.boardSize ?? 20) - room.game.drawHistory.length)
+  };
+  io.to(STUDENT_ROOM).emit('numberDrawn', payload);
+  io.to(TEACHER_ROOM).emit('numberDrawn', payload);
+};
+
+const snapshot = (): Snapshot => ({
+  round: room.game.round,
+  currentNumber: room.game.currentNumber,
+  drawHistory: [...room.game.drawHistory],
+  students: Object.fromEntries(
+    [...room.students.values()].map((s) => [
+      s.studentKey,
       {
-        board: cloneBoard(p.board),
-        tempPlacementIndex: p.tempPlacementIndex,
-        score: p.score,
-        submittedRound: p.submittedRound
+        board: [...s.board],
+        score: s.score,
+        placedRound: s.placedRound
       }
     ])
   )
 });
 
-const emitState = (state: RoomState) => {
-  const participantsSummary = [...state.participants.values()]
-    .map((p) => ({
-      id: p.id,
-      nickname: p.nickname,
-      connected: p.connected,
-      reconnectCount: p.reconnectCount,
-      lastSeenAt: p.lastSeenAt,
-      score: p.score,
-      submitted: p.submittedRound === state.game.round,
-      hasTempPlacement: p.tempPlacementIndex !== null
-    }))
-    .sort((a, b) => b.score - a.score || a.nickname.localeCompare(b.nickname, 'ko'));
+const restoreSnapshot = (snap: Snapshot) => {
+  room.game.round = snap.round;
+  room.game.currentNumber = snap.currentNumber;
+  room.game.drawHistory = [...snap.drawHistory];
 
-  if (state.hostSocketId) {
-    io.to(state.hostSocketId).emit('state:host', {
-      role: 'host',
-      hostConnected: state.hostConnected,
-      participants: participantsSummary,
-      game: {
-        inProgress: state.game.inProgress,
-        settings: state.game.settings,
-        round: state.game.round,
-        totalRounds: state.game.settings?.boardSize ?? 20,
-        remainingDraws: Math.max(0, (state.game.settings?.boardSize ?? 20) - state.game.drawHistory.length),
-        currentNumber: state.game.currentNumber,
-        drawHistory: state.game.drawHistory
-      }
-    });
-  }
-
-  [...state.participants.values()].forEach((p) => {
-    if (!p.socketId) return;
-    const boardView = cloneBoard(p.board);
-    if (p.tempPlacementIndex !== null && state.game.currentNumber !== null) boardView[p.tempPlacementIndex] = state.game.currentNumber;
-    io.to(p.socketId).emit('state:participant', {
-      role: 'participant',
-      participantId: p.id,
-      nickname: p.nickname,
-      connected: p.connected,
-      participantsCount: state.participants.size,
-      game: {
-        inProgress: state.game.inProgress,
-        round: state.game.round,
-        totalRounds: state.game.settings?.boardSize ?? 20,
-        remainingSlots: boardView.filter((v) => v === null).length,
-        currentNumber: state.game.currentNumber,
-        board: boardView,
-        tempPlacementIndex: p.tempPlacementIndex,
-        score: p.score,
-        submitted: p.submittedRound === state.game.round,
-        message: state.game.inProgress
-          ? state.game.currentNumber === null
-            ? '진행자가 숫자를 뽑는 중입니다.'
-            : p.submittedRound === state.game.round
-              ? '이번 턴 배치 완료'
-              : '현재 숫자를 빈 칸에 배치하세요.'
-          : '게임 대기 중입니다.'
-      }
-    });
+  room.students.forEach((student) => {
+    const data = snap.students[student.studentKey];
+    if (!data) return;
+    student.board = [...data.board];
+    student.score = data.score;
+    student.placedRound = data.placedRound;
   });
 };
 
-const finalizeRound = (state: RoomState) => {
-  for (const p of state.participants.values()) {
-    if (p.tempPlacementIndex !== null && state.game.currentNumber !== null && p.board[p.tempPlacementIndex] === null) {
-      p.board[p.tempPlacementIndex] = state.game.currentNumber;
-      p.submittedRound = state.game.round;
-      p.tempPlacementIndex = null;
-      p.score = computeScore(p.board);
-    }
-  }
-};
-
-const restoreSnapshot = (state: RoomState, snap: Snapshot) => {
-  state.game.round = snap.round;
-  state.game.currentNumber = snap.currentNumber;
-  state.game.drawHistory = [...snap.drawHistory];
-
-  state.participants.forEach((participant, id) => {
-    const s = snap.participants[id];
-    if (!s) return;
-    participant.board = [...s.board];
-    participant.tempPlacementIndex = s.tempPlacementIndex;
-    participant.score = s.score;
-    participant.submittedRound = s.submittedRound;
+const resetStudentsForNewGame = () => {
+  room.students.forEach((student) => {
+    student.board = Array(20).fill(null);
+    student.score = 0;
+    student.placedRound = 0;
+    emitStudentState(student);
   });
 };
 
-io.on('connection', (socket) => {
-  socket.on('host:login', ({ pin }: { pin: string }) => {
+const initGame = (rawSettings: GameSettings): { ok: true } | { ok: false; message: string } => {
+  const settings = normalizeSettings(rawSettings);
+  const drawSequence = makeDeck(settings);
+  if (drawSequence.length < 20) {
+    room.game = newGameState();
+    return { ok: false, message: '덱 카드 수가 부족합니다. 20장 이상으로 설정하세요.' };
+  }
+
+  room.game = newGameState();
+  room.game.inProgress = true;
+  room.game.settings = settings;
+  room.game.drawSequence = drawSequence;
+  resetStudentsForNewGame();
+  room.game.history = [snapshot()];
+  emitTeacherState();
+  return { ok: true };
+};
+
+io.on('connection', (socket: Socket) => {
+  socket.on('teacher:login', ({ pin }: { pin: string }) => {
     if (pin !== HOST_PIN) {
-      socket.emit('host:login:error', { message: 'PIN이 올바르지 않습니다.' });
+      socket.emit('teacher:error', { message: 'PIN이 올바르지 않습니다.' });
       return;
     }
 
-    room = room ?? newRoom();
-    room.hostSocketId = socket.id;
-    room.hostConnected = true;
-    socketRole.set(socket.id, { type: 'host' });
-    socket.join(ROOM_KEY);
-    socket.emit('host:login:ok');
-    emitState(room);
+    room.teacherSocketId = socket.id;
+    room.teacherConnected = true;
+    socketMeta.set(socket.id, { role: 'teacher' });
+    socket.join(TEACHER_ROOM);
+    socket.emit('teacher:login:ok');
+    emitTeacherState();
   });
 
-  socket.on('host:start-game', ({ settings }: { settings: GameSettings }) => {
-    if (!room) return socket.emit('server:error', { message: '방이 없습니다.' });
-    room.game = newGameState();
-    room.game.inProgress = true;
-    room.game.settings = normalizeSettings(settings);
-    room.game.drawSequence = makeDeck(room.game.settings);
-    if (room.game.drawSequence.length < 20) {
-      room.game = newGameState();
-      emitState(room);
-      return socket.emit('server:error', { message: '덱 카드 수가 부족합니다. 20장 이상으로 설정하세요.' });
+  socket.on('teacher:startGame', ({ settings }: { settings: GameSettings }) => {
+    const result = initGame(settings);
+    if (!result.ok) {
+      socket.emit('teacher:error', { message: result.message });
+      emitTeacherState();
     }
-    for (const p of room.participants.values()) {
-      p.board = Array(20).fill(null);
-      p.tempPlacementIndex = null;
-      p.score = 0;
-      p.submittedRound = 0;
-    }
-    room.game.history = [snapshot(room)];
-    emitState(room);
   });
 
-  socket.on('host:new-game', ({ settings }: { settings: GameSettings }) => {
-    if (!room) return;
-    room.game = newGameState();
-    room.game.inProgress = true;
-    room.game.settings = normalizeSettings(settings);
-    room.game.drawSequence = makeDeck(room.game.settings);
-    if (room.game.drawSequence.length < 20) {
-      room.game = newGameState();
-      emitState(room);
-      return socket.emit('server:error', { message: '덱 카드 수가 부족합니다. 20장 이상으로 설정하세요.' });
+  socket.on('teacher:newGame', ({ settings }: { settings: GameSettings }) => {
+    const result = initGame(settings);
+    if (!result.ok) {
+      socket.emit('teacher:error', { message: result.message });
+      emitTeacherState();
     }
-    room.participants.forEach((p) => {
-      p.board = Array(20).fill(null);
-      p.tempPlacementIndex = null;
-      p.score = 0;
-      p.submittedRound = 0;
-    });
-    room.game.history = [snapshot(room)];
-    emitState(room);
   });
 
-  socket.on('host:draw', () => {
-    if (!room || !room.game.inProgress) return;
-    finalizeRound(room);
+  socket.on('teacher:draw', () => {
+    if (!room.game.inProgress) return;
+
     const next = room.game.drawSequence[room.game.round];
     if (next === undefined) return;
+
     room.game.round += 1;
     room.game.currentNumber = next;
     room.game.drawHistory.push(next);
-    room.game.history.push(snapshot(room));
-    emitState(room);
+    room.game.history.push(snapshot());
+
+    emitNumberDrawn();
+    emitTeacherState();
+
+    room.students.forEach((student) => {
+      io.to(`student:${student.studentKey}`).emit('roundStatus', {
+        round: room.game.round,
+        placed: student.placedRound === room.game.round
+      });
+    });
   });
 
-  socket.on('host:rewind', () => {
-    if (!room || room.game.history.length <= 1) return;
+  socket.on('teacher:rewind', () => {
+    if (room.game.history.length <= 1) return;
     room.game.history.pop();
     const prev = room.game.history[room.game.history.length - 1];
-    restoreSnapshot(room, prev);
-    emitState(room);
+    restoreSnapshot(prev);
+
+    emitTeacherState();
+    room.students.forEach((student) => {
+      emitStudentState(student);
+    });
   });
 
-  socket.on('host:end-room', () => {
-    if (!room) return;
-    for (const p of room.participants.values()) {
-      if (p.socketId) io.to(p.socketId).emit('room:ended');
-    }
-    if (room.hostSocketId) io.to(room.hostSocketId).emit('room:ended');
-    room = null;
+  socket.on('teacher:endGame', () => {
+    room.game = newGameState();
+    room.students.forEach((student) => {
+      io.to(`student:${student.studentKey}`).emit('roomEnded');
+      student.board = Array(20).fill(null);
+      student.score = 0;
+      student.placedRound = 0;
+      student.socketIds.clear();
+      student.connected = false;
+    });
+    room.students.clear();
+    io.to(TEACHER_ROOM).emit('roomEnded');
+    emitTeacherState();
   });
 
-  socket.on('participant:join', ({ nickname, participantId }: { nickname: string; participantId?: string }) => {
-    if (!room) return socket.emit('participant:join:error', { message: '진행자가 아직 방을 열지 않았습니다.' });
+  socket.on('student:join', ({ studentKey, nickname }: { studentKey: string; nickname: string }) => {
+    const key = studentKey.trim();
+    const name = nickname.trim() || key;
+    if (!key) return socket.emit('student:error', { message: '학생 키를 입력하세요.' });
 
-    const trimmed = nickname.trim();
-    if (!trimmed && !participantId) return socket.emit('participant:join:error', { message: '별명을 입력하세요.' });
-
-    let participant = participantId ? room.participants.get(participantId) : undefined;
-    if (!participant) {
-      const dup = [...room.participants.values()].find((p) => p.nickname.toLowerCase() === trimmed.toLowerCase());
-      if (dup) return socket.emit('participant:join:error', { message: '이미 사용 중인 별명입니다.' });
-
-      const id = randomId();
-      participant = {
-        id,
-        nickname: trimmed,
+    let student = room.students.get(key);
+    if (!student) {
+      student = {
+        studentKey: key,
+        nickname: name,
+        board: Array(20).fill(null),
+        score: 0,
         connected: true,
         reconnectCount: 0,
         lastSeenAt: Date.now(),
-        socketId: socket.id,
-        board: Array(20).fill(null),
-        tempPlacementIndex: null,
-        score: 0,
-        submittedRound: 0
+        socketIds: new Set(),
+        placedRound: 0
       };
-      room.participants.set(id, participant);
-      socket.emit('participant:join:ok', { participantId: id });
+      room.students.set(key, student);
     } else {
-      participant.connected = true;
-      participant.lastSeenAt = Date.now();
-      participant.reconnectCount += 1;
-      participant.socketId = socket.id;
-      socket.emit('participant:join:ok', { participantId: participant.id });
+      student.nickname = name;
+      student.connected = true;
+      student.reconnectCount += 1;
+      student.lastSeenAt = Date.now();
     }
 
-    socketRole.set(socket.id, { type: 'participant', participantId: participant.id });
-    socket.join(ROOM_KEY);
-    emitState(room);
+    student.socketIds.add(socket.id);
+    socketMeta.set(socket.id, { role: 'student', studentKey: key });
+    socket.join(STUDENT_ROOM);
+    socket.join(`student:${key}`);
+
+    emitStudentState(student);
+    io.to(TEACHER_ROOM).emit('studentConnectionChanged', {
+      studentKey: key,
+      connected: true,
+      reconnectCount: student.reconnectCount,
+      lastSeenAt: student.lastSeenAt,
+      nickname: student.nickname,
+      score: student.score,
+      placed: student.placedRound === room.game.round
+    });
+    emitTeacherState();
   });
 
-  socket.on('participant:place-temp', ({ participantId, index }: { participantId: string; index: number }) => {
-    if (!room || !room.game.inProgress || room.game.currentNumber === null) return;
-    const participant = room.participants.get(participantId);
-    if (!participant) return;
-    if (index < 0 || index >= 20) return;
-    if (participant.board[index] !== null) return;
-    participant.tempPlacementIndex = index;
-    participant.submittedRound = room.game.round;
-    const boardPreview = [...participant.board];
-    boardPreview[index] = room.game.currentNumber;
-    participant.score = computeScore(boardPreview);
-    participant.lastSeenAt = Date.now();
-    emitState(room);
-  });
+  socket.on(
+    'student:place',
+    (
+      { studentKey, index, round }: { studentKey: string; index: number; round: number },
+      ack?: (response: { ok: boolean; message?: string }) => void
+    ) => {
+      if (!room.game.inProgress || room.game.currentNumber === null) {
+        ack?.({ ok: false, message: '현재 배치 가능한 숫자가 없습니다.' });
+        return;
+      }
 
-  socket.on('disconnect', () => {
-    const role = socketRole.get(socket.id);
-    if (!role || !room) return;
+      const student = room.students.get(studentKey);
+      if (!student) {
+        ack?.({ ok: false, message: '학생 정보를 찾을 수 없습니다.' });
+        return;
+      }
 
-    if (role.type === 'host') {
-      room.hostConnected = false;
-      room.hostSocketId = null;
-    } else if (role.participantId) {
-      const p = room.participants.get(role.participantId);
-      if (p) {
-        p.connected = false;
-        p.lastSeenAt = Date.now();
-        p.socketId = null;
+      if (round !== room.game.round) {
+        ack?.({ ok: false, message: '라운드 정보가 다릅니다. 화면을 확인하세요.' });
+        return;
+      }
+
+      if (student.placedRound === room.game.round) {
+        ack?.({ ok: false, message: '이번 숫자는 이미 배치했습니다.' });
+        return;
+      }
+
+      if (index < 0 || index >= 20) {
+        ack?.({ ok: false, message: '잘못된 칸입니다.' });
+        return;
+      }
+
+      if (student.board[index] !== null) {
+        ack?.({ ok: false, message: '이미 사용한 칸입니다.' });
+        return;
+      }
+
+      student.board[index] = room.game.currentNumber;
+      student.placedRound = room.game.round;
+      student.lastSeenAt = Date.now();
+      student.score = computeScore(student.board);
+
+      io.to(`student:${student.studentKey}`).emit('myBoardUpdated', {
+        round: room.game.round,
+        board: student.board,
+        score: student.score,
+        placed: true
+      });
+
+      io.to(TEACHER_ROOM).emit('studentPlaced', {
+        studentKey: student.studentKey,
+        nickname: student.nickname,
+        score: student.score,
+        placed: true,
+        lastSeenAt: student.lastSeenAt
+      });
+
+      ack?.({ ok: true });
+    }
+  );
+
+  socket.on('disconnect', (reason: string) => {
+    console.log(`[disconnect] socket=${socket.id} reason=${reason}`);
+
+    const meta = socketMeta.get(socket.id);
+    if (!meta) return;
+
+    if (meta.role === 'teacher') {
+      room.teacherConnected = false;
+      room.teacherSocketId = null;
+      socketMeta.delete(socket.id);
+      emitTeacherState();
+      return;
+    }
+
+    if (meta.studentKey) {
+      const student = room.students.get(meta.studentKey);
+      if (student) {
+        student.socketIds.delete(socket.id);
+        if (student.socketIds.size === 0) {
+          student.connected = false;
+          student.lastSeenAt = Date.now();
+          io.to(TEACHER_ROOM).emit('studentConnectionChanged', {
+            studentKey: student.studentKey,
+            connected: false,
+            reconnectCount: student.reconnectCount,
+            lastSeenAt: student.lastSeenAt,
+            nickname: student.nickname,
+            score: student.score,
+            placed: student.placedRound === room.game.round
+          });
+        }
       }
     }
-    socketRole.delete(socket.id);
-    emitState(room);
+
+    socketMeta.delete(socket.id);
+    emitTeacherState();
   });
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('[uncaughtException]', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
 });
 
 app.get('*', (_req, res) => {
