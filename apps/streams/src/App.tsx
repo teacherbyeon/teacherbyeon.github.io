@@ -7,7 +7,7 @@ const socket = io(socketUrl, { transports: ['websocket'], reconnection: true });
 
 type RolePage = 'select' | 'teacher-login' | 'teacher-setup' | 'teacher-game' | 'student-join' | 'student-game';
 
-const defaultDeckConfig: Record<string, number> = (() => {
+const fixedDeckConfig: Record<string, number> = (() => {
   const cfg: Record<string, number> = {};
   for (let i = 1; i <= 10; i += 1) cfg[String(i)] = 1;
   for (let i = 11; i <= 19; i += 1) cfg[String(i)] = 2;
@@ -21,10 +21,13 @@ const initialSettings: GameSettings = {
   includeJoker: true,
   animationOn: true,
   soundOn: false,
-  deckConfig: defaultDeckConfig
+  deckConfig: fixedDeckConfig
 };
 
 const tileText = (value: TileValue | null) => (value === null ? '' : value === 'J' ? '🃏' : String(value));
+
+const isNumericHost = /^\d+\.\d+\.\d+\.\d+$/.test(window.location.hostname);
+const defaultJoinUrl = localStorage.getItem('streams_join_url') ?? (isNumericHost ? window.location.origin : '');
 
 export function App() {
   const [page, setPage] = useState<RolePage>('select');
@@ -34,6 +37,7 @@ export function App() {
   const [settings, setSettings] = useState<GameSettings>(initialSettings);
   const [teacherState, setTeacherState] = useState<TeacherStateInit | null>(null);
   const [students, setStudents] = useState<TeacherStudentRow[]>([]);
+  const [joinUrl, setJoinUrl] = useState(defaultJoinUrl);
 
   const [studentKey, setStudentKey] = useState(localStorage.getItem('streams_student_key') ?? '');
   const [nickname, setNickname] = useState(localStorage.getItem('streams_student_name') ?? '');
@@ -55,7 +59,9 @@ export function App() {
     socket.on('teacherStateInit', (payload: TeacherStateInit) => {
       setTeacherState(payload);
       setStudents(payload.students);
-      if (payload.game.settings) setSettings(payload.game.settings);
+      if (payload.game.settings) {
+        setSettings((prev) => ({ ...prev, ...payload.game.settings, deckConfig: fixedDeckConfig }));
+      }
       setPage(payload.game.inProgress ? 'teacher-game' : 'teacher-setup');
     });
 
@@ -138,10 +144,11 @@ export function App() {
     };
   }, []);
 
-  const effectiveDeckCount = useMemo(
-    () => Object.entries(settings.deckConfig).reduce((sum, [key, count]) => (key === 'J' && !settings.includeJoker ? sum : sum + Math.max(0, count)), 0),
-    [settings]
-  );
+  const qrImageUrl = useMemo(() => {
+    const safe = joinUrl.trim();
+    if (!safe) return '';
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(safe)}`;
+  }, [joinUrl]);
 
   const loginTeacher = () => socket.emit('teacher:login', { pin: teacherPin });
 
@@ -153,6 +160,12 @@ export function App() {
     localStorage.setItem('streams_student_key', studentKey.trim());
     localStorage.setItem('streams_student_name', nickname.trim());
     socket.emit('student:join', { studentKey: studentKey.trim(), nickname: nickname.trim() || studentKey.trim() });
+  };
+
+  const startOrNewGame = (isNew: boolean) => {
+    localStorage.setItem('streams_join_url', joinUrl.trim());
+    if (isNew) socket.emit('teacher:newGame', { settings: { ...settings, deckConfig: fixedDeckConfig } });
+    else socket.emit('teacher:startGame', { settings: { ...settings, deckConfig: fixedDeckConfig } });
   };
 
   const placeNumber = (index: number) => {
@@ -207,29 +220,23 @@ export function App() {
           <h3>설정</h3>
           <label><input type="checkbox" checked={settings.includeJoker} onChange={(e) => setSettings((p) => ({ ...p, includeJoker: e.target.checked }))} /> 조커 포함</label>
 
-          <div className="deck-grid">
-            {Object.keys(settings.deckConfig).map((k) => (
-              <label key={k}>{k}
-                <input
-                  type="number"
-                  min={0}
-                  disabled={k === 'J' && !settings.includeJoker}
-                  value={settings.deckConfig[k]}
-                  onChange={(e) => setSettings((p) => ({
-                    ...p,
-                    deckConfig: { ...p.deckConfig, [k]: Math.max(0, Number(e.target.value) || 0) }
-                  }))}
-                />
-              </label>
-            ))}
+          <h3>학생 접속 URL (숫자 아이피)</h3>
+          <input
+            value={joinUrl}
+            onChange={(e) => setJoinUrl(e.target.value)}
+            placeholder="예: http://192.168.0.15:5173"
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+          <div className="qr-wrap">
+            <p>{joinUrl || '숫자 아이피 URL을 입력하세요.'}</p>
+            {qrImageUrl && <img src={qrImageUrl} alt="학생 접속 QR 코드" width={220} height={220} />}
           </div>
-          <p>실제 사용 덱 수: {effectiveDeckCount}</p>
 
           <div className="row">
-            <button onClick={() => socket.emit('teacher:startGame', { settings })}>게임 시작</button>
+            <button onClick={() => startOrNewGame(false)}>게임 시작</button>
             <button onClick={() => socket.emit('teacher:draw')}>뽑기</button>
             <button onClick={() => socket.emit('teacher:rewind')}>되감기</button>
-            <button onClick={() => socket.emit('teacher:newGame', { settings })}>새 게임 시작</button>
+            <button onClick={() => startOrNewGame(true)}>새 게임 시작</button>
             <button className="danger" onClick={() => socket.emit('teacher:endGame')}>게임 끝</button>
           </div>
 
