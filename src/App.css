@@ -168,3 +168,17 @@ button:disabled { opacity: 0.45; box-shadow: none; cursor: not-allowed; }
   .host-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+
+.countdown { font-size: 28px; font-weight: 900; color: var(--accent-dark); }
+.countdown-banner {
+  margin: 10px 0;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: var(--accent-dark);
+  border-radius: 16px;
+  font-size: 36px;
+  font-weight: 1000;
+  text-align: center;
+  padding: 8px;
+}

@@ -42,13 +42,13 @@ npm run start
 - 참가자 2명 제한 및 재접속 복구(localStorage)
 - 진행자 PIN 로그인(sessionStorage)
 - 비밀 선택(상대 choice 비공개), 선택 완료 여부만 공유
-- 두 명 모두 선택 시 2.5초 카운트다운 후 결과 동시 공개
-- 진행자만 다음 턴 진행
+- 서버 자동 턴 진행(3,2,1,선택! 카운트다운 → 선택 → 즉시 판정 → 2초 결과 표시 후 자동 다음 턴)
+- 진행자 일시정지/계속하기/새 경기 제어
 - 승리 점수(1/2/3/5) 설정, 표현 모드(아이용/카우보이용) 설정
 - 누적 기록 표시
 - Express 정적 서빙 + Socket.IO 단일 서버 운영
 
 ## 이벤트 구조
-- 진행자: `host:login`, `host:setSettings`, `host:start`, `host:nextTurn`, `host:reset`, `host:clearPlayers`
+- 진행자: `host:login`, `host:setSettings`, `host:start`, `host:newMatch`, `host:pause`, `host:resume`, `host:clearPlayers`
 - 참가자: `player:join`, `player:choose`
 - 서버→클라이언트: `host:state`, `player:state`, `host:error`, `player:error`, `server:hello`
