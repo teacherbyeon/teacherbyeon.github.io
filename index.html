@@ -50,7 +50,8 @@
       {id:'random-picker',name:'Random Pick',ko:'랜덤 뽑기 · 조편성',desc:'발표 순서부터 모둠 구성까지 빠르고 공정하게 정하는 학급 도구',icon:'⚄',href:'./apps/random-picker/',tags:['학급운영','랜덤']},
       {id:'quiz-timer',name:'Quiz Timer',ko:'퀴즈 타이머',desc:'활동 시간을 또렷하게 보여주고 수업의 리듬을 잡는 카운트다운',icon:'◷',href:'./apps/quiz-timer/',tags:['타이머','학급운영']},
       {id:'algebra-tiles',name:'Algebra Tiles',ko:'대수막대',desc:'다항식 연산과 인수분해를 넓이 모델로 직접 만지고 발견하는 도구',icon:'▦',href:'./apps/algebra-tiles/',tags:['대수','인수분해','중등','고등']},
-      {id:'elementary-800',name:'Word Flashcards',ko:'초등 필수 영단어 800',desc:'듣기·말하기·철자 퀴즈로 초등 필수 영단어 800개를 익히는 플래시카드',icon:'Aa',href:'./apps/elementary-800-flashcards/',tags:['영어','초등','플래시카드']}
+      {id:'elementary-800',name:'Word Flashcards',ko:'초등 필수 영단어 800',desc:'듣기·말하기·철자 퀴즈로 초등 필수 영단어 800개를 익히는 플래시카드',icon:'Aa',href:'./apps/elementary-800-flashcards/',tags:['영어','초등','플래시카드']},
+      {id:'classroom-seat',name:'Seat Planner',ko:'교실 자리배치',desc:'학생 명단을 불러와 좌석을 직접 편집하거나 조건에 맞춰 자동으로 배치하는 학급 운영 도구',icon:'▦',href:'./apps/classroom-seat/',tags:['학급운영','자리배치','랜덤']}
     ];
     const grid=document.querySelector('#toolGrid'),filters=document.querySelector('#filters'),search=document.querySelector('#search');let active='전체';
     const categories=['전체',...new Set(tools.flatMap(t=>t.tags))];
