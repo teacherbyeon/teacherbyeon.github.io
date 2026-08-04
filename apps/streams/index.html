@@ -1,636 +1,72 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Streams Host (서버 없음)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#182218">
+  <meta name="description" content="확률·추정·수 배열 수업을 위한 무작위 숫자 진행 도구">
+  <title>숫자 흐름 실험실</title>
   <style>
-    :root{
-      /* theme variables (default: Aurora) */
-      --bg0:#080b14;
-      --bg1:#0b1020;
-      --bg2:#070a12;
-      --glowA: rgba(124,92,255,.45);
-      --glowB: rgba(35,213,171,.35);
-      --glowC: rgba(255,77,109,.18);
-
-      --panel: rgba(255,255,255,.08);
-      --line: rgba(255,255,255,.14);
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.70);
-      --accent: #7c5cff;
-      --accent2:#23d5ab;
-      --danger:#ff4d6d;
-      --shadow: 0 16px 46px rgba(0,0,0,.38);
-
-      --radius2: 26px;
-
-      /* BIGGER UI (태블릿/프로젝터 기준) */
-      --btnH: 60px;
-      --tileSize: clamp(86px, 10vw, 140px);
-    }
-
-    *{ box-sizing:border-box; }
-    html, body { height: 100%; }
-    body{
-      margin:0;
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
-      background:
-        radial-gradient(1000px 600px at 15% 10%, var(--glowA), transparent 60%),
-        radial-gradient(900px 600px at 85% 25%, var(--glowB), transparent 60%),
-        radial-gradient(1000px 700px at 50% 100%, var(--glowC), transparent 55%),
-        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg2) 100%);
-      padding: 20px;
-    }
-
-    .wrap{ max-width: 1180px; margin: 0 auto; display:grid; gap: 16px; }
-
-    .topbar{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
-
-    .brand{ display:flex; align-items:center; gap: 14px; min-width: 0; }
-    .logo{
-      width: 48px; height: 48px; border-radius: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 12px 28px rgba(124,92,255,.25);
-      flex: 0 0 auto;
-    }
-    .titles{ min-width:0; }
-    h1{ margin:0; font-size: 20px; letter-spacing: .2px; }
-    .sub{
-      margin-top: 5px; color: var(--muted); font-size: 14px; line-height: 1.2;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70vw;
-    }
-
-    .card{
-      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.05));
-      border: 1px solid var(--line);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      padding: 16px;
-    }
-
-    /* 태블릿 대응: 가로폭이 애매한 구간에서는 1열이 더 잘 보임 */
-    .grid{ display:grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 1100px){ .grid{ grid-template-columns: 1fr 1fr; } }
-
-    .sectionTitle{
-      margin: 0 0 12px; font-size: 15px; letter-spacing: .2px;
-      color: rgba(255,255,255,.90); display:flex; align-items:center; gap:10px;
-    }
-    .dot{ width: 9px; height: 9px; border-radius: 999px; background: rgba(255,255,255,.50); }
-
-    .row{ display:flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    label{ display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 14px; }
-
-    input[type="number"]{
-      height: 48px; width: 150px; padding: 10px 12px;
-      border-radius: 16px; border: 1px solid var(--line);
-      background: rgba(0,0,0,.25); color: var(--text); outline: none;
-      font-size: 16px;
-    }
-
-    input[type="checkbox"]{ width: 20px; height: 20px; accent-color: var(--accent); }
-
-    select{
-      height: 48px;
-      padding: 10px 12px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      outline:none;
-      font-size: 16px;
-    }
-
-    textarea{
-      width:100%; min-height: 120px; padding: 14px 14px;
-      border-radius: 18px; border: 1px solid var(--line);
-      background: rgba(0,0,0,.25); color: var(--text);
-      outline: none; resize: vertical; line-height: 1.5;
-      font-size: 16px;
-    }
-
-    .hint{ color: var(--muted); font-size: 14px; line-height: 1.5; }
-    code{
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 3px 9px;
-      border-radius: 999px;
-      color: rgba(255,255,255,.92);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 13px;
-    }
-
-    .btn{
-      height: var(--btnH); padding: 0 18px;
-      border-radius: 18px; border: 1px solid var(--line);
-      background: rgba(255,255,255,.06); color: var(--text);
-      cursor: pointer; font-weight: 800; letter-spacing: .2px;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease, opacity .2s ease;
-      user-select: none;
-      font-size: 16px;
-    }
-    .btn:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      border: none;
-      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(35,213,171,.85));
-      box-shadow: 0 14px 30px rgba(124,92,255,.18);
-    }
-    .btn.ghost{ background: transparent; }
-    .btn:disabled{ opacity: .45; cursor: not-allowed; transform: none; }
-
-    .lock{ color: rgba(255,255,255,.72); font-size: 13px; margin-top: 10px; }
-    .lock b{ color: rgba(255,255,255,.94); }
-    .danger{ color: var(--danger); font-weight: 900; }
-    .smallNote{ color: rgba(255,255,255,.60); font-size: 13px; line-height: 1.35; }
-
-    .tileCard{
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,.16);
-      background:
-        radial-gradient(740px 260px at 50% 0%, rgba(124,92,255,.25), transparent 70%),
-        radial-gradient(740px 280px at 50% 100%, rgba(35,213,171,.18), transparent 70%),
-        rgba(255,255,255,.05);
-      padding: 18px;
-    }
-
-    .tileTop{ display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 12px; }
-    .progressWrap{
-      flex: 1; min-width: 180px; height: 12px; border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.10);
-      overflow:hidden;
-    }
-    .progressBar{
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, rgba(124,92,255,.95), rgba(35,213,171,.9));
-      border-radius: 999px;
-      transition: width .25s ease;
-    }
-    .counter{ color: rgba(255,255,255,.84); font-weight: 900; letter-spacing: .3px; white-space: nowrap; font-size: 16px; }
-
-    .bigTile{
-      display:flex; align-items:center; justify-content:center;
-      height: 260px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      position: relative;
-      overflow:hidden;
-    }
-    .bigTile::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(440px 260px at 30% 20%, rgba(124,92,255,.20), transparent 60%),
-                  radial-gradient(460px 280px at 70% 80%, rgba(35,213,171,.16), transparent 60%);
-      pointer-events:none;
-      filter: blur(2px);
-    }
-    .tileValue{
-      position: relative;
-      font-size: var(--tileSize);
-      font-weight: 1000;
-      letter-spacing: .5px;
-      text-shadow: 0 18px 50px rgba(0,0,0,.35);
-      transform: translateZ(0);
-    }
-    .tileValue.pop{ animation: pop .18s ease-out; }
-    @keyframes pop{
-      0%{ transform: scale(.96); opacity:.6; }
-      100%{ transform: scale(1); opacity:1; }
-    }
-
-    .pill{
-      padding: 10px 14px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.78);
-      font-size: 13.5px;
-      font-weight: 800;
-    }
-
-    .teacherTools{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-    .historyWrap{ display:none; margin-top: 10px; }
-    .hist{ display:flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-    .chip{
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      font-weight: 900;
-      color: rgba(255,255,255,.90);
-      font-size: 15px;
-    }
-    .chip.cur{
-      background: rgba(124,92,255,.22);
-      border-color: rgba(124,92,255,.38);
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Montserrat:wght@700;800;900&display=swap');
+    :root{--ink:#182218;--paper:#f5f3e9;--card:#fffdf6;--lime:#d9ff57;--mint:#b9efd5;--orange:#ff7751;--blue:#3158ff;--muted:#667066;--line:#263126;--shadow:7px 7px 0 var(--ink)}
+    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Gowun Dodum",system-ui,sans-serif}button,input,textarea{font:inherit;color:inherit}button{cursor:pointer}.shell{width:min(1220px,calc(100% - 28px));margin:auto}
+    header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0;border-bottom:2px solid var(--ink)}.brand{display:flex;align-items:center;gap:13px}.mark{width:46px;height:46px;border:2px solid var(--ink);border-radius:50%;background:var(--lime);display:grid;place-items:center;font:900 1.25rem Montserrat}.brand h1{font:900 clamp(1.35rem,3vw,2rem) Montserrat,"Gowun Dodum";letter-spacing:-.05em;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:.9rem}.top-actions{display:flex;gap:8px}
+    .btn{border:2px solid var(--ink);background:var(--card);border-radius:999px;padding:11px 17px;font-weight:800;transition:.16s}.btn:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}.btn:disabled{opacity:.38;cursor:not-allowed}.btn.primary{background:var(--ink);color:white}.btn.primary:hover:not(:disabled){background:var(--blue)}.btn.lime{background:var(--lime)}.btn.danger{color:#a93220;border-color:#a93220}.icon-btn{width:46px;height:46px;padding:0;display:grid;place-items:center}
+    main{display:grid;grid-template-columns:360px 1fr;gap:22px;padding:24px 0 34px}.panel,.stage{border:2px solid var(--ink);background:var(--card);border-radius:10px}.panel{padding:22px;align-self:start}.eyebrow{font:900 .73rem Montserrat;letter-spacing:.12em;color:var(--blue)}.panel h2{font-size:1.45rem;margin:7px 0 6px}.helper{color:var(--muted);font-size:.9rem;line-height:1.55;margin:0 0 19px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-weight:800;font-size:.85rem}.field input,.field textarea{width:100%;border:2px solid #cbd0c5;background:white;border-radius:9px;padding:11px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--blue)}.field textarea{resize:vertical;min-height:88px;line-height:1.5}.hint{font-size:.78rem;color:var(--muted)}.preset-row{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.preset{border:1.5px solid var(--ink);border-radius:999px;background:white;padding:7px 10px;font-size:.8rem;font-weight:800}.preset:hover{background:var(--mint)}.start{width:100%;margin-top:15px;padding:14px}.copyright-note{border-top:1px solid #d8dbd2;margin-top:18px;padding-top:15px;color:var(--muted);font-size:.78rem;line-height:1.55}
+    .stage{min-height:650px;overflow:hidden;display:flex;flex-direction:column;position:relative;background:linear-gradient(135deg,#fdfcf5 0 72%,#eef6de 72%)}.stage-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:18px 21px;border-bottom:2px solid var(--ink)}.session-label{display:flex;align-items:center;gap:9px;font-weight:900}.live-dot{width:10px;height:10px;border:2px solid var(--ink);border-radius:50%;background:#bdc5b8}.running .live-dot{background:var(--orange);box-shadow:0 0 0 5px #ffded4}.progress-copy{font:800 .9rem Montserrat}.progress{height:10px;background:#dfe3d9;border-bottom:2px solid var(--ink)}.progress-bar{height:100%;width:0;background:var(--lime);border-right:2px solid var(--ink);transition:width .25s}
+    .number-zone{flex:1;display:grid;place-items:center;padding:32px;position:relative}.number-zone:before,.number-zone:after{content:"";position:absolute;border:2px solid var(--ink);background:var(--mint);width:62px;height:62px}.number-zone:before{left:34px;top:35px;transform:rotate(8deg)}.number-zone:after{right:42px;bottom:34px;background:var(--orange);border-radius:50%}.number-card{position:relative;z-index:1;text-align:center}.round{font:900 .8rem Montserrat;letter-spacing:.15em;color:var(--blue);margin-bottom:16px}.number{font:900 clamp(8rem,24vw,17rem)/.8 Montserrat,sans-serif;letter-spacing:-.09em;min-width:3ch;font-variant-numeric:tabular-nums}.number.placeholder{font-size:clamp(5rem,14vw,10rem);color:#c8cdc2}.instruction{margin-top:32px;color:var(--muted);font-weight:800}.stage-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 20px 22px}.draw-btn{min-width:190px;padding:15px 28px;font-size:1.05rem}
+    .history-wrap{border-top:2px solid var(--ink);background:white;padding:17px 20px}.history-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}.history-head b{font-size:.9rem}.history-head span{font-size:.78rem;color:var(--muted)}.history{display:flex;gap:8px;overflow:auto;padding:2px 2px 7px;min-height:48px}.chip{flex:0 0 auto;width:43px;height:43px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:white;font:800 .86rem Montserrat}.chip.current{background:var(--lime);box-shadow:3px 3px 0 var(--ink)}.empty{color:#929a90;font-size:.85rem;padding:11px 0}
+    dialog{border:2px solid var(--ink);border-radius:10px;box-shadow:var(--shadow);max-width:520px;padding:28px;background:var(--card)}dialog::backdrop{background:rgba(24,34,24,.72)}dialog h2{margin:0 0 10px}dialog p,dialog li{line-height:1.65;color:var(--muted)}dialog .btn{float:right}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:white;padding:11px 17px;border-radius:999px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:10}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:860px){main{grid-template-columns:1fr}.panel{order:2}.stage{min-height:610px}.brand p{display:none}}@media(max-width:520px){header{align-items:flex-start}.brand h1{font-size:1.2rem}.top-actions .label{display:none}.stage{min-height:560px}.number-zone{padding:24px 12px}.number-zone:before{left:16px;top:22px;width:38px;height:38px}.number-zone:after{right:18px;bottom:20px;width:38px;height:38px}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.btn{padding:10px 13px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="card topbar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div class="titles">
-          <h1>스트림스 Streams</h1>
-          <div class="sub">가독성 강화(버튼/글자/타일 확대) · 뽑기 소리 · 배경 테마 선택</div>
-        </div>
+  <header class="shell">
+    <div class="brand"><div class="mark" aria-hidden="true">N°</div><div><h1>숫자 흐름 실험실</h1><p>확률 · 추정 · 수 배열을 위한 교실 숫자 도구</p></div></div>
+    <div class="top-actions"><button class="btn" id="guideBtn">?<span class="label"> 사용 안내</span></button><button class="btn icon-btn" id="fullscreenBtn" aria-label="전체 화면">⛶</button></div>
+  </header>
+  <main class="shell">
+    <aside class="panel" aria-label="숫자 활동 설정">
+      <span class="eyebrow">CREATE A NUMBER POOL</span><h2>숫자 풀 만들기</h2><p class="helper">수업 목표에 맞게 범위와 반복 횟수를 정하세요. 특정 숫자 목록을 직접 입력할 수도 있습니다.</p>
+      <div class="fields">
+        <div class="field"><label for="minValue">시작 숫자</label><input id="minValue" type="number" value="1"></div>
+        <div class="field"><label for="maxValue">끝 숫자</label><input id="maxValue" type="number" value="50"></div>
+        <div class="field"><label for="copies">숫자별 반복</label><input id="copies" type="number" min="1" max="10" value="1"></div>
+        <div class="field"><label for="drawCount">추첨 횟수</label><input id="drawCount" type="number" min="1" value="15"></div>
+        <div class="field full"><label for="customPool">직접 만든 숫자 풀 <span class="hint">(선택)</span></label><textarea id="customPool" placeholder="예: 2, 3, 5, 7, 11, 13"></textarea><span class="hint">입력하면 위 범위 설정보다 우선합니다. 같은 숫자를 반복 입력할 수 있어요.</span></div>
       </div>
-      <div class="row">
-        <button id="btnFullscreen" class="btn ghost">전체화면</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="sectionTitle"><span class="dot"></span>게임 설정</div>
-
-        <div class="row" style="margin-bottom:12px;">
-          <label>뽑기 횟수
-            <input id="drawCount" type="number" min="1" max="50" value="20">
-          </label>
-          <label>
-            <input id="includeJoker" type="checkbox" checked>
-            조커 포함
-          </label>
-        </div>
-
-        <div class="row" style="margin-bottom:12px;">
-          <label>배경 테마
-            <select id="themeSelect">
-              <option value="aurora" selected>오로라(기본)</option>
-              <option value="greenboard">칠판(그린 보드)</option>
-              <option value="midnight">미드나잇 블루</option>
-              <option value="forest">포레스트</option>
-              <option value="sunset">선셋</option>
-              <option value="paper">화이트(밝은 배경)</option>
-            </select>
-          </label>
-
-          <label>소리
-            <select id="soundSelect">
-              <option value="on" selected>켜기</option>
-              <option value="off">끄기</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="hint" style="margin: 6px 0 10px;">
-          덱(타일 목록)을 숫자들로 적어줘. <b>중복은 그대로 반복</b>하면 돼요.
-          예: <code>11 11 12 12 13</code>
-        </div>
-
-        <textarea id="deckText"></textarea>
-
-        <div class="row" style="margin-top:14px;">
-          <button id="btnFillExample" class="btn">예시 덱</button>
-          <button id="btnStartGame" class="btn primary">게임 시작</button>
-        </div>
-
-        <div id="lockHint" class="lock"></div>
-        <div class="smallNote" style="margin-top:10px;">
-          ※ <span class="danger">게임 시작 후 설정 잠김</span>. 다시 설정하려면 새로고침(F5).
-        </div>
-      </div>
-
-      <div class="card tileCard">
-        <div class="sectionTitle"><span class="dot"></span>진행</div>
-
-        <div class="tileTop">
-          <div class="progressWrap" aria-label="진행률">
-            <div id="progressBar" class="progressBar"></div>
-          </div>
-          <div id="roundLabel" class="counter">뽑기 0 / 0</div>
-        </div>
-
-        <div class="row" style="margin-bottom:14px;">
-          <button id="btnDraw" class="btn primary" disabled>뽑기</button>
-          <button id="btnUndo" class="btn" disabled>되돌리기</button>
-          <span id="statusPill" class="pill">대기 중</span>
-        </div>
-
-        <div class="bigTile">
-          <div id="tileValue" class="tileValue">—</div>
-        </div>
-
-        <div class="teacherTools">
-          <span class="pill">교사용 도구</span>
-          <button id="btnHoldToShowHistory" class="btn">히스토리(1초 길게)</button>
-          <span class="smallNote">실수로 켜지 않게 길게 누르기로만 토글됩니다.</span>
-        </div>
-
-        <div id="historyWrap" class="historyWrap">
-          <div class="hint" style="margin-top:12px;">히스토리(이미 나온 것만)</div>
-          <div id="history" class="hist"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<script>
-  // ---------- Theme presets ----------
-  const THEMES = {
-    aurora: {
-      bg0:"#080b14", bg1:"#0b1020", bg2:"#070a12",
-      glowA:"rgba(124,92,255,.45)", glowB:"rgba(35,213,171,.35)", glowC:"rgba(255,77,109,.18)",
-      accent:"#7c5cff", accent2:"#23d5ab"
-    },
-    greenboard: {
-      // 칠판 느낌: 녹색 바탕 + 분필 하이라이트 느낌의 글로우
-      bg0:"#03150f", bg1:"#062a1f", bg2:"#02110c",
-      glowA:"rgba(110,255,190,.18)", glowB:"rgba(80,220,160,.16)", glowC:"rgba(255,255,255,.05)",
-      accent:"#7cffc9", accent2:"#b8ffd9"
-    },
-    midnight: {
-      bg0:"#050815", bg1:"#070b1c", bg2:"#040613",
-      glowA:"rgba(70,120,255,.35)", glowB:"rgba(120,200,255,.18)", glowC:"rgba(255,255,255,.06)",
-      accent:"#4a7dff", accent2:"#7ad7ff"
-    },
-    forest: {
-      bg0:"#06120b", bg1:"#071b12", bg2:"#040f09",
-      glowA:"rgba(35,213,171,.28)", glowB:"rgba(140,255,180,.16)", glowC:"rgba(255,220,120,.10)",
-      accent:"#23d5ab", accent2:"#8cffb4"
-    },
-    sunset: {
-      bg0:"#12070a", bg1:"#1b0b12", bg2:"#08040a",
-      glowA:"rgba(255,120,80,.28)", glowB:"rgba(255,77,109,.22)", glowC:"rgba(255,220,120,.12)",
-      accent:"#ff7a50", accent2:"#ff4d6d"
-    },
-    paper: {
-      bg0:"#f4f6fb", bg1:"#eef2ff", bg2:"#f8fafc",
-      glowA:"rgba(124,92,255,.18)", glowB:"rgba(35,213,171,.14)", glowC:"rgba(255,77,109,.10)",
-      accent:"#5a3dff", accent2:"#17b68f"
-    }
-  };
-
-  function applyTheme(key){
-    const t = THEMES[key] || THEMES.aurora;
-    const r = document.documentElement.style;
-    r.setProperty("--bg0", t.bg0);
-    r.setProperty("--bg1", t.bg1);
-    r.setProperty("--bg2", t.bg2);
-    r.setProperty("--glowA", t.glowA);
-    r.setProperty("--glowB", t.glowB);
-    r.setProperty("--glowC", t.glowC);
-    r.setProperty("--accent", t.accent);
-    r.setProperty("--accent2", t.accent2);
-
-    if (key === "paper") {
-      r.setProperty("--text", "rgba(10,14,30,.92)");
-      r.setProperty("--muted", "rgba(10,14,30,.62)");
-      r.setProperty("--panel", "rgba(255,255,255,.75)");
-      r.setProperty("--line", "rgba(10,14,30,.10)");
-      r.setProperty("--shadow", "0 16px 46px rgba(10,14,30,.12)");
-    } else {
-      r.setProperty("--text", "rgba(255,255,255,.92)");
-      r.setProperty("--muted", "rgba(255,255,255,.70)");
-      r.setProperty("--panel", "rgba(255,255,255,.08)");
-      r.setProperty("--line", "rgba(255,255,255,.14)");
-      r.setProperty("--shadow", "0 16px 46px rgba(0,0,0,.38)");
-    }
-  }
-
-  // ---------- Sound ----------
-  let audioCtx = null;
-  function ensureAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-  }
-
-  function beep({freq=880, duration=0.08, type="sine", gain=0.06} = {}) {
-    if (document.getElementById("soundSelect").value === "off") return;
-    ensureAudio();
-    const t0 = audioCtx.currentTime;
-
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
-
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
-
-    osc.connect(g);
-    g.connect(audioCtx.destination);
-
-    osc.start(t0);
-    osc.stop(t0 + duration + 0.02);
-  }
-
-  // ---------- Utils ----------
-  function parseDeck(text) {
-    const tokens = text.replace(/[,\n\r\t]+/g, " ").split(" ").map(s => s.trim()).filter(Boolean);
-    const deck = [];
-    for (const t of tokens) {
-      if (t.toUpperCase() === "J" || t === "★" || t.toUpperCase() === "JOKER") { deck.push("J"); continue; }
-      const n = Number(t);
-      if (!Number.isFinite(n)) continue;
-      deck.push(n);
-    }
-    return deck;
-  }
-
-  function shuffleInPlace(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  // ---------- DOM ----------
-  const elDrawCount = document.getElementById("drawCount");
-  const elIncludeJoker = document.getElementById("includeJoker");
-  const elDeckText = document.getElementById("deckText");
-  const themeSelect = document.getElementById("themeSelect");
-
-  const btnFillExample = document.getElementById("btnFillExample");
-  const btnStartGame = document.getElementById("btnStartGame");
-  const btnDraw = document.getElementById("btnDraw");
-  const btnUndo = document.getElementById("btnUndo");
-
-  const tileValue = document.getElementById("tileValue");
-  const roundLabel = document.getElementById("roundLabel");
-  const progressBar = document.getElementById("progressBar");
-  const statusPill = document.getElementById("statusPill");
-
-  const historyEl = document.getElementById("history");
-  const historyWrap = document.getElementById("historyWrap");
-  const btnHoldToShowHistory = document.getElementById("btnHoldToShowHistory");
-
-  const lockHint = document.getElementById("lockHint");
-  const btnFullscreen = document.getElementById("btnFullscreen");
-
-  // ---------- State ----------
-  let game = null;
-  let idx = -1;
-
-  function setExampleDeck() {
-    const base = [];
-    for (let i = 1; i <= 30; i++) base.push(i);
-    for (let i = 11; i <= 19; i++) base.push(i);
-    elDeckText.value = base.join(" ");
-  }
-
-  function lockSettings() {
-    elDrawCount.disabled = true;
-    elIncludeJoker.disabled = true;
-    elDeckText.disabled = true;
-    themeSelect.disabled = true;
-    document.getElementById("soundSelect").disabled = true;
-    btnFillExample.disabled = true;
-    btnStartGame.disabled = true;
-    lockHint.innerHTML = "✅ 설정 잠김 · <b>뽑기</b> 버튼으로 진행하세요";
-  }
-
-  function popTile() {
-    tileValue.classList.remove("pop");
-    void tileValue.offsetWidth;
-    tileValue.classList.add("pop");
-  }
-
-  function renderHistoryOnlyRevealed() {
-    historyEl.innerHTML = "";
-    if (!game) return;
-    const revealed = game.draws.slice(0, Math.max(0, idx + 1));
-    revealed.forEach((t, i) => {
-      const chip = document.createElement("div");
-      chip.className = "chip" + (i === idx ? " cur" : "");
-      chip.textContent = (t === "J") ? "★" : String(t);
-      historyEl.appendChild(chip);
-    });
-  }
-
-  function setStatus(text) { statusPill.textContent = text; }
-
-  function render() {
-    if (!game) {
-      roundLabel.textContent = "뽑기 0 / 0";
-      tileValue.textContent = "—";
-      progressBar.style.width = "0%";
-      btnDraw.disabled = true;
-      btnUndo.disabled = true;
-      setStatus("대기 중");
-      historyWrap.style.display = "none";
-      historyEl.innerHTML = "";
-      return;
-    }
-
-    const total = game.totalDraws;
-    const revealedCount = Math.max(0, idx + 1);
-    roundLabel.textContent = `뽑기 ${revealedCount} / ${total}`;
-    progressBar.style.width = `${(total ? (revealedCount / total) * 100 : 0).toFixed(1)}%`;
-
-    if (idx >= 0) {
-      const t = game.draws[idx];
-      tileValue.textContent = (t === "J") ? "★" : String(t);
-    } else tileValue.textContent = "—";
-
-    btnDraw.disabled = (idx >= total - 1);
-    btnUndo.disabled = (idx < 0);
-
-    if (revealedCount === 0) setStatus("첫 뽑기 대기");
-    else if (revealedCount < total) setStatus("배치 후 다음");
-    else setStatus("끝! 점수 계산");
-
-    if (historyWrap.style.display !== "none") renderHistoryOnlyRevealed();
-  }
-
-  // ---------- Events ----------
-  themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
-
-  btnFillExample.addEventListener("click", () => setExampleDeck());
-
-  btnStartGame.addEventListener("click", () => {
-    beep({freq: 660, duration: 0.06, type:"sine", gain:0.05});
-
-    const wantDraws = Math.max(1, Math.min(50, Number(elDrawCount.value) || 20));
-    let deck = parseDeck(elDeckText.value);
-    if (elIncludeJoker.checked) deck.push("J");
-
-    if (deck.length < wantDraws) {
-      alert(`덱 장수(${deck.length})가 뽑기 횟수(${wantDraws})보다 적습니다.\n덱 목록을 늘려주세요.`);
-      return;
-    }
-
-    shuffleInPlace(deck);
-    game = { totalDraws: wantDraws, draws: deck.slice(0, wantDraws) };
-    idx = -1;
-
-    lockSettings();
-    btnDraw.disabled = false;
-    btnUndo.disabled = true;
-
-    setStatus("첫 뽑기 대기");
-    render();
-  });
-
-  btnDraw.addEventListener("click", () => {
-    if (!game) return;
-    if (idx >= game.totalDraws - 1) return;
-
-    idx++;
-    render();
-    popTile();
-
-    const t = game.draws[idx];
-    if (t === "J") beep({freq: 420, duration: 0.11, type:"triangle", gain:0.06});
-    else beep({freq: 880, duration: 0.07, type:"sine", gain:0.05});
-
-    if (idx === game.totalDraws - 1) {
-      setTimeout(() => beep({freq: 990, duration: 0.06, type:"sine", gain:0.04}), 90);
-      setTimeout(() => beep({freq: 1180, duration: 0.06, type:"sine", gain:0.04}), 170);
-    }
-  });
-
-  btnUndo.addEventListener("click", () => {
-    if (!game) return;
-    if (idx < 0) return;
-    idx--;
-    render();
-    popTile();
-    beep({freq: 520, duration: 0.06, type:"sine", gain:0.045});
-  });
-
-  // hold-to-show history (1s)
-  let holdTimer = null;
-  function startHold() {
-    holdTimer = setTimeout(() => {
-      const nowVisible = historyWrap.style.display !== "none";
-      historyWrap.style.display = nowVisible ? "none" : "block";
-      if (historyWrap.style.display !== "none") renderHistoryOnlyRevealed();
-      beep({freq: nowVisible ? 600 : 740, duration: 0.05, type:"sine", gain:0.03});
-    }, 1000);
-  }
-  function cancelHold() { if (holdTimer) clearTimeout(holdTimer); holdTimer = null; }
-  btnHoldToShowHistory.addEventListener("mousedown", startHold);
-  btnHoldToShowHistory.addEventListener("touchstart", startHold, {passive:true});
-  btnHoldToShowHistory.addEventListener("mouseup", cancelHold);
-  btnHoldToShowHistory.addEventListener("mouseleave", cancelHold);
-  btnHoldToShowHistory.addEventListener("touchend", cancelHold);
-
-  // fullscreen
-  btnFullscreen.addEventListener("click", async () => {
-    try{
-      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-      else await document.exitFullscreen();
-      beep({freq: 760, duration: 0.05, type:"sine", gain:0.03});
-    }catch{
-      alert("이 브라우저에서는 전체화면이 제한될 수 있어요.");
-    }
-  });
-
-  // init
-  applyTheme("aurora");
-  setExampleDeck();
-  render();
-</script>
+      <div class="preset-row"><button class="preset" data-preset="dice">주사위 1~6</button><button class="preset" data-preset="tens">십의 배수</button><button class="preset" data-preset="negative">정수 -10~10</button></div>
+      <button class="btn primary start" id="startBtn">새 활동 시작하기 →</button>
+      <div class="copyright-note">BBB쌤이 제작한 범용 수업 도구입니다. 특정 상용 게임의 공식 디지털판이 아니며, 공식 이미지·규칙서·구성물을 사용하지 않습니다.</div>
+    </aside>
+    <section class="stage" id="stage" aria-label="숫자 추첨 화면">
+      <div class="stage-head"><div class="session-label"><span class="live-dot"></span><span id="status">설정을 마치고 활동을 시작하세요</span></div><span class="progress-copy" id="progressCopy">0 / 0</span></div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="number-zone"><div class="number-card"><div class="round" id="roundLabel">READY</div><div class="number placeholder" id="number">?</div><div class="instruction" id="instruction">스페이스바로도 다음 숫자를 뽑을 수 있어요</div></div></div>
+      <div class="stage-actions"><button class="btn" id="undoBtn" disabled>↶ 되돌리기</button><button class="btn lime draw-btn" id="drawBtn" disabled>다음 숫자 뽑기</button><button class="btn danger" id="resetBtn" disabled>활동 끝내기</button></div>
+      <div class="history-wrap"><div class="history-head"><b>지금까지 나온 숫자</b><span>최근 숫자가 강조됩니다</span></div><div class="history" id="history"><span class="empty">아직 뽑은 숫자가 없습니다.</span></div></div>
+    </section>
+  </main>
+  <dialog id="guide"><h2>수업 활용 아이디어</h2><ul><li>다음 숫자가 어느 구간에서 나올지 먼저 예측하게 해보세요.</li><li>뽑힌 숫자를 수직선이나 빈칸에 배치하며 전략을 설명하게 해보세요.</li><li>범위와 반복 횟수를 바꾸고 결과의 차이를 비교해보세요.</li></ul><p><b>단축키:</b> 스페이스바는 다음 숫자, Ctrl/⌘ + Z는 되돌리기입니다.</p><button class="btn" id="closeGuide">닫기</button></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const $=s=>document.querySelector(s);const els={min:$('#minValue'),max:$('#maxValue'),copies:$('#copies'),count:$('#drawCount'),custom:$('#customPool'),start:$('#startBtn'),draw:$('#drawBtn'),undo:$('#undoBtn'),reset:$('#resetBtn'),stage:$('#stage'),status:$('#status'),copy:$('#progressCopy'),bar:$('#progressBar'),round:$('#roundLabel'),number:$('#number'),instruction:$('#instruction'),history:$('#history'),toast:$('#toast')};
+    let session=null;
+    function toast(message){els.toast.textContent=message;els.toast.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>els.toast.classList.remove('show'),1800)}
+    function shuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+    function makePool(){const direct=els.custom.value.trim();if(direct){const values=direct.split(/[\s,]+/).filter(Boolean).map(Number);if(!values.length||values.some(v=>!Number.isFinite(v)))throw new Error('직접 만든 숫자 풀을 확인해 주세요.');return values}const min=Number(els.min.value),max=Number(els.max.value),copies=Number(els.copies.value);if(!Number.isInteger(min)||!Number.isInteger(max)||min>max)throw new Error('숫자 범위를 확인해 주세요.');if(max-min>999)throw new Error('숫자 범위는 1,000개 이하로 설정해 주세요.');if(!Number.isInteger(copies)||copies<1||copies>10)throw new Error('반복 횟수는 1~10으로 정해 주세요.');const pool=[];for(let copy=0;copy<copies;copy++)for(let n=min;n<=max;n++)pool.push(n);return pool}
+    function setLocked(locked){[els.min,els.max,els.copies,els.count,els.custom,...document.querySelectorAll('.preset')].forEach(el=>el.disabled=locked);els.start.disabled=locked;els.draw.disabled=!locked;els.undo.disabled=!locked;els.reset.disabled=!locked;els.stage.classList.toggle('running',locked)}
+    function start(){try{const pool=makePool(),want=Number(els.count.value);if(!Number.isInteger(want)||want<1)throw new Error('추첨 횟수를 확인해 주세요.');if(want>pool.length)throw new Error(`숫자 풀 ${pool.length}개보다 많이 뽑을 수 없어요.`);session={deck:shuffle(pool).slice(0,want),index:-1};setLocked(true);render();toast('새 숫자 활동을 시작했어요.')}catch(error){toast(error.message)}}
+    function draw(){if(!session||session.index>=session.deck.length-1)return;session.index++;render();beep();if(session.index===session.deck.length-1)toast('모든 숫자를 뽑았습니다!')}
+    function undo(){if(!session||session.index<0)return;session.index--;render();toast('한 단계 되돌렸어요.')}
+    function reset(){session=null;setLocked(false);render();toast('설정을 다시 바꿀 수 있어요.')}
+    function render(){const active=!!session,shown=active?session.deck.slice(0,session.index+1):[],total=active?session.deck.length:0,current=shown.at(-1);els.copy.textContent=`${shown.length} / ${total}`;els.bar.style.width=total?`${shown.length/total*100}%`:'0%';els.status.textContent=!active?'설정을 마치고 활동을 시작하세요':shown.length===total?'활동 완료':shown.length?'다음 숫자를 준비하세요':'숫자 풀이 섞였습니다';els.round.textContent=!active?'READY':shown.length===total?'COMPLETE':`DRAW ${shown.length+1}`;els.number.textContent=current??'?';els.number.classList.toggle('placeholder',current===undefined);els.instruction.textContent=!active?'스페이스바로도 다음 숫자를 뽑을 수 있어요':shown.length===total?'결과를 함께 돌아보세요':'어디에 놓을지 먼저 생각해 보세요';els.draw.disabled=!active||shown.length===total;els.undo.disabled=!active||session.index<0;els.reset.disabled=!active;els.history.innerHTML=shown.length?shown.map((v,i)=>`<span class="chip ${i===shown.length-1?'current':''}">${v}</span>`).join(''):'<span class="empty">아직 뽑은 숫자가 없습니다.</span>';els.history.scrollLeft=els.history.scrollWidth}
+    function beep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=520;gain.gain.setValueAtTime(.04,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.11);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.11)}catch{}}
+    document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{els.custom.value='';if(btn.dataset.preset==='dice'){els.min.value=1;els.max.value=6;els.copies.value=3;els.count.value=12}else if(btn.dataset.preset==='tens'){els.custom.value='10, 20, 30, 40, 50, 60, 70, 80, 90';els.count.value=6}else{els.min.value=-10;els.max.value=10;els.copies.value=1;els.count.value=12}toast('추천 설정을 불러왔어요.')}));
+    els.start.addEventListener('click',start);els.draw.addEventListener('click',draw);els.undo.addEventListener('click',undo);els.reset.addEventListener('click',reset);document.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();draw()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
+    const guide=$('#guide');$('#guideBtn').onclick=()=>guide.showModal();$('#closeGuide').onclick=()=>guide.close();$('#fullscreenBtn').onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch{toast('이 브라우저에서는 전체 화면을 사용할 수 없어요.')}};render();
+  </script>
 </body>
 </html>
