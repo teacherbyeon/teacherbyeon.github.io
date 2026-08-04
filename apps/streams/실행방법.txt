@@ -1,0 +1,35 @@
+[Streams 실행 방법]
+
+1) 폴더 이동
+cd apps/streams
+
+2) 패키지 설치
+npm install
+
+3) 개발 실행(클라이언트+서버 동시 실행)
+npm run dev
+
+4) 접속 주소
+- 진행자/참가자 공통 기본 접속: http://<노트북IP>:5173
+- 소켓 서버: http://<노트북IP>:3000
+
+5) 진행자 로그인
+- PIN 입력 후 로그인
+- PIN 변경: 환경변수 STREAMS_HOST_PIN 사용
+
+6) 학생 식별 규칙(studentKey)
+- 학생은 socket.id가 아닌 studentKey(예: 2-15-홍길동, 15-홍길동)로 식별됨
+- 새로고침/재접속 시 동일 studentKey로 입장하면 board, score, 배치상태 복구됨
+
+7) 게임 설정
+- 덱 개수 설정 UI는 제거됨(기본 고정 덱 사용)
+- 조커 포함 체크박스는 유지됨
+
+8) 진행자 QR 접속 안내
+- 진행자 화면에서 숫자 아이피 주소를 입력하면 QR 코드가 표시됨
+- 학생은 QR 스캔으로 빠르게 접속 가능
+
+9) 배포(프로덕션)
+npm run build
+npm run start
+- 접속: http://<노트북IP>:3000
