@@ -186,6 +186,31 @@
       color:var(--muted); font-size:12px;
     }
 
+
+    .hidden{display:none !important;}
+    .mode-switch{grid-column:1/-1;display:flex;gap:8px;padding:8px;}
+    .mode-switch button{flex:1;font-size:15px;}
+    .mode-switch button.active{background:rgba(124,92,255,.32);border-color:rgba(124,92,255,.72);}
+    .team-controls{display:grid;gap:12px;}
+    .team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    .team-card{border:1px solid var(--border);border-radius:15px;background:rgba(0,0,0,.18);padding:13px;}
+    .team-card h3{margin:0 0 9px;color:var(--warn);font-size:16px;display:flex;justify-content:space-between;gap:8px;}
+    .team-card ol{margin:0;padding-left:22px;}
+    .team-message{min-height:20px;color:var(--warn);font-size:13px;line-height:1.5;}
+    select{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:12px;}
+    @media(max-width:720px){main{grid-template-columns:1fr}.mode-switch{grid-column:auto}.team-grid{grid-template-columns:1fr}.split{grid-template-columns:1fr}}
+    @media print{
+      body.team-print{background:#fff;color:#111;}
+      body.team-print header,body.team-print #setupCard,body.team-print #pickerPanel,body.team-print .mode-switch,body.team-print .footer,body.team-print .team-controls{display:none!important;}
+      body.team-print main{display:block;max-width:none;padding:0;}
+      body.team-print #teamPanel{display:block!important;border:0;box-shadow:none;background:#fff;}
+      body.team-print #teamPanel .hd{background:#fff;border-bottom:2px solid #111;}
+      body.team-print #teamPanel .hd h2,body.team-print #teamPanel .pill{color:#111;}
+      body.team-print .team-grid{grid-template-columns:repeat(2,1fr);}
+      body.team-print .team-card{background:#fff;border:1px solid #555;break-inside:avoid;color:#111;}
+      body.team-print .team-card h3{color:#111;}
+    }
+
     /* Fullscreen presentation */
     body.fullscreen main{grid-template-columns: 1fr;}
     body.fullscreen .hide-on-full{display:none !important;}
@@ -211,8 +236,12 @@
   </header>
 
   <main>
+    <nav class="card mode-switch hide-on-full" aria-label="사용 모드">
+      <button id="btnPickerMode" class="active" aria-pressed="true">🎯 개인 뽑기</button>
+      <button id="btnTeamMode" aria-pressed="false">👥 조편성</button>
+    </nav>
     <!-- Left: Setup -->
-    <section class="card hide-on-full">
+    <section id="setupCard" class="card hide-on-full">
       <div class="hd">
         <h2>목록 설정</h2>
         <span class="pill" id="statCounts">대기 0 · 제외 0 · 기록 0</span>
@@ -318,7 +347,7 @@
     </section>
 
     <!-- Right: Result -->
-    <section class="card">
+    <section id="pickerPanel" class="card">
       <div class="hd">
         <h2>뽑기 결과</h2>
         <span class="pill" id="statRemain">남은 인원 0</span>
@@ -363,6 +392,40 @@
         </div>
       </div>
     </section>
+
+    <section id="teamPanel" class="card hidden">
+      <div class="hd">
+        <h2>조편성 결과</h2>
+        <span class="pill" id="teamSummary">아직 편성하지 않음</span>
+      </div>
+      <div class="bd result">
+        <div class="bigbox team-controls">
+          <div class="row">
+            <label>편성 기준
+              <select id="teamBasis">
+                <option value="count">조 개수</option>
+                <option value="size">조당 인원</option>
+              </select>
+            </label>
+            <label id="teamCountLabel">조 개수
+              <input id="teamCount" type="number" min="1" value="7" />
+            </label>
+            <label id="teamSizeLabel" class="hidden">조당 인원
+              <input id="teamSize" type="number" min="1" value="4" />
+            </label>
+          </div>
+          <div class="row">
+            <button id="btnMakeTeams" class="primary">👥 조편성하기</button>
+            <button id="btnRemakeTeams">다시 섞기</button>
+            <button id="btnCopyTeams">결과 복사</button>
+            <button id="btnPrintTeams">인쇄</button>
+          </div>
+          <div id="teamMessage" class="team-message">학생 명단을 적용한 뒤 조편성 기준을 선택하세요.</div>
+        </div>
+        <div id="teamGrid" class="team-grid"></div>
+        <div class="hint">모든 학생은 한 조에만 배정되며, 조별 인원 차이는 최대 1명입니다. 결과는 이 브라우저에 자동 저장됩니다.</div>
+      </div>
+    </section>
   </main>
 
   <div class="footer hide-on-full">
@@ -401,6 +464,22 @@
     btnSaveAs: $("#btnSaveAs"),
     btnImport: $("#btnImport"),
     fileImport: $("#fileImport"),
+    btnPickerMode: $("#btnPickerMode"),
+    btnTeamMode: $("#btnTeamMode"),
+    pickerPanel: $("#pickerPanel"),
+    teamPanel: $("#teamPanel"),
+    teamBasis: $("#teamBasis"),
+    teamCount: $("#teamCount"),
+    teamSize: $("#teamSize"),
+    teamCountLabel: $("#teamCountLabel"),
+    teamSizeLabel: $("#teamSizeLabel"),
+    btnMakeTeams: $("#btnMakeTeams"),
+    btnRemakeTeams: $("#btnRemakeTeams"),
+    btnCopyTeams: $("#btnCopyTeams"),
+    btnPrintTeams: $("#btnPrintTeams"),
+    teamSummary: $("#teamSummary"),
+    teamMessage: $("#teamMessage"),
+    teamGrid: $("#teamGrid"),
 
     // ✅ 번호 자동 생성 UI
     numStart: $("#numStart"),
@@ -418,7 +497,10 @@
     pool: [],
     excluded: [],
     history: [],
-    lastPickSet: null
+    lastPickSet: null,
+    teams: [],
+    mode: "picker",
+    teamSettings: { basis: "count", count: 7, size: 4 }
   };
 
   function normalizeInput(text){
@@ -444,7 +526,10 @@
         pool: Array.isArray(obj.pool) ? obj.pool : [],
         excluded: Array.isArray(obj.excluded) ? obj.excluded : [],
         history: Array.isArray(obj.history) ? obj.history : [],
-        lastPickSet: obj.lastPickSet ?? null
+        lastPickSet: obj.lastPickSet ?? null,
+        teams: Array.isArray(obj.teams) ? obj.teams : [],
+        mode: obj.mode === "team" ? "team" : "picker",
+        teamSettings: obj.teamSettings && typeof obj.teamSettings === "object" ? obj.teamSettings : { basis:"count", count:7, size:4 }
       };
       return true;
     }catch(e){
@@ -476,6 +561,7 @@
     });
     el.exCount.textContent = state.excluded.length;
 
+    renderTeams();
     save();
   }
 
@@ -492,6 +578,8 @@
     state.excluded = [];
     state.history = [];
     state.lastPickSet = null;
+    state.teams = [];
+    if(el.teamMessage) el.teamMessage.textContent = "새 명단을 적용했습니다. 조편성을 다시 실행해주세요.";
 
     shuffle(state.pool);
     el.bigResult.textContent = items.length ? "준비 완료! 🎯" : "목록이 비어 있어요";
@@ -604,10 +692,11 @@
   }
 
   function resetAll(){
-    state = { pool: [], excluded: [], history: [], lastPickSet: null };
+    state = { pool: [], excluded: [], history: [], lastPickSet: null, teams: [], mode: "picker", teamSettings: { basis:"count", count:7, size:4 } };
     el.taList.value = "";
     el.bigResult.textContent = "목록을 입력하고 “목록 적용”을 누르세요";
     el.lastPicked.textContent = "-";
+    setMode("picker");
     render();
   }
 
@@ -657,6 +746,120 @@
         document.exitFullscreen?.().catch(()=>{});
       }
     }
+  }
+
+
+  function setMode(mode){
+    state.mode = mode === "team" ? "team" : "picker";
+    const isTeam = state.mode === "team";
+    el.pickerPanel.classList.toggle("hidden", isTeam);
+    el.teamPanel.classList.toggle("hidden", !isTeam);
+    el.btnPickerMode.classList.toggle("active", !isTeam);
+    el.btnTeamMode.classList.toggle("active", isTeam);
+    el.btnPickerMode.setAttribute("aria-pressed", String(!isTeam));
+    el.btnTeamMode.setAttribute("aria-pressed", String(isTeam));
+    save();
+  }
+
+  function syncTeamBasis(){
+    const bySize = el.teamBasis.value === "size";
+    el.teamCountLabel.classList.toggle("hidden", bySize);
+    el.teamSizeLabel.classList.toggle("hidden", !bySize);
+    state.teamSettings = {
+      basis: bySize ? "size" : "count",
+      count: Math.max(1, parseInt(el.teamCount.value,10) || 1),
+      size: Math.max(1, parseInt(el.teamSize.value,10) || 1)
+    };
+    save();
+  }
+
+  function currentRoster(){
+    return normalizeInput(el.taList.value);
+  }
+
+  function makeTeams(){
+    const raw = currentRoster();
+    if(!raw.length){
+      el.teamMessage.textContent = "학생 명단이 입력되지 않았습니다. 왼쪽에서 명단을 입력하고 ‘목록 적용’을 눌러주세요.";
+      state.teams = [];
+      renderTeams();
+      return;
+    }
+    const students = [...new Set(raw)];
+    if(students.length !== raw.length){
+      el.teamMessage.textContent = "중복된 이름은 한 번만 포함하여 편성했습니다.";
+    }else{
+      el.teamMessage.textContent = "";
+    }
+    syncTeamBasis();
+    let count;
+    if(state.teamSettings.basis === "size"){
+      if(state.teamSettings.size > students.length){
+        el.teamMessage.textContent = "조당 인원이 전체 학생 수보다 많습니다. 더 작은 수를 입력해주세요.";
+        return;
+      }
+      count = Math.ceil(students.length / state.teamSettings.size);
+    }else{
+      count = state.teamSettings.count;
+      if(count > students.length){
+        el.teamMessage.textContent = `조 개수(${count})가 학생 수(${students.length})보다 많습니다. 조 개수를 줄여주세요.`;
+        return;
+      }
+    }
+    shuffle(students);
+    const teams = Array.from({length:count},()=>[]);
+    students.forEach((student,index)=>teams[index % count].push(student));
+    teams.forEach(shuffle);
+    state.teams = teams;
+    el.teamMessage.textContent = `${students.length}명을 ${count}개 조로 고르게 편성했습니다.`;
+    renderTeams();
+    save();
+  }
+
+  function renderTeams(){
+    if(!el.teamGrid) return;
+    el.teamGrid.innerHTML = "";
+    const teams = Array.isArray(state.teams) ? state.teams : [];
+    const total = teams.reduce((sum,team)=>sum+team.length,0);
+    el.teamSummary.textContent = teams.length ? `${teams.length}개 조 · ${total}명` : "아직 편성하지 않음";
+    teams.forEach((members,index)=>{
+      const card=document.createElement("article");
+      card.className="team-card";
+      const title=document.createElement("h3");
+      const name=document.createElement("span");
+      name.textContent=`${index+1}조`;
+      const count=document.createElement("span");
+      count.className="pill";
+      count.textContent=`${members.length}명`;
+      title.append(name,count);
+      const list=document.createElement("ol");
+      members.forEach(member=>{const li=document.createElement("li");li.textContent=member;list.appendChild(li);});
+      card.append(title,list);
+      el.teamGrid.appendChild(card);
+    });
+  }
+
+  function teamsAsText(){
+    return state.teams.map((members,index)=>`${index+1}조 (${members.length}명)\n${members.map((m,i)=>`  ${i+1}. ${m}`).join("\n")}`).join("\n\n");
+  }
+
+  async function copyTeams(){
+    if(!state.teams.length){el.teamMessage.textContent="먼저 조편성을 실행해주세요.";return;}
+    const text=teamsAsText();
+    try{
+      await navigator.clipboard.writeText(text);
+      el.teamMessage.textContent="조편성 결과를 클립보드에 복사했습니다.";
+    }catch(e){
+      const area=document.createElement("textarea");area.value=text;document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+      el.teamMessage.textContent="조편성 결과를 복사했습니다.";
+    }
+  }
+
+  function printTeams(){
+    if(!state.teams.length){el.teamMessage.textContent="먼저 조편성을 실행해주세요.";return;}
+    document.body.classList.add("team-print");
+    window.print();
+    setTimeout(()=>document.body.classList.remove("team-print"),300);
   }
 
   function exportJSON(){
@@ -714,9 +917,18 @@
           pool: Array.isArray(obj.pool) ? obj.pool : [],
           excluded: Array.isArray(obj.excluded) ? obj.excluded : [],
           history: Array.isArray(obj.history) ? obj.history : [],
-          lastPickSet: obj.lastPickSet ?? null
+          lastPickSet: obj.lastPickSet ?? null,
+          teams: Array.isArray(obj.teams) ? obj.teams : [],
+          mode: obj.mode === "team" ? "team" : "picker",
+          teamSettings: obj.teamSettings && typeof obj.teamSettings === "object" ? obj.teamSettings : { basis:"count", count:7, size:4 }
         };
         if(obj.settings) applySettings(obj.settings);
+        const importedTeamSettings = state.teamSettings || { basis:"count", count:7, size:4 };
+        el.teamBasis.value = importedTeamSettings.basis === "size" ? "size" : "count";
+        el.teamCount.value = importedTeamSettings.count || 7;
+        el.teamSize.value = importedTeamSettings.size || 4;
+        syncTeamBasis();
+        setMode(state.mode);
         el.bigResult.textContent = "불러오기 완료!";
         el.lastPicked.textContent = state.lastPickSet ? state.lastPickSet.picked.join(", ") : "-";
         render();
@@ -736,7 +948,11 @@
       numStart: el.numStart.value,
       numEnd: el.numEnd.value,
       txtFormat: el.txtFormat.value,
-      chkPadZero: el.chkPadZero.checked
+      chkPadZero: el.chkPadZero.checked,
+      mode: state.mode,
+      teamBasis: el.teamBasis.value,
+      teamCount: el.teamCount.value,
+      teamSize: el.teamSize.value
     };
   }
   function applySettings(s){
@@ -748,9 +964,23 @@
     if("numEnd" in s) el.numEnd.value = s.numEnd;
     if("txtFormat" in s) el.txtFormat.value = s.txtFormat;
     if("chkPadZero" in s) el.chkPadZero.checked = !!s.chkPadZero;
+    if("teamBasis" in s) el.teamBasis.value = s.teamBasis === "size" ? "size" : "count";
+    if("teamCount" in s) el.teamCount.value = s.teamCount;
+    if("teamSize" in s) el.teamSize.value = s.teamSize;
+    syncTeamBasis();
+    if("mode" in s) state.mode = s.mode === "team" ? "team" : "picker";
   }
 
   // Wire events
+  el.btnPickerMode.addEventListener("click",()=>setMode("picker"));
+  el.btnTeamMode.addEventListener("click",()=>setMode("team"));
+  el.teamBasis.addEventListener("change",syncTeamBasis);
+  el.teamCount.addEventListener("change",syncTeamBasis);
+  el.teamSize.addEventListener("change",syncTeamBasis);
+  el.btnMakeTeams.addEventListener("click",makeTeams);
+  el.btnRemakeTeams.addEventListener("click",makeTeams);
+  el.btnCopyTeams.addEventListener("click",copyTeams);
+  el.btnPrintTeams.addEventListener("click",printTeams);
   el.btnApply.addEventListener("click", applyListFromTextarea);
   el.btnShuffle.addEventListener("click", () => { shuffle(state.pool); el.bigResult.textContent="섞었습니다."; render(); });
   el.btnPick.addEventListener("click", doPick);
@@ -802,6 +1032,12 @@
     el.bigResult.textContent = state.history.length ? (state.history[state.history.length-1].picked.join(" · ")) : "불러온 상태입니다. 🎯";
     el.lastPicked.textContent = state.lastPickSet ? state.lastPickSet.picked.join(", ") : "-";
   }
+  const savedTeamSettings = state.teamSettings || { basis:"count", count:7, size:4 };
+  el.teamBasis.value = savedTeamSettings.basis === "size" ? "size" : "count";
+  el.teamCount.value = savedTeamSettings.count || 7;
+  el.teamSize.value = savedTeamSettings.size || 4;
+  syncTeamBasis();
+  setMode(state.mode);
   render();
 })();
 </script>
