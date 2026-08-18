@@ -6,226 +6,74 @@
   <title>수업용 랜덤 뽑기</title>
   <style>
     :root{
-      --bg:#0b1020;
-      --panel:#121a33;
-      --panel2:#0f1730;
-      --text:#e7ecff;
-      --muted:#a8b2d1;
-      --accent:#7c5cff;
-      --good:#37d67a;
-      --warn:#ffcc66;
-      --bad:#ff5c7a;
-      --border:rgba(255,255,255,.12);
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius:18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      --bg:#f3f6fb; --panel:#ffffff; --panel2:#f8fafc; --text:#172033;
+      --muted:#667085; --accent:#3157d5; --accent-soft:#edf2ff;
+      --good:#16865c; --warn:#b86b08; --bad:#cf4050; --border:#dfe5ee;
+      --shadow:0 10px 30px rgba(31,48,78,.08); --radius:20px;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0; background: radial-gradient(1200px 700px at 20% 10%, rgba(124,92,255,.35), transparent 60%),
-                         radial-gradient(900px 600px at 90% 30%, rgba(55,214,122,.18), transparent 60%),
-                         radial-gradient(900px 600px at 40% 90%, rgba(255,92,122,.12), transparent 55%),
-                         var(--bg);
-      color:var(--text); font-family:var(--sans);
-    }
-    header{
-      padding:20px 18px 10px;
-      max-width:1100px; margin:0 auto;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    header h1{
-      margin:0; font-size:18px; letter-spacing:.2px;
-      display:flex; align-items:center; gap:10px;
-    }
-    header h1 span.badge{
-      font-size:12px; color:var(--muted);
-      border:1px solid var(--border); padding:4px 10px; border-radius:999px;
-      background:rgba(255,255,255,.04);
-    }
-    main{
-      max-width:1100px; margin:0 auto; padding:12px 18px 40px;
-      display:grid; grid-template-columns: 1.1fr .9fr; gap:14px;
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border:1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:14px 14px 10px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      background: rgba(255,255,255,.03);
-      border-bottom:1px solid var(--border);
-    }
-    .card .hd h2{margin:0; font-size:14px; color:var(--muted); font-weight:650;}
-    .card .bd{padding:14px;}
-    textarea{
-      width:100%;
-      min-height:150px;
-      resize:vertical;
-      background: var(--panel2);
-      color: var(--text);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      outline:none;
-      line-height:1.4;
-      font-family: var(--mono);
-      font-size:13px;
-    }
-    textarea:focus{border-color: rgba(124,92,255,.6); box-shadow: 0 0 0 3px rgba(124,92,255,.18);}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .row > *{flex: 0 0 auto;}
-    .grow{flex:1 1 auto;}
-    label{
-      font-size:12px; color:var(--muted);
-      display:flex; align-items:center; gap:8px;
-      user-select:none;
-    }
-    input[type="number"], input[type="text"]{
-      background: var(--panel2);
-      border:1px solid var(--border);
-      color:var(--text);
-      padding:10px 10px;
-      border-radius:12px;
-      outline:none;
-    }
-    input[type="number"]{ width:84px; }
-    input[type="text"]{ width:140px; }
-    input[type="checkbox"]{transform: translateY(1px);}
-    button{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition:.15s transform ease, .15s background ease, .15s border-color ease;
-      font-weight:650;
-    }
-    button:hover{background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22);}
-    button:active{transform: translateY(1px);}
-    button.primary{
-      background: rgba(124,92,255,.25);
-      border-color: rgba(124,92,255,.55);
-    }
-    button.primary:hover{background: rgba(124,92,255,.32);}
-    button.good{
-      background: rgba(55,214,122,.18);
-      border-color: rgba(55,214,122,.45);
-    }
-    button.bad{
-      background: rgba(255,92,122,.18);
-      border-color: rgba(255,92,122,.45);
-    }
-    button.warn{
-      background: rgba(255,204,102,.16);
-      border-color: rgba(255,204,102,.45);
-      color:#fff;
-    }
-    .pill{
-      font-size:12px; color:var(--muted);
-      border:1px solid var(--border);
-      padding:6px 10px; border-radius:999px;
-      background:rgba(255,255,255,.03);
-    }
-    .result{
-      display:flex; flex-direction:column; gap:12px;
-      align-items:stretch;
-    }
-    .bigbox{
-      border-radius:18px;
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, rgba(124,92,255,.18), rgba(255,255,255,.03));
-      padding:16px;
-    }
-    .big{
-      font-size:46px;
-      font-weight:850;
-      letter-spacing:.3px;
-      text-align:center;
-      padding:18px 10px;
-      border-radius:16px;
-      background: rgba(0,0,0,.18);
-      border:1px dashed rgba(255,255,255,.18);
-      user-select:none;
-      word-break:break-word;
-      min-height:110px;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .sub{
-      margin-top:10px;
-      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .list{
-      background: rgba(0,0,0,.14);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:12px;
-      max-height: 260px;
-      overflow:auto;
-    }
-    .list h3{
-      margin:0 0 10px; font-size:13px; color:var(--muted);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    ol{margin:0; padding-left:22px;}
-    li{margin:6px 0; color:var(--text);}
-    .hint{font-size:12px; color:var(--muted); line-height:1.5;}
-    .split{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    .mini{
-      font-size:12px; color:var(--muted);
-    }
-    .footer{
-      max-width:1100px; margin:0 auto; padding:10px 18px 26px;
-      color:var(--muted); font-size:12px;
-    }
-
-
-    .hidden{display:none !important;}
-    .mode-switch{grid-column:1/-1;display:flex;gap:8px;padding:8px;}
-    .mode-switch button{flex:1;font-size:15px;}
-    .mode-switch button.active{background:rgba(124,92,255,.32);border-color:rgba(124,92,255,.72);}
-    .team-controls{display:grid;gap:12px;}
-    .team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-    .team-card{border:1px solid var(--border);border-radius:15px;background:rgba(0,0,0,.18);padding:13px;}
-    .team-card h3{margin:0 0 9px;color:var(--warn);font-size:16px;display:flex;justify-content:space-between;gap:8px;}
-    .team-card ol{margin:0;padding-left:22px;}
-    .team-message{min-height:20px;color:var(--warn);font-size:13px;line-height:1.5;}
-    select{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:12px;}
-    @media(max-width:720px){main{grid-template-columns:1fr}.mode-switch{grid-column:auto}.team-grid{grid-template-columns:1fr}.split{grid-template-columns:1fr}}
-    @media print{
-      body.team-print{background:#fff;color:#111;}
-      body.team-print header,body.team-print #setupCard,body.team-print #pickerPanel,body.team-print .mode-switch,body.team-print .footer,body.team-print .team-controls{display:none!important;}
-      body.team-print main{display:block;max-width:none;padding:0;}
-      body.team-print #teamPanel{display:block!important;border:0;box-shadow:none;background:#fff;}
-      body.team-print #teamPanel .hd{background:#fff;border-bottom:2px solid #111;}
-      body.team-print #teamPanel .hd h2,body.team-print #teamPanel .pill{color:#111;}
-      body.team-print .team-grid{grid-template-columns:repeat(2,1fr);}
-      body.team-print .team-card{background:#fff;border:1px solid #555;break-inside:avoid;color:#111;}
-      body.team-print .team-card h3{color:#111;}
-    }
-
-    /* Fullscreen presentation */
-    body.fullscreen main{grid-template-columns: 1fr;}
-    body.fullscreen .hide-on-full{display:none !important;}
-    body.fullscreen .big{font-size: clamp(52px, 7vw, 120px); min-height: 46vh;}
-    body.fullscreen header{max-width:1100px;}
-    body.fullscreen .bigbox{padding:18px;}
+    body{margin:0;background:linear-gradient(180deg,#eef3ff 0,#f6f8fc 270px,var(--bg) 100%);color:var(--text);font-family:var(--sans);min-height:100vh}
+    header{max-width:1180px;margin:0 auto;padding:24px 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:12px}
+    .home-link{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--border);border-radius:14px;background:#fff;color:var(--text);text-decoration:none;font-size:20px;box-shadow:0 4px 14px rgba(31,48,78,.06)}
+    header h1{margin:0;font-size:clamp(20px,3vw,28px);letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+    header h1 span.badge{font-size:12px;color:var(--accent);border:1px solid #cdd8ff;padding:5px 10px;border-radius:999px;background:var(--accent-soft);font-weight:700}
+    main{max-width:1180px;margin:0 auto;padding:10px 20px 44px;display:grid;grid-template-columns:minmax(0,1.03fr) minmax(380px,.97fr);gap:18px;align-items:start}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card .card{background:var(--panel2)!important;box-shadow:none}
+    .card .hd{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fbfcfe;border-bottom:1px solid var(--border)}
+    .card .hd h2{margin:0;font-size:15px;color:var(--text);font-weight:800}
+    .card .bd{padding:18px}
+    textarea{width:100%;min-height:160px;resize:vertical;background:#fff;color:var(--text);border:1px solid #cfd7e5;border-radius:14px;padding:14px;outline:none;line-height:1.55;font-family:var(--mono);font-size:14px}
+    textarea:focus,input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(49,87,213,.13)}
+    .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}.grow{flex:1 1 auto}
+    label{font-size:13px;color:#4c5870;display:flex;align-items:center;gap:8px;user-select:none;font-weight:650}
+    input[type="number"],input[type="text"],select{background:#fff;border:1px solid #cfd7e5;color:var(--text);padding:10px;border-radius:11px;outline:none;font:inherit}
+    input[type="number"]{width:82px}input[type="text"]{width:145px}input[type="checkbox"]{width:17px;height:17px;accent-color:var(--accent)}
+    button{border:1px solid #d3dae6;background:#fff;color:#344054;padding:10px 13px;border-radius:11px;cursor:pointer;transition:.15s transform ease,.15s background ease,.15s box-shadow ease;font-weight:750;font-family:inherit}
+    button:hover{background:#f6f8fb;box-shadow:0 4px 12px rgba(31,48,78,.08)}button:active{transform:translateY(1px)}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(49,87,213,.2)}
+    button.primary:hover{background:#2749bb}button.good{color:var(--good);border-color:#a9dac7;background:#f1fbf7}
+    button.bad{color:var(--bad);border-color:#efbec5;background:#fff5f6}button.warn{color:#8b540b;border-color:#f0d29f;background:#fff8e9}
+    .pill{font-size:12px;color:#526077;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff;white-space:nowrap}
+    .mode-switch{grid-column:1/-1;display:flex;gap:8px;padding:7px;background:#e7ecf5;border-radius:16px;box-shadow:none}
+    .mode-switch button{flex:1;font-size:16px;padding:13px;border:0;background:transparent;color:#657087}
+    .mode-switch button.active{background:#fff;color:var(--accent);box-shadow:0 3px 12px rgba(31,48,78,.12)}
+    .result{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+    .bigbox{border-radius:17px;border:1px solid #d6e0ff;background:linear-gradient(145deg,#f2f5ff,#fff);padding:17px}
+    .big{font-size:46px;font-weight:900;letter-spacing:-.5px;text-align:center;padding:20px 12px;border-radius:15px;background:#fff;border:2px dashed #bdcaf1;user-select:none;word-break:break-word;min-height:120px;display:flex;align-items:center;justify-content:center;color:#203b92}
+    .sub{margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+    .list{background:var(--panel2);border:1px solid var(--border);border-radius:15px;padding:13px;max-height:260px;overflow:auto}
+    .list h3{margin:0 0 10px;font-size:13px;color:#4e5c72;display:flex;align-items:center;justify-content:space-between}ol{margin:0;padding-left:22px}li{margin:7px 0;color:var(--text)}
+    .hint{font-size:12px;color:var(--muted);line-height:1.6}.split{display:grid;grid-template-columns:1fr 1fr;gap:11px}.mini{font-size:12px;color:var(--muted)}
+    .footer{max-width:1180px;margin:0 auto;padding:0 20px 28px;color:var(--muted);font-size:12px}.hidden{display:none!important}
+    .team-controls{display:grid;gap:14px;background:linear-gradient(145deg,#f2f5ff,#fff)}
+    .team-controls .row:first-child{padding-bottom:13px;border-bottom:1px solid #dde4f2}
+    #btnMakeTeams{font-size:16px;padding:12px 18px}
+    .team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .team-card{border:1px solid #dbe3f0;border-radius:17px;background:#f7f9ff;padding:15px;box-shadow:0 5px 15px rgba(31,48,78,.05)}
+    .team-card:nth-child(4n+2){background:#f1fbf7}.team-card:nth-child(4n+3){background:#fff8eb}.team-card:nth-child(4n+4){background:#fff4f6}
+    .team-card h3{margin:0 0 10px;color:var(--accent);font-size:18px;display:flex;justify-content:space-between;gap:8px}
+    .team-card ol{margin:0;padding-left:24px}.team-card li{padding:3px 0;font-size:15px}
+    .team-message{min-height:21px;color:#8a580d;font-size:13px;line-height:1.55;font-weight:650}
+    @media(max-width:820px){main{grid-template-columns:1fr}.mode-switch{grid-column:auto}header{align-items:flex-start}.team-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){header{padding:16px 14px 10px}.brand{width:100%}.home-link{width:38px;height:38px}header h1{font-size:20px}header h1 .badge{display:none}header>.row{width:100%;display:grid;grid-template-columns:1fr 1fr}header>.row button{width:100%;padding:9px 7px}main{padding:8px 14px 34px;gap:12px}.card .bd{padding:14px}.split,.team-grid{grid-template-columns:1fr}.mode-switch button{font-size:15px}.big{font-size:35px;min-height:100px}.footer{padding:0 14px 22px}}
+    @media print{body.team-print{background:#fff;color:#111}body.team-print header,body.team-print #setupCard,body.team-print #pickerPanel,body.team-print .mode-switch,body.team-print .footer,body.team-print .team-controls{display:none!important}body.team-print main{display:block;max-width:none;padding:0}body.team-print #teamPanel{display:block!important;border:0;box-shadow:none;background:#fff}body.team-print #teamPanel .hd{background:#fff;border-bottom:2px solid #111}body.team-print #teamPanel .hd h2,body.team-print #teamPanel .pill{color:#111}body.team-print .team-grid{grid-template-columns:repeat(2,1fr)}body.team-print .team-card{background:#fff;border:1px solid #555;break-inside:avoid;color:#111;box-shadow:none}body.team-print .team-card h3{color:#111}}
+    body.fullscreen main{grid-template-columns:1fr}body.fullscreen .hide-on-full{display:none!important}body.fullscreen .big{font-size:clamp(52px,7vw,120px);min-height:46vh}body.fullscreen header{max-width:1180px}body.fullscreen .bigbox{padding:18px}
   </style>
 </head>
 
 <body>
   <header>
-    <h1>
-      🎲 수업용 랜덤 뽑기
-      <span class="badge">단일 HTML · 로컬 저장</span>
+    <div class="brand">
+      <a class="home-link" href="../../" aria-label="홈으로 돌아가기" title="홈으로">⌂</a>
+      <h1>
+      수업용 뽑기 · 조편성
+      <span class="badge">자동 저장</span>
     </h1>
+    </div>
     <div class="row">
       <button id="btnFullscreen" class="warn">화면 크게(전체)</button>
       <button id="btnExport" title="현재 상태를 JSON 파일로 저장">내보내기</button>
@@ -429,7 +277,7 @@
   </main>
 
   <div class="footer hide-on-full">
-    필요 기능(예: 팀별 뽑기, 좌석번호 모드, 가중치, 두 번 연속 금지 등) 있으면 말해 주세요.
+    명단과 편성 결과는 이 브라우저에 자동으로 저장됩니다.
   </div>
 
 <script>
