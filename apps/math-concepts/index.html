@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#3158ff">
+  <meta name="description" content="학교급·학년·영역별 수학 개념 설명 웹앱을 모아 보는 BBB쌤 수학 개념 학습관">
+  <title>수학 개념 학습 | BBB쌤의 수학 실험실</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Montserrat:wght@700;800;900&display=swap');
+    :root{--ink:#121826;--paper:#f6f4ed;--lime:#d7ff45;--orange:#ff6b35;--blue:#3158ff;--line:#202635;--muted:#687083;--white:#fff;--shadow:6px 6px 0 var(--ink)}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Gowun Dodum",system-ui,sans-serif}button,input{font:inherit}a{color:inherit;text-decoration:none}.shell{width:min(1180px,calc(100% - 32px));margin:auto}
+    .nav{height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--ink)}.brand{display:flex;align-items:center;gap:11px;font-weight:900}.brandmark{width:34px;height:34px;border:2px solid var(--ink);background:var(--lime);display:grid;place-items:center;border-radius:50%;font-family:Montserrat}.home{border:2px solid var(--ink);background:#fff;padding:9px 15px;border-radius:999px;font-weight:800}.home:hover{background:var(--lime)}
+    .hero{padding:70px 0 42px;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end}.kicker{color:var(--blue);font-weight:900;letter-spacing:.08em}.hero h1{font-family:Montserrat,"Gowun Dodum";font-size:clamp(2.8rem,6vw,5.4rem);line-height:.95;letter-spacing:-.06em;margin:17px 0}.hero p{color:var(--muted);font-size:1.08rem;line-height:1.7;max-width:650px}.symbol{width:160px;height:160px;border:3px solid var(--ink);background:var(--blue);color:#fff;display:grid;place-items:center;font:900 5rem Montserrat;box-shadow:10px 10px 0 var(--lime);transform:rotate(3deg)}
+    .finder{border:2px solid var(--ink);background:#fff;border-radius:10px;padding:20px;margin-bottom:24px}.finder-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.group{display:flex;gap:7px;flex-wrap:wrap}.filter{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer}.filter.active,.filter:hover{background:var(--lime)}.search{margin-left:auto;min-width:280px;display:flex;border:2px solid var(--ink);border-radius:999px;padding:4px 6px 4px 16px}.search input{width:100%;border:0;outline:0;background:transparent;padding:8px}.search button{width:38px;height:38px;border:0;border-radius:50%;background:var(--ink);color:#fff;cursor:pointer}
+    .summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:28px 0 18px}.summary h2{margin:0;font-family:Montserrat,"Gowun Dodum";font-size:1.8rem}.count{font-weight:800;color:var(--blue)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:80px}.concept{position:relative;min-height:225px;border:2px solid var(--ink);background:#fff;border-radius:8px;padding:21px;display:flex;flex-direction:column;transition:.18s}.concept:hover{transform:translate(-4px,-4px);box-shadow:var(--shadow)}.meta{display:flex;gap:7px;flex-wrap:wrap}.badge{font-size:.75rem;font-weight:800;border:1px solid var(--ink);border-radius:999px;padding:4px 8px}.concept h3{font-size:1.35rem;margin:19px 0 8px}.concept p{color:var(--muted);line-height:1.6;margin:0 0 22px}.open{margin-top:auto;align-self:flex-end;width:44px;height:44px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:1.2rem}.empty{grid-column:1/-1;border:2px dashed var(--ink);background:#fff;padding:65px 24px;text-align:center;border-radius:10px}.empty b{display:block;font-size:1.45rem;margin-bottom:10px}.empty p{color:var(--muted);line-height:1.7;margin:0}
+    footer{border-top:2px solid var(--ink);padding:28px 0 40px;color:var(--muted)}
+    @media(max-width:850px){.hero{grid-template-columns:1fr}.symbol{display:none}.grid{grid-template-columns:repeat(2,1fr)}.search{width:100%;margin-left:0}.finder-row{align-items:flex-start;flex-direction:column}}
+    @media(max-width:560px){.shell{width:calc(100% - 22px)}.brand span:last-child{font-size:.9rem}.home{padding:8px 11px}.hero{padding-top:45px}.grid{grid-template-columns:1fr}.concept{min-height:200px}.finder{padding:14px}}
+  </style>
+</head>
+<body>
+  <header class="shell nav"><a class="brand" href="../../"><span class="brandmark">B³</span><span>BBB쌤의 수학 실험실</span></a><a class="home" href="../../">홈으로</a></header>
+  <main class="shell">
+    <section class="hero"><div><span class="kicker">MATH CONCEPTS</span><h1>수학 개념<br>학습관</h1><p>설명을 읽는 데서 멈추지 않고, 움직이고 실험하며 개념을 발견합니다. 학교급과 학년, 영역을 선택해 필요한 개념 웹앱을 찾아보세요.</p></div><div class="symbol" aria-hidden="true">∑</div></section>
+    <section class="finder" aria-label="개념 찾기"><div class="finder-row"><div class="group" id="schoolFilters"></div><div class="group" id="gradeFilters"></div><label class="search"><input id="search" type="search" placeholder="개념명, 단원 또는 영역 검색" aria-label="개념 검색"><button id="clear" aria-label="검색 지우기">×</button></label></div></section>
+    <div class="summary"><h2 id="resultTitle">전체 개념</h2><span class="count" id="count">0개</span></div>
+    <section class="grid" id="conceptGrid" aria-live="polite"></section>
+  </main>
+  <footer><div class="shell">BBB쌤의 수학 개념 학습관 · 개념 웹앱은 계속 추가됩니다.</div></footer>
+  <script>
+    let concepts=[],school='전체',grade='전체';
+    const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    async function loadConcepts(){try{const response=await fetch('./concepts.json',{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();concepts=Array.isArray(data)?data.filter(x=>x&&x.published!==false):[]}catch{concepts=[]}renderFilters();render()}
+    function button(label,type,active){return `<button class="filter ${active?'active':''}" data-${type}="${esc(label)}" aria-pressed="${active}">${esc(label)}</button>`}
+    function renderFilters(){const schools=['전체',...new Set(concepts.map(x=>x.school).filter(Boolean))];$('#schoolFilters').innerHTML=schools.map(x=>button(x,'school',x===school)).join('');const grades=['전체',...new Set(concepts.filter(x=>school==='전체'||x.school===school).map(x=>x.grade).filter(Boolean))];if(!grades.includes(grade))grade='전체';$('#gradeFilters').innerHTML=grades.map(x=>button(x,'grade',x===grade)).join('')}
+    function render(){const q=$('#search').value.trim().toLowerCase();const list=concepts.filter(x=>(school==='전체'||x.school===school)&&(grade==='전체'||x.grade===grade)&&[x.title,x.area,x.unit,x.description,...(x.tags||[])].join(' ').toLowerCase().includes(q));$('#resultTitle').textContent=[school,grade].filter(x=>x!=='전체').join(' · ')||'전체 개념';$('#count').textContent=`${list.length}개`;$('#conceptGrid').innerHTML=list.length?list.map(x=>`<article class="concept"><div class="meta"><span class="badge">${esc(x.school)}</span><span class="badge">${esc(x.grade)}</span><span class="badge">${esc(x.area)}</span></div><h3>${esc(x.title)}</h3><p>${esc(x.description||x.unit||'직접 탐구하며 개념을 이해해 보세요.')}</p><a class="open" href="${esc(x.href)}" aria-label="${esc(x.title)} 열기">→</a></article>`).join(''):'<div class="empty"><b>첫 번째 개념 웹앱을 준비하고 있습니다.</b><p>앞으로 중학교·고등학교의 개념 설명 웹앱이<br>학년과 영역별로 이곳에 차곡차곡 추가됩니다.</p></div>'}
+    $('#schoolFilters').onclick=e=>{if(!e.target.dataset.school)return;school=e.target.dataset.school;grade='전체';renderFilters();render()};$('#gradeFilters').onclick=e=>{if(!e.target.dataset.grade)return;grade=e.target.dataset.grade;renderFilters();render()};$('#search').oninput=render;$('#clear').onclick=()=>{$('#search').value='';$('#search').focus();render()};loadConcepts();
+  </script>
+</body>
+</html>
