@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "id": "triangle-incenter",
+    "school": "중학교",
+    "grade": "2학년",
+    "area": "도형과 측정",
+    "unit": "삼각형과 사각형의 성질",
+    "title": "삼각형의 내심",
+    "description": "단계별 그림과 강조 애니메이션으로 내심과 내접원의 성질을 이해하는 개념 강의",
+    "href": "./middle-2/triangle-incenter/",
+    "tags": [
+      "삼각형",
+      "내심",
+      "내접원",
+      "각의 이등분선"
+    ],
+    "published": true
+  }
+]
