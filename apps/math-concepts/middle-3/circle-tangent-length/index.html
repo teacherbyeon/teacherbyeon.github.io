@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>원의 접선의 길이 v2</title>
+<style>
+:root{
+  --bg:#ffffff; --panel:#f7f7f8; --text:#171717; --muted:#666b73;
+  --border:#d9dadd; --accent:#2563eb; --accent-soft:#eef4ff;
+  --focus:#f97316; --focus-soft:#fed7aa; --ok:#16803b; --ok-soft:#eaf7ee;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{
+  display:flex;align-items:center;gap:10px;padding:8px 0 12px;
+  border-bottom:1px solid var(--border)
+}
+.badge{padding:6px 10px;border-radius:999px;background:var(--accent-soft);font-size:14px}
+.title{font-size:18px;font-weight:750}
+.stage{padding-top:14px}
+.diagram{
+  position:relative;min-height:520px;border:1px solid var(--border);border-radius:18px;
+  background:var(--panel);padding:12px;display:flex;align-items:center;justify-content:center;
+}
+svg{width:100%;height:auto;max-height:64vh;overflow:visible}
+.subtitle{
+  text-align:center;font-size:24px;font-weight:650;line-height:1.62;
+  min-height:92px;padding:13px 14px 4px;white-space:pre-line
+}
+.hint{
+  text-align:center;color:var(--muted);font-size:14px;min-height:24px;padding-top:2px
+}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer
+}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)}
+button:disabled{opacity:.38;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}
+.small{font-size:14px;color:var(--muted)}
+.controls{
+  width:min(760px,100%);margin:0 auto 10px;padding:10px 12px;
+  background:#fff;border:1px solid var(--border);border-radius:14px
+}
+.controls label{display:block;font-size:15px;font-weight:700;margin-bottom:7px}
+.activity-note{text-align:center;color:var(--muted);font-size:14px;margin-top:6px}
+.readout{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  margin-top:7px;font-size:15px;color:var(--muted)
+}
+.readout b{color:var(--text)}
+
+.click-math{
+  color:var(--accent);border-bottom:2px dotted var(--accent);
+  cursor:pointer;padding:0 2px;white-space:nowrap
+}
+.click-math.checked{
+  color:var(--ok);border-bottom-color:var(--ok)
+}
+.checkmark{color:var(--ok);font-weight:800;margin-left:3px}
+
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}
+.off{opacity:0!important;pointer-events:none}
+.circle-line,.line{stroke:var(--text);stroke-width:3;fill:none;stroke-linecap:round}
+.radius{stroke:#5f6670;stroke-width:2.6;fill:none;stroke-linecap:round}
+.center-line{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round}
+.helper{stroke:#7b8189;stroke-width:2.2;fill:none;stroke-dasharray:8 7;stroke-linecap:round}
+.pt{fill:var(--text)} .ptO{fill:var(--accent)}
+.txt{fill:var(--text);font-size:24px;font-weight:750}
+.txtSmall{fill:var(--muted);font-size:18px}
+.eq{fill:var(--accent);font-size:23px;font-weight:800}
+.right{stroke:var(--text);stroke-width:2.2;fill:none}
+.tick{stroke:var(--text);stroke-width:3.4;stroke-linecap:round}
+.tangentEqual{stroke:var(--accent);stroke-width:4;stroke-linecap:round}
+.congruentOutline{fill:none;stroke:var(--accent);stroke-width:4;stroke-linejoin:round}
+.drag-handle{
+  fill:var(--accent);stroke:#fff;stroke-width:3;cursor:grab;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))
+}
+.drag-handle:active{cursor:grabbing}
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.blink{animation:blink .72s ease-in-out 3}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+.focusLine{
+  stroke:var(--focus)!important;stroke-width:8px!important;stroke-dasharray:none!important;
+  filter:drop-shadow(0 0 7px var(--focus-soft)) drop-shadow(0 0 12px var(--focus));
+  animation:pulse .7s ease-in-out 3
+}
+.focusDot{
+  fill:var(--focus)!important;filter:drop-shadow(0 0 8px var(--focus-soft));
+  animation:blink .72s ease-in-out 3
+}
+.focusText{
+  fill:var(--focus)!important;font-weight:900!important;
+  filter:drop-shadow(0 0 5px var(--focus-soft));animation:blink .72s ease-in-out 3
+}
+.focusRight{stroke:var(--focus)!important;stroke-width:5px!important;animation:blink .55s ease-in-out 4}
+@keyframes pulse{0%,100%{stroke-width:7px}50%{stroke-width:10px}}
+@media(max-width:820px){
+  .diagram{min-height:46vh}
+  .subtitle{font-size:21px;min-height:108px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="badge" id="badge">1 / 12</span>
+    <span class="title" id="title">원의 접선의 길이</span>
+  </div>
+
+  <div class="stage">
+    <section class="diagram">
+      <svg id="svg" viewBox="0 0 760 520" role="img" aria-label="원의 접선의 길이에 관한 성질 설명 그림">
+        <g id="circleLayer"></g>
+        <g id="lineLayer"></g>
+        <g id="markLayer"></g>
+        <g id="textLayer"></g>
+      </svg>
+    </section>
+
+    <div id="activityControls"></div>
+    <div class="subtitle" id="subtitle"></div>
+    <div class="hint" id="hint"></div>
+
+    <div class="footer">
+      <button id="prev" type="button">이전</button>
+      <div class="progress"><div id="bar"></div></div>
+      <span class="small" id="stepText">1단계</span>
+      <button class="primary" id="next" type="button">다음</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const NS="http://www.w3.org/2000/svg";
+  const svg=document.getElementById("svg");
+  const circleLayer=document.getElementById("circleLayer");
+  const lineLayer=document.getElementById("lineLayer");
+  const markLayer=document.getElementById("markLayer");
+  const textLayer=document.getElementById("textLayer");
+  const subtitle=document.getElementById("subtitle");
+  const hint=document.getElementById("hint");
+  const activityControls=document.getElementById("activityControls");
+  const badge=document.getElementById("badge");
+  const title=document.getElementById("title");
+  const prev=document.getElementById("prev");
+  const next=document.getElementById("next");
+  const bar=document.getElementById("bar");
+  const stepText=document.getElementById("stepText");
+
+  const O={x:430,y:255}, R=135;
+
+  function add(tag,attrs,parent=lineLayer){
+    const el=document.createElementNS(NS,tag);
+    Object.entries(attrs||{}).forEach(([k,v])=>el.setAttribute(k,v));
+    parent.appendChild(el); return el;
+  }
+  function line(P,Q,cls,key,id,parent=lineLayer){
+    return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${cls}`,"data-key":key,id},parent);
+  }
+  function dot(P,cls,key,id,r=6,parent=markLayer){
+    return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${cls}`,"data-key":key,id},parent);
+  }
+  function text(P,s,cls,key,id,dx=0,dy=0,parent=textLayer){
+    const el=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${cls}`,"data-key":key,id},parent);
+    el.textContent=s; return el;
+  }
+  function poly(points,cls,key,id,parent=markLayer){
+    return add("polygon",{points:points.map(p=>`${p.x},${p.y}`).join(" "),class:`shape ${cls}`,"data-key":key,id},parent);
+  }
+  function unit(dx,dy){
+    const l=Math.hypot(dx,dy)||1; return {x:dx/l,y:dy/l};
+  }
+  function dist(P,Q){ return Math.hypot(P.x-Q.x,P.y-Q.y); }
+
+  function tangentData(P){
+    const vx=P.x-O.x, vy=P.y-O.y;
+    const d=Math.hypot(vx,vy);
+    const a=(R*R)/(d*d);
+    const b=(R*Math.sqrt(Math.max(0,d*d-R*R)))/(d*d);
+    const perp={x:-vy,y:vx};
+    const A={x:O.x+a*vx + b*perp.x, y:O.y+a*vy + b*perp.y};
+    const B={x:O.x+a*vx - b*perp.x, y:O.y+a*vy - b*perp.y};
+    return {A,B,d};
+  }
+
+  function rightMarker(T, radialToCenter, tangentDir, id, key){
+    const s=14;
+    const u=unit(radialToCenter.x, radialToCenter.y);
+    const v=unit(tangentDir.x, tangentDir.y);
+    const p1={x:T.x+v.x*s,y:T.y+v.y*s};
+    const p2={x:p1.x+u.x*s,y:p1.y+u.y*s};
+    const p3={x:T.x+u.x*s,y:T.y+u.y*s};
+    return add("polyline",{
+      points:`${T.x},${T.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`,
+      class:"shape right","data-key":key,id
+    },markLayer);
+  }
+
+  function styledTick(P,Q,t,id,key,cls){
+    const x=P.x+(Q.x-P.x)*t, y=P.y+(Q.y-P.y)*t;
+    const u=unit(Q.x-P.x,Q.y-P.y), n={x:-u.y,y:u.x},L=10;
+    return add("line",{x1:x-n.x*L,y1:y-n.y*L,x2:x+n.x*L,y2:y+n.y*L,class:`shape ${cls}`,"data-key":key,id},markLayer);
+  }
+
+  add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle-line","data-key":"circle",id:"circle"},circleLayer);
+  dot(O,"ptO","O","pointO");
+  text(O,"O","txt","O","labelO",12,-10);
+
+  // Activity diagram
+  const initialP={x:190,y:255};
+  const actP=dot(initialP,"drag-handle","activityP","actP",10);
+  text(initialP,"P","txt","activityP","actPL",-22,-10);
+  line(initialP, initialP, "line", "activityTangents", "actPA");
+  line(initialP, initialP, "line", "activityTangents", "actPB");
+  line(O, O, "center-line", "activityRadii", "actOA");
+  line(O, O, "center-line", "activityRadii", "actOB");
+  dot({x:0,y:0},"pt","activityAB","actA");
+  dot({x:0,y:0},"pt","activityAB","actB");
+  text({x:0,y:0},"A","txtSmall","activityAB","actAL",6,-8);
+  text({x:0,y:0},"B","txtSmall","activityAB","actBL",6,18);
+  rightMarker({x:0,y:0},{x:1,y:0},{x:0,y:1},"actRightA","activityRight");
+  rightMarker({x:0,y:0},{x:1,y:0},{x:0,y:-1},"actRightB","activityRight");
+  styledTick(initialP, initialP, .48, "actTickPA1","activityEqual","tangentEqual");
+  styledTick(initialP, initialP, .56, "actTickPA2","activityEqual","tangentEqual");
+  styledTick(initialP, initialP, .48, "actTickPB1","activityEqual","tangentEqual");
+  styledTick(initialP, initialP, .56, "actTickPB2","activityEqual","tangentEqual");
+
+  // Proof diagram
+  const P0={x:185,y:255};
+  const td=tangentData(P0);
+  const A=td.A, B=td.B;
+  dot(P0,"pt","proofP","P0");
+  text(P0,"P","txt","proofP","P0L",-24,-10);
+  dot(A,"pt","proofAB","A0");
+  dot(B,"pt","proofAB","B0");
+  text(A,"A","txtSmall","proofAB","A0L",6,-8);
+  text(B,"B","txtSmall","proofAB","B0L",6,18);
+  line(P0,A,"line","proofTangents","PA0");
+  line(P0,B,"line","proofTangents","PB0");
+  line(O,P0,"helper","proofOP","OP0");
+  line(O,A,"center-line","proofRadii","OA0");
+  line(O,B,"center-line","proofRadii","OB0");
+  rightMarker(A,{x:O.x-A.x,y:O.y-A.y},{x:P0.x-A.x,y:P0.y-A.y},"rightA","proofRight");
+  rightMarker(B,{x:O.x-B.x,y:O.y-B.y},{x:P0.x-B.x,y:P0.y-B.y},"rightB","proofRight");
+  styledTick(P0,A,.48,"tickPA1","proofEqual","tangentEqual");
+  styledTick(P0,A,.56,"tickPA2","proofEqual","tangentEqual");
+  styledTick(P0,B,.48,"tickPB1","proofEqual","tangentEqual");
+  styledTick(P0,B,.56,"tickPB2","proofEqual","tangentEqual");
+  poly([P0,A,O],"congruentOutline","proofCongruent","triPAO");
+  poly([P0,B,O],"congruentOutline","proofCongruent","triPBO");
+
+  const steps=[
+    {title:"원의 접선의 길이",show:["circle","O"],text:"원의 접선에는 어떤 성질이 있을까요?"},
+    {title:"활동 1. 점 P를 움직여 보기",show:["circle","O","activityP","activityTangents","activityAB"],text:"원 밖의 한 점 P를 움직여 보세요. 점 P에서 원에 그은 두 접선의 길이 PA와 PB는 어떻게 되나요?",activity:"dragP"},
+    {title:"관찰한 내용",show:["circle","O","activityP","activityTangents","activityAB","activityEqual"],text:"점 P의 위치가 달라져도 두 접선의 길이 PA와 PB는 항상 같습니다.",activity:"dragStatic"},
+    {title:"접점과 접선",show:["circle","O","proofP","proofAB","proofTangents"],text:"점 P에서 원에 그은 두 접선이 원과 만나는 점을 각각 A, B라고 하겠습니다."},
+    {title:"중심과 접점을 연결하기",show:["circle","O","proofP","proofAB","proofTangents","proofRadii"],text:"이제 원의 중심 O와 접점 A, B를 각각 연결해 봅시다.",draw:["OA0","OB0"]},
+    {title:"접선과 반지름",show:["circle","O","proofP","proofAB","proofTangents","proofRadii","proofRight"],text:"접선은 접점을 지나는 반지름과 수직입니다. 따라서 OA ⟂ PA이고, OB ⟂ PB입니다."},
+    {title:"두 직각삼각형 비교",show:["circle","O","proofP","proofAB","proofTangents","proofRadii","proofOP","proofRight"],text:'△PAO와 △PBO에서 <span class="click-math" data-action="radii">OA = OB</span>이고, <span class="click-math" data-action="common">OP는 공통인 변</span>이며, <span class="click-math" data-action="right">∠PAO = ∠PBO = 90°</span>입니다.',clickable:true},
+    {title:"합동의 결론",show:["circle","O","proofP","proofAB","proofTangents","proofRadii","proofOP","proofRight","proofCongruent"],text:'따라서 두 직각삼각형은 빗변의 길이와 다른 한 변의 길이가 각각 같으므로 <span class="click-math" data-action="congruent">△PAO ≡ △PBO</span>입니다.',clickable:true},
+    {title:"대응하는 변의 길이",show:["circle","O","proofP","proofAB","proofTangents","proofEqual"],text:'두 삼각형이 합동이므로 대응하는 변의 길이가 같습니다. 따라서 <span class="click-math" data-action="equalTangent">PA = PB</span>입니다.',clickable:true},
+    {title:"접선의 길이",show:["circle","O","proofP","proofAB","proofTangents","proofEqual"],text:"PA, PB처럼 원 밖의 한 점에서 원에 그은 접선의 접점까지의 선분을 접선의 길이라고 합니다."},
+    {title:"성질 정리",show:["circle","proofP","proofAB","proofTangents","proofEqual"],text:'원 밖의 한 점에서 그 원에 그은 <span class="click-math" data-action="theorem">두 접선의 길이</span>는 같습니다.',clickable:true},
+    {title:"최종 정리",show:["circle","proofP","proofAB","proofTangents","proofEqual"],text:'<span class="click-math" data-action="finalEqual">원 밖의 한 점에서 그 원에 그은 두 접선의 길이는 같다.</span>',clickable:true}
+  ];
+
+  let idx=0;
+  let dragging=false;
+  let activityP={x:190,y:255};
+  const checkedByStep=new Map();
+  const all=[...document.querySelectorAll("[data-key]")];
+
+  function clearFocus(){
+    document.querySelectorAll(".focusLine,.focusDot,.focusText,.focusRight").forEach(el=>{
+      el.classList.remove("focusLine","focusDot","focusText","focusRight");
+    });
+  }
+  function focus(ids){
+    clearFocus();
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      if(el.tagName==="circle") el.classList.add("focusDot");
+      else if(el.tagName==="text") el.classList.add("focusText");
+      else if(el.classList.contains("right")) el.classList.add("focusRight");
+      else el.classList.add("focusLine");
+    });
+    setTimeout(clearFocus,2200);
+  }
+
+  function setLine(id,P,Q){
+    const el=document.getElementById(id);
+    el.setAttribute("x1",P.x); el.setAttribute("y1",P.y);
+    el.setAttribute("x2",Q.x); el.setAttribute("y2",Q.y);
+  }
+  function setPoint(id,P){
+    const el=document.getElementById(id);
+    el.setAttribute("cx",P.x); el.setAttribute("cy",P.y);
+  }
+  function setTextPos(id,x,y){
+    const el=document.getElementById(id);
+    el.setAttribute("x",x); el.setAttribute("y",y);
+  }
+  function setTick(id,P,Q,t){
+    const x=P.x+(Q.x-P.x)*t, y=P.y+(Q.y-P.y)*t;
+    const u=unit(Q.x-P.x,Q.y-P.y), n={x:-u.y,y:u.x},L=10;
+    const el=document.getElementById(id);
+    el.setAttribute("x1",x-n.x*L); el.setAttribute("y1",y-n.y*L);
+    el.setAttribute("x2",x+n.x*L); el.setAttribute("y2",y+n.y*L);
+  }
+  function setRight(id,T, radialToCenter, tangentDir){
+    const s=14;
+    const u=unit(radialToCenter.x, radialToCenter.y);
+    const v=unit(tangentDir.x, tangentDir.y);
+    const p1={x:T.x+v.x*s,y:T.y+v.y*s};
+    const p2={x:p1.x+u.x*s,y:p1.y+u.y*s};
+    const p3={x:T.x+u.x*s,y:T.y+u.y*s};
+    document.getElementById(id).setAttribute("points",`${T.x},${T.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`);
+  }
+
+  function updateActivity(P=activityP){
+    activityP=P;
+    const minD=R+32;
+    const vx=P.x-O.x, vy=P.y-O.y;
+    const d=Math.hypot(vx,vy);
+    if(d<minD){
+      const u=unit(vx||-1,vy);
+      P={x:O.x+u.x*minD,y:O.y+u.y*minD};
+      activityP=P;
+    }
+    const td=tangentData(P);
+    setPoint("actP",P); setTextPos("actPL",P.x-22,P.y-10);
+
+    setLine("actPA",P,td.A); setLine("actPB",P,td.B);
+    setLine("actOA",O,td.A); setLine("actOB",O,td.B);
+
+    setPoint("actA",td.A); setPoint("actB",td.B);
+    setTextPos("actAL",td.A.x+6,td.A.y-8); setTextPos("actBL",td.B.x+6,td.B.y+18);
+
+    setRight("actRightA", td.A, {x:O.x-td.A.x,y:O.y-td.A.y}, {x:P.x-td.A.x,y:P.y-td.A.y});
+    setRight("actRightB", td.B, {x:O.x-td.B.x,y:O.y-td.B.y}, {x:P.x-td.B.x,y:P.y-td.B.y});
+
+    setTick("actTickPA1",P,td.A,.48); setTick("actTickPA2",P,td.A,.56);
+    setTick("actTickPB1",P,td.B,.48); setTick("actTickPB2",P,td.B,.56);
+
+    const pa=dist(P,td.A), pb=dist(P,td.B);
+    const pOut=document.getElementById("PAout"), bOut=document.getElementById("PBout");
+    if(pOut) pOut.textContent=Math.round(pa*10)/10;
+    if(bOut) bOut.textContent=Math.round(pb*10)/10;
+  }
+
+  function renderControls(activity){
+    activityControls.innerHTML="";
+    if(!activity) return;
+    if(activity==="dragP" || activity==="dragStatic"){
+      const box=document.createElement("div");
+      box.className="controls";
+      box.innerHTML=`
+        <label>점 P를 움직여 보세요.</label>
+        <div class="readout">
+          <span>PA = <b id="PAout"></b></span>
+          <span>PB = <b id="PBout"></b></span>
+        </div>
+        <div class="activity-note">${activity==="dragP" ? "그림의 파란 점 P를 끌어 움직일 수 있습니다." : "앞에서 움직여 본 결과를 떠올려 보세요."}</div>`;
+      activityControls.appendChild(box);
+      updateActivity(activityP);
+    }
+  }
+
+  function actionTargets(action){
+    return ({
+      radii:["OA0","OB0"],
+      common:["OP0"],
+      right:["rightA","rightB"],
+      congruent:["triPAO","triPBO"],
+      equalTangent:["PA0","PB0","tickPA1","tickPA2","tickPB1","tickPB2"],
+      theorem:["PA0","PB0","tickPA1","tickPA2","tickPB1","tickPB2"],
+      finalEqual:["PA0","PB0","tickPA1","tickPA2","tickPB1","tickPB2"]
+    })[action] || [];
+  }
+
+  function bindClickable(){
+    const checked=checkedByStep.get(idx)||new Set();
+    document.querySelectorAll(".click-math").forEach(el=>{
+      const action=el.dataset.action;
+      if(checked.has(action)){
+        el.classList.add("checked");
+        if(!el.querySelector(".checkmark")){
+          const c=document.createElement("span");
+          c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+        }
+      }
+      el.addEventListener("click",()=>{
+        focus(actionTargets(action));
+        checked.add(action);
+        checkedByStep.set(idx,checked);
+        el.classList.add("checked");
+        if(!el.querySelector(".checkmark")){
+          const c=document.createElement("span");
+          c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+        }
+      });
+    });
+  }
+
+  function render(){
+    clearFocus();
+    const s=steps[idx];
+    all.forEach(el=>el.classList.toggle("off",!s.show.includes(el.getAttribute("data-key"))));
+    badge.textContent=`${idx+1} / ${steps.length}`;
+    title.textContent=s.title;
+    subtitle.innerHTML=s.text;
+    hint.textContent=s.clickable ? "밑줄 친 글자를 눌러 그림에서 확인하세요." : "";
+    prev.disabled=idx===0;
+    next.disabled=idx===steps.length-1;
+    bar.style.width=`${((idx+1)/steps.length)*100}%`;
+    stepText.textContent=`${idx+1}단계`;
+    renderControls(s.activity);
+    bindClickable();
+
+    if(s.draw){
+      s.draw.forEach(id=>{
+        const el=document.getElementById(id);
+        el.classList.remove("draw");
+        void el.offsetWidth;
+        el.classList.add("draw");
+        setTimeout(()=>el.classList.remove("draw"),1200);
+      });
+    }
+  }
+
+  actP.addEventListener("pointerdown",e=>{
+    const s=steps[idx];
+    if(s.activity!=="dragP") return;
+    dragging=true; actP.setPointerCapture(e.pointerId);
+  });
+  actP.addEventListener("pointermove",e=>{
+    if(!dragging || steps[idx].activity!=="dragP") return;
+    const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    updateActivity({x:p.x,y:p.y});
+  });
+  actP.addEventListener("pointerup",()=>dragging=false);
+  actP.addEventListener("pointercancel",()=>dragging=false);
+
+  prev.addEventListener("click",()=>{ if(idx>0){ idx--; render(); }});
+  next.addEventListener("click",()=>{ if(idx<steps.length-1){ idx++; render(); }});
+  document.addEventListener("keydown",e=>{
+    const tag=document.activeElement?.tagName;
+    if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
+    if(e.key==="ArrowRight" && idx<steps.length-1){ idx++; render(); }
+    if(e.key==="ArrowLeft" && idx>0){ idx--; render(); }
+  });
+
+  updateActivity(activityP);
+  render();
+})();
+</script>
+</body>
+</html>
+
