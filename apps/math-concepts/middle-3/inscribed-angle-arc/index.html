@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>원주각과 호의 길이 v1</title>
+<style>
+:root{
+  --bg:#fff; --panel:#f7f7f8; --text:#171717; --muted:#6b7280;
+  --border:#d9dadd; --accent:#2563eb; --accent-soft:#eef4ff;
+  --focus:#f97316; --focus-soft:#fed7aa; --ok:#16803b; --arc:#e11d48;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif
+}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{
+  display:flex;align-items:center;gap:10px;padding:8px 0 12px;
+  border-bottom:1px solid var(--border)
+}
+.badge{padding:6px 10px;border-radius:999px;background:var(--accent-soft);font-size:14px}
+.title{font-size:18px;font-weight:750}
+.diagram{
+  margin-top:14px;min-height:535px;border:1px solid var(--border);border-radius:18px;
+  background:var(--panel);display:flex;align-items:center;justify-content:center;padding:12px
+}
+svg{width:100%;height:auto;max-height:65vh;overflow:visible}
+.subtitle{
+  text-align:center;font-size:23px;font-weight:650;line-height:1.62;
+  min-height:104px;padding:13px 14px 4px;white-space:pre-line
+}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px;padding-top:2px}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer
+}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.38;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}
+.small{font-size:14px;color:var(--muted)}
+.controls{
+  width:min(780px,100%);margin:0 auto 10px;padding:10px 12px;
+  background:#fff;border:1px solid var(--border);border-radius:14px
+}
+.controls label{display:block;font-size:15px;font-weight:700;margin-bottom:7px}
+.controls input[type=range]{width:100%}
+.readout{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-size:15px;color:var(--muted)}
+.readout b{color:var(--text)}
+.activity-note{text-align:center;color:var(--muted);font-size:14px;margin-top:6px}
+
+.click-math{
+  color:var(--accent);border-bottom:2px dotted var(--accent);
+  cursor:pointer;padding:0 2px;white-space:nowrap
+}
+.click-math.checked{color:var(--ok);border-bottom-color:var(--ok)}
+.checkmark{color:var(--ok);font-weight:800;margin-left:3px}
+
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}
+.off{opacity:0!important;pointer-events:none}
+.line,.circle-line{stroke:var(--text);stroke-width:3;fill:none;stroke-linecap:round}
+.radius{stroke:#5b6470;stroke-width:2.7;fill:none;stroke-linecap:round}
+.arc-red{stroke:var(--arc);stroke-width:5;fill:none;stroke-linecap:round}
+.angle{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round}
+.pt{fill:var(--text)} .ptO{fill:var(--accent)}
+.txt{fill:var(--text);font-size:24px;font-weight:750}
+.txtSm{fill:var(--muted);font-size:18px}
+.eqTxt{fill:var(--accent);font-size:22px;font-weight:800}
+
+.focusLine{
+  stroke:var(--focus)!important;stroke-width:8px!important;stroke-dasharray:none!important;
+  filter:drop-shadow(0 0 7px var(--focus-soft)) drop-shadow(0 0 12px var(--focus));
+  animation:pulse .7s ease-in-out 3
+}
+.focusDot{fill:var(--focus)!important;filter:drop-shadow(0 0 8px var(--focus-soft));animation:blink .7s ease-in-out 3}
+.focusText{fill:var(--focus)!important;font-weight:900!important;filter:drop-shadow(0 0 5px var(--focus-soft));animation:blink .7s ease-in-out 3}
+.focusAngle{stroke:var(--focus)!important;stroke-width:7px!important;filter:drop-shadow(0 0 7px var(--focus-soft));animation:blink .55s ease-in-out 4}
+@keyframes pulse{0%,100%{stroke-width:7px}50%{stroke-width:10px}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+@media(max-width:820px){
+  .diagram{min-height:47vh}
+  .subtitle{font-size:20px;min-height:120px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="badge" id="badge">1 / 11</span>
+    <span class="title" id="title">질문으로 시작하기</span>
+  </div>
+
+  <section class="diagram">
+    <svg id="svg" viewBox="0 0 760 520" role="img" aria-label="원주각과 호의 길이 설명 그림">
+      <g id="base"></g>
+      <g id="lines"></g>
+      <g id="marks"></g>
+      <g id="labels"></g>
+    </svg>
+  </section>
+
+  <div id="controls"></div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="hint" id="hint"></div>
+
+  <div class="footer">
+    <button id="prev" type="button">이전</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span class="small" id="stepText">1단계</span>
+    <button id="next" class="primary" type="button">다음</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg");
+const base=document.getElementById("base"), lines=document.getElementById("lines"),
+      marks=document.getElementById("marks"), labels=document.getElementById("labels");
+const subtitle=document.getElementById("subtitle"), hint=document.getElementById("hint"),
+      controls=document.getElementById("controls"), badge=document.getElementById("badge"),
+      title=document.getElementById("title"), prev=document.getElementById("prev"),
+      next=document.getElementById("next"), bar=document.getElementById("bar"),
+      stepText=document.getElementById("stepText");
+
+function add(tag,attrs,parent=lines){
+  const e=document.createElementNS(NS,tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));
+  parent.appendChild(e); return e;
+}
+function line(P,Q,cls,key,id,parent=lines){
+  return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function dot(P,cls,key,id,r=6,parent=marks){
+  return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function text(P,s,cls,key,id,dx=0,dy=0,parent=labels){
+  const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${cls}`,"data-key":key,id},parent);
+  e.textContent=s; return e;
+}
+function path(d,cls,key,id,parent=marks){
+  return add("path",{d,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function ptOn(O,R,deg){
+  const a=(deg%360)*Math.PI/180;
+  return {x:O.x+R*Math.cos(a),y:O.y+R*Math.sin(a)};
+}
+function circleArc(O,R,startDeg,endDeg){
+  let s=((startDeg%360)+360)%360, e=((endDeg%360)+360)%360;
+  let delta=e-s; if(delta<0)delta+=360;
+  const p1=ptOn(O,R,s), p2=ptOn(O,R,e);
+  return `M ${p1.x} ${p1.y} A ${R} ${R} 0 ${delta>180?1:0} 1 ${p2.x} ${p2.y}`;
+}
+function angleArc(V,P1,P2,r){
+  let a1=Math.atan2(P1.y-V.y,P1.x-V.x), a2=Math.atan2(P2.y-V.y,P2.x-V.x);
+  let d=a2-a1;
+  while(d<=-Math.PI)d+=2*Math.PI;
+  while(d>Math.PI)d-=2*Math.PI;
+  const s={x:V.x+r*Math.cos(a1),y:V.y+r*Math.sin(a1)};
+  const e={x:V.x+r*Math.cos(a1+d),y:V.y+r*Math.sin(a1+d)};
+  return `M ${s.x} ${s.y} A ${r} ${r} 0 0 ${d>0?1:0} ${e.x} ${e.y}`;
+}
+function angleMeasure(V,P1,P2){
+  const a={x:P1.x-V.x,y:P1.y-V.y}, b={x:P2.x-V.x,y:P2.y-V.y};
+  const dot=a.x*b.x+a.y*b.y;
+  const den=Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y);
+  return Math.acos(Math.max(-1,Math.min(1,dot/den)))*180/Math.PI;
+}
+function setLine(id,P,Q){
+  const e=document.getElementById(id);
+  e.setAttribute("x1",P.x); e.setAttribute("y1",P.y); e.setAttribute("x2",Q.x); e.setAttribute("y2",Q.y);
+}
+function setCircle(id,P){ const e=document.getElementById(id); e.setAttribute("cx",P.x); e.setAttribute("cy",P.y); }
+function setText(id,x,y,t=null){
+  const e=document.getElementById(id); e.setAttribute("x",x); e.setAttribute("y",y);
+  if(t!==null)e.textContent=t;
+}
+function setPath(id,d){ document.getElementById(id).setAttribute("d",d); }
+
+const O={x:380,y:260}, R=150;
+const P=ptOn(O,R,250), Q=ptOn(O,R,290);
+
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle-line","data-key":"eqCircle",id:"eqCircle"},base);
+dot(O,"ptO","eqCenter","eqO"); text(O,"O","txt","eqCenter","eqOL",12,-10);
+dot(P,"pt","eqPts","eqP"); dot(Q,"pt","eqPts","eqQ");
+text(P,"P","txtSm","eqPts","eqPL",-6,-12); text(Q,"Q","txtSm","eqPts","eqQL",8,-12);
+
+["A","B","C","D"].forEach(k=>{
+  dot({x:0,y:0},"pt","eqEnds","eq"+k);
+  text({x:0,y:0},k,"txtSm","eqEnds","eq"+k+"L");
+});
+["PA","PB","QC","QD"].forEach(k=>line(P,P,"line","eqChords","eq"+k));
+["OA","OB","OC","OD"].forEach(k=>line(O,O,"radius","eqRadii","eq"+k));
+path("", "arc-red","eqArcs","eqArcAB");
+path("", "arc-red","eqArcs","eqArcCD");
+path("", "angle","eqInscribed","eqAngP");
+path("", "angle","eqInscribed","eqAngQ");
+path("", "angle","eqCentral","eqAngO1");
+path("", "angle","eqCentral","eqAngO2");
+text({x:560,y:180},"","eqTxt","eqReadout","eqT1");
+text({x:560,y:220},"","eqTxt","eqReadout","eqT2");
+text({x:560,y:260},"","eqTxt","eqReadout","eqT3");
+text({x:560,y:300},"","eqTxt","eqReadout","eqT4");
+
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle-line","data-key":"unCircle",id:"unCircle"},base);
+dot(O,"ptO","unCenter","unO"); text(O,"O","txt","unCenter","unOL",12,-10);
+dot(P,"pt","unPts","unP"); dot(Q,"pt","unPts","unQ");
+text(P,"P","txtSm","unPts","unPL",-6,-12); text(Q,"Q","txtSm","unPts","unQL",8,-12);
+
+["A","B","C","D"].forEach(k=>{
+  dot({x:0,y:0},"pt","unEnds","un"+k);
+  text({x:0,y:0},k,"txtSm","unEnds","un"+k+"L");
+});
+["PA","PB","QC","QD"].forEach(k=>line(P,P,"line","unChords","un"+k));
+["OA","OB","OC","OD"].forEach(k=>line(O,O,"radius","unRadii","un"+k));
+path("", "arc-red","unArcs","unArcAB");
+path("", "arc-red","unArcs","unArcCD");
+path("", "angle","unInscribed","unAngP");
+path("", "angle","unInscribed","unAngQ");
+text({x:560,y:200},"","eqTxt","unReadout","unT1");
+text({x:560,y:245},"","eqTxt","unReadout","unT2");
+
+let eqSpan=42;
+let idx=0;
+const checkedByStep=new Map();
+
+function updateEqualScene(span=eqSpan){
+  eqSpan=span;
+  const A=ptOn(O,R,160), B=ptOn(O,R,160-span);
+  const C=ptOn(O,R,20+span), D=ptOn(O,R,20);
+
+  setCircle("eqA",A); setCircle("eqB",B); setCircle("eqC",C); setCircle("eqD",D);
+  setText("eqAL",A.x-22,A.y+12); setText("eqBL",B.x-2,B.y+24);
+  setText("eqCL",C.x-14,C.y+24); setText("eqDL",D.x+8,D.y+12);
+
+  setLine("eqPA",P,A); setLine("eqPB",P,B); setLine("eqQC",Q,C); setLine("eqQD",Q,D);
+  setLine("eqOA",O,A); setLine("eqOB",O,B); setLine("eqOC",O,C); setLine("eqOD",O,D);
+
+  setPath("eqArcAB",circleArc(O,R,160-span,160));
+  setPath("eqArcCD",circleArc(O,R,20,20+span));
+  setPath("eqAngP",angleArc(P,A,B,34));
+  setPath("eqAngQ",angleArc(Q,C,D,34));
+  setPath("eqAngO1",angleArc(O,B,A,48));
+  setPath("eqAngO2",angleArc(O,D,C,48));
+
+  const pAng=Math.round(angleMeasure(P,A,B)*10)/10;
+  const qAng=Math.round(angleMeasure(Q,C,D)*10)/10;
+  document.getElementById("eqT1").textContent=`∠AOB = ${span}°`;
+  document.getElementById("eqT2").textContent=`∠COD = ${span}°`;
+  document.getElementById("eqT3").textContent=`∠APB = ${pAng}°`;
+  document.getElementById("eqT4").textContent=`∠CQD = ${qAng}°`;
+
+  const sOut=document.getElementById("spanOut");
+  const pOut=document.getElementById("pOut");
+  const qOut=document.getElementById("qOut");
+  if(sOut) sOut.textContent=`${span}°`;
+  if(pOut) pOut.textContent=`${pAng}°`;
+  if(qOut) qOut.textContent=`${qAng}°`;
+}
+function updateUnequalScene(){
+  const span1=28, span2=58;
+  const A=ptOn(O,R,160), B=ptOn(O,R,160-span1);
+  const C=ptOn(O,R,20+span2), D=ptOn(O,R,20);
+
+  setCircle("unA",A); setCircle("unB",B); setCircle("unC",C); setCircle("unD",D);
+  setText("unAL",A.x-22,A.y+12); setText("unBL",B.x-2,B.y+24);
+  setText("unCL",C.x-14,C.y+24); setText("unDL",D.x+8,D.y+12);
+
+  setLine("unPA",P,A); setLine("unPB",P,B); setLine("unQC",Q,C); setLine("unQD",Q,D);
+  setLine("unOA",O,A); setLine("unOB",O,B); setLine("unOC",O,C); setLine("unOD",O,D);
+
+  setPath("unArcAB",circleArc(O,R,160-span1,160));
+  setPath("unArcCD",circleArc(O,R,20,20+span2));
+  setPath("unAngP",angleArc(P,A,B,34));
+  setPath("unAngQ",angleArc(Q,C,D,34));
+
+  const pAng=Math.round(angleMeasure(P,A,B)*10)/10;
+  const qAng=Math.round(angleMeasure(Q,C,D)*10)/10;
+  document.getElementById("unT1").textContent=`∠APB = ${pAng}°`;
+  document.getElementById("unT2").textContent=`∠CQD = ${qAng}°`;
+}
+
+updateEqualScene();
+updateUnequalScene();
+
+const steps = [
+  {
+    title:"질문으로 시작하기",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs"],
+    text:"한 원에서 길이가 같은 두 호를 바라보는 원주각의 크기는 어떨까요?"
+  },
+  {
+    title:"활동. 같은 길이의 두 호",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed","eqCentral","eqRadii","eqReadout"],
+    text:"슬라이더를 움직여 보세요. 길이가 같은 두 호 AB, CD에 대하여 중심각과 원주각의 크기를 살펴봅시다.",
+    activity:"equalSpan"
+  },
+  {
+    title:"중심각 먼저 보기",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqCentral","eqRadii"],
+    text:'<span class="click-math" data-action="eqArc">길이가 같은 두 호 AB, CD</span>에 대한 <span class="click-math" data-action="eqCentral">중심각 ∠AOB, ∠COD</span>의 크기는 같습니다.',
+    clickable:true
+  },
+  {
+    title:"앞에서 배운 성질 사용하기",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed","eqCentral","eqRadii"],
+    text:'앞에서 배운 대로 <span class="click-math" data-action="leftHalf">∠APB = 1/2 ∠AOB</span>이고, <span class="click-math" data-action="rightHalf">∠CQD = 1/2 ∠COD</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"첫 번째 결론",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed"],
+    text:'따라서 <span class="click-math" data-action="eqInscribed">길이가 같은 호에 대한 원주각의 크기는 같습니다.</span> 즉, ∠APB = ∠CQD입니다.',
+    clickable:true
+  },
+  {
+    title:"반대로 생각해 보기",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed"],
+    text:"그렇다면 반대로, 크기가 같은 원주각이 바라보는 호의 길이도 같을까요?"
+  },
+  {
+    title:"두 중심각으로 바꾸기",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed","eqCentral","eqRadii"],
+    text:'만약 <span class="click-math" data-action="sameInscribed">∠APB = ∠CQD</span>라면, 각각 대응하는 중심각의 크기도 같습니다. 즉 <span class="click-math" data-action="sameCentral">∠AOB = ∠COD</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"두 번째 결론",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqCentral","eqRadii"],
+    text:'중심각의 크기가 같으면 그에 대한 호의 길이도 같습니다. 따라서 <span class="click-math" data-action="sameArcFromAngle">크기가 같은 원주각에 대한 호의 길이는 같습니다.</span>',
+    clickable:true
+  },
+  {
+    title:"호가 더 길어지면",
+    show:["unCircle","unCenter","unPts","unEnds","unChords","unArcs","unInscribed","unReadout"],
+    text:"이번에는 한 호를 더 길게 해 보았습니다. 더 긴 호를 바라보는 원주각이 더 크게 나타나는지 살펴봅시다."
+  },
+  {
+    title:"호의 길이와 원주각",
+    show:["unCircle","unCenter","unPts","unEnds","unChords","unArcs","unInscribed"],
+    text:'한 원 또는 합동인 두 원에서 <span class="click-math" data-action="longerArc">호가 더 길면</span>, 그에 대한 <span class="click-math" data-action="largerAngle">원주각의 크기도 더 큽니다.</span>',
+    clickable:true
+  },
+  {
+    title:"정리",
+    show:["eqCircle","eqCenter","eqPts","eqEnds","eqChords","eqArcs","eqInscribed","eqCentral","eqRadii"],
+    text:'① <span class="click-math" data-action="sum1">길이가 같은 호에 대한 원주각의 크기는 같다.</span><br>② <span class="click-math" data-action="sum2">크기가 같은 원주각에 대한 호의 길이는 같다.</span><br>③ 같은 원에서 <span class="click-math" data-action="sum3">호의 길이가 커질수록 원주각의 크기도 커진다.</span>',
+    clickable:true
+  }
+];
+
+function clearFocus(){
+  document.querySelectorAll(".focusLine,.focusDot,.focusText,.focusAngle").forEach(e=>{
+    e.classList.remove("focusLine","focusDot","focusText","focusAngle");
+  });
+}
+function focus(ids){
+  clearFocus();
+  ids.forEach(id=>{
+    const e=document.getElementById(id); if(!e)return;
+    if(e.tagName==="circle") e.classList.add("focusDot");
+    else if(e.tagName==="text") e.classList.add("focusText");
+    else if(e.tagName==="path") e.classList.add("focusAngle");
+    else e.classList.add("focusLine");
+  });
+  setTimeout(clearFocus,2200);
+}
+
+function actionTargets(a){
+  return ({
+    eqArc:["eqArcAB","eqArcCD"],
+    eqCentral:["eqAngO1","eqAngO2","eqOA","eqOB","eqOC","eqOD"],
+    leftHalf:["eqAngP","eqAngO1","eqPA","eqPB","eqOA","eqOB"],
+    rightHalf:["eqAngQ","eqAngO2","eqQC","eqQD","eqOC","eqOD"],
+    eqInscribed:["eqAngP","eqAngQ"],
+    sameInscribed:["eqAngP","eqAngQ"],
+    sameCentral:["eqAngO1","eqAngO2","eqOA","eqOB","eqOC","eqOD"],
+    sameArcFromAngle:["eqArcAB","eqArcCD"],
+    longerArc:["unArcAB","unArcCD"],
+    largerAngle:["unAngP","unAngQ"],
+    sum1:["eqArcAB","eqArcCD","eqAngP","eqAngQ"],
+    sum2:["eqAngP","eqAngQ","eqArcAB","eqArcCD"],
+    sum3:["unArcAB","unArcCD","unAngP","unAngQ"]
+  })[a] || [];
+}
+
+function bindClickable(){
+  const checked=checkedByStep.get(idx)||new Set();
+  document.querySelectorAll(".click-math").forEach(el=>{
+    const a=el.dataset.action;
+    if(checked.has(a)){
+      el.classList.add("checked");
+      if(!el.querySelector(".checkmark")){
+        const c=document.createElement("span"); c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+      }
+    }
+    el.addEventListener("click",()=>{
+      focus(actionTargets(a));
+      checked.add(a); checkedByStep.set(idx,checked);
+      el.classList.add("checked");
+      if(!el.querySelector(".checkmark")){
+        const c=document.createElement("span"); c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+      }
+    });
+  });
+}
+
+function renderControls(){
+  controls.innerHTML="";
+  if(steps[idx].activity!=="equalSpan") return;
+  const box=document.createElement("div");
+  box.className="controls";
+  box.innerHTML=`
+    <label for="eqSlider">같은 길이의 두 호를 함께 조절해 보기</label>
+    <input id="eqSlider" type="range" min="20" max="65" value="${Math.round(eqSpan)}">
+    <div class="readout">
+      <span>∠AOB = ∠COD = <b id="spanOut"></b></span>
+      <span>∠APB = <b id="pOut"></b></span>
+      <span>∠CQD = <b id="qOut"></b></span>
+    </div>
+    <div class="activity-note">두 호의 길이는 항상 같게 유지됩니다. 각의 크기가 어떻게 달라지는지 살펴보세요.</div>`;
+  controls.appendChild(box);
+  document.getElementById("eqSlider").addEventListener("input",e=>{
+    updateEqualScene(Number(e.target.value));
+  });
+  updateEqualScene(eqSpan);
+}
+
+const all=[...document.querySelectorAll("[data-key]")];
+
+function render(){
+  clearFocus();
+  const s=steps[idx];
+  all.forEach(e=>e.classList.toggle("off", !s.show.includes(e.getAttribute("data-key"))));
+  badge.textContent=`${idx+1} / ${steps.length}`;
+  title.textContent=s.title;
+  subtitle.innerHTML=s.text;
+  hint.textContent=s.clickable ? "밑줄 친 글자를 눌러 그림에서 확인하세요." : "";
+  prev.disabled=idx===0; next.disabled=idx===steps.length-1;
+  bar.style.width=`${(idx+1)/steps.length*100}%`;
+  stepText.textContent=`${idx+1}단계`;
+  renderControls();
+  bindClickable();
+}
+
+prev.addEventListener("click",()=>{ if(idx>0){ idx--; render(); }});
+next.addEventListener("click",()=>{ if(idx<steps.length-1){ idx++; render(); }});
+document.addEventListener("keydown",e=>{
+  const tag=document.activeElement?.tagName;
+  if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
+  if(e.key==="ArrowRight" && idx<steps.length-1){ idx++; render(); }
+  if(e.key==="ArrowLeft" && idx>0){ idx--; render(); }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
