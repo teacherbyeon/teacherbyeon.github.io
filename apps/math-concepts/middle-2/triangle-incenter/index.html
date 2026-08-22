@@ -167,6 +167,13 @@ text.focus-text{font-weight:900}
 .angle-x{stroke:var(--text);stroke-width:3;stroke-linecap:round}
 .angle-mark-focus{fill:var(--focus)!important;stroke:var(--focus)!important;filter:drop-shadow(0 0 6px var(--focusSoft))}
 
+.check-panel{display:block;margin:8px auto 2px;max-width:1000px;text-align:center;line-height:1.8}
+.check-panel:empty{display:none}
+.check-hint{display:inline-block;margin-right:6px;color:var(--muted);font-size:13px}
+button.link-check{display:inline;padding:1px 3px;border:0;border-radius:0;background:transparent;color:var(--accent);font:inherit;font-weight:850;text-decoration-line:underline;text-decoration-style:dotted;text-decoration-thickness:2px;text-underline-offset:5px;cursor:pointer}
+button.link-check:hover,button.link-check:focus{background:var(--accentBg);outline:2px solid transparent}
+button.link-check.done{color:#15803d;text-decoration-style:solid}
+button.link-check.done::after{content:" ✓";font-weight:900}
 </style>
 </head>
 <body>
@@ -690,20 +697,32 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
     });
   }
 
+  function escapeInline(text){return String(text??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;"}[c]))}
+
   function renderChecks(step){
     checkPanel.innerHTML="";
+    scriptText.textContent=step.script;
     if(!step.checks?.length) return;
+    let html=escapeInline(step.script).replace(/\n/g,"<br>");
+    const remaining=[];
     step.checks.forEach((item,i)=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="check-item";
-      button.innerHTML=`${item.label}<small>눌러 보기</small>`;
+      const label=escapeInline(item.label);
+      if(html.includes(label)){
+        html=html.replace(label,`<button type="button" class="link-check" data-check="${i}" aria-label="${label} 눌러 확인">${label}</button>`);
+      }else remaining.push(i);
+    });
+    scriptText.innerHTML=html;
+    if(remaining.length){
+      checkPanel.innerHTML=`<span class="check-hint">그림에서 확인:</span> `+remaining.map(i=>`<button type="button" class="link-check" data-check="${i}" aria-label="${escapeInline(step.checks[i].label)} 눌러 확인">${escapeInline(step.checks[i].label)}</button>`).join(" · ");
+    }else{
+      checkPanel.innerHTML=`<span class="check-hint">밑줄 친 글자를 눌러 그림에서 확인하세요.</span>`;
+    }
+    [...scriptText.querySelectorAll("[data-check]"),...checkPanel.querySelectorAll("[data-check]")].forEach(button=>{
       button.addEventListener("click",()=>{
-        showCheckFocus(item.ids);
+        showCheckFocus(step.checks[Number(button.dataset.check)].ids);
         button.classList.add("done");
-        button.querySelector("small").textContent="✓ 확인 완료";
+        button.setAttribute("aria-label",button.textContent+" 확인 완료");
       });
-      checkPanel.appendChild(button);
     });
   }
 
