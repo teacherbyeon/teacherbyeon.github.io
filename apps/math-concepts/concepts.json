@@ -67,5 +67,30 @@
     "unitOrder": 1,
     "conceptOrder": 2,
     "published": true
+  },
+  {
+    "id": "circle-tangent-length",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원의 접선의 길이",
+    "description": "원 밖의 한 점에서 그은 두 접선의 길이가 같은 이유를 직접 움직이고 증명하며 이해합니다.",
+    "href": "./middle-3/circle-tangent-length/",
+    "tags": [
+      "원",
+      "접선",
+      "접점",
+      "접선의 길이",
+      "직각삼각형",
+      "합동",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 3,
+    "published": true
   }
 ]
