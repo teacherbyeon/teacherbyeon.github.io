@@ -33,7 +33,7 @@ svg{width:100%;height:auto;max-height:70vh;overflow:visible}
 
 .script p{margin:0;white-space:pre-line;line-height:1.65;font-size:26px;font-weight:600}
 
-.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:14px}
+.check-panel{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:8px auto 2px;max-width:1000px}.check-item{min-width:170px;padding:10px 13px}.check-item small{display:block;margin-top:4px;color:var(--muted);font-size:12px}.check-item.done{border-color:var(--accent);background:var(--accentBg)}.check-item.done small{color:var(--accent);font-weight:800}.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:14px}
 .progress{height:8px;background:var(--chip);border-radius:999px;overflow:hidden;flex:1;max-width:430px}
 .progress>div{height:100%;background:var(--accent);transition:width .25s}
 .small{font-size:14px;color:var(--muted)}
@@ -191,6 +191,7 @@ text.focus-text{font-weight:900}
 
     <aside class="script" id="scriptPanel" aria-label="설명 자막">
       <p id="scriptText"></p>
+      <div class="check-panel" id="checkPanel"></div>
     </aside>
   </div>
 
@@ -456,6 +457,12 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
       focus:[],
       dimOthers:false,
       sequence:"rhs",
+      checks:[
+        {label:"두 삼각형은 모두 직각삼각형",ids:["rightE","rightF"]},
+        {label:"IC는 공통인 빗변",ids:["CIline"]},
+        {label:"IE = IF",ids:["perpE","perpF"]},
+        {label:"두 직각삼각형은 서로 합동",ids:["rightE","rightF","CIline","perpE","perpF"]}
+      ],
       script:"두 삼각형은 모두 직각삼각형입니다.\n\n선분 IC는 두 삼각형의 공통인 빗변입니다.\n\n또 선분 IE와 선분 IF의 길이는 같습니다.\n\n따라서 두 직각삼각형은 서로 합동입니다.",
       cue:"이 단계에서는 직각 표시 → 빗변 IC → IE와 IF 순서로 하나씩만 강조됩니다."
     },
@@ -495,6 +502,12 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
       focus:[],
       dimOthers:false,
       sequence:"summary_incenter",
+      checks:[
+        {label:"∠A의 이등분선",ids:["bisAline"]},
+        {label:"∠B의 이등분선",ids:["bisBline"]},
+        {label:"∠C의 이등분선",ids:["bisCline"]},
+        {label:"세 이등분선이 내심 I에서 만남",ids:["bisAline","bisBline","bisCline","pointI","labelI","conclusionText"]}
+      ],
       script:"1. 삼각형의 세 내각의 이등분선은 한 점, 내심에서 만난다.",
       cue:"세 이등분선이 차례로 강조된 뒤, 마지막에 내심과 정리 문장이 함께 강조됩니다."
     },
@@ -504,6 +517,12 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
       focus:[],
       dimOthers:false,
       sequence:"summary_distance",
+      checks:[
+        {label:"거리 ID",ids:["perpD"]},
+        {label:"거리 IE",ids:["perpE"]},
+        {label:"거리 IF",ids:["perpF"]},
+        {label:"ID = IE = IF",ids:["perpD","perpE","perpF","equalTextLabel","pointI","labelI"]}
+      ],
       script:"2. 내심에서 삼각형의 세 변에 이르는 거리는 모두 같다.",
       cue:"ID, IE, IF가 차례로 강조된 뒤, 마지막에 세 거리와 등식이 함께 강조됩니다."
     }
@@ -519,6 +538,7 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
   const next=document.getElementById("nextBtn");
   const bar=document.getElementById("progressBar");
   const progressText=document.getElementById("progressText");
+  const checkPanel=document.getElementById("checkPanel");
 
   let sequenceTimers=[];
 
@@ -657,6 +677,36 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
     });
   }
 
+  function showCheckFocus(ids){
+    clearRhsFocus();
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      const tag=el.tagName.toLowerCase();
+      if(tag==="circle") el.classList.add("summary-flash-dot");
+      else if(tag==="text") el.classList.add("summary-flash-text");
+      else if(el.classList.contains("right")) el.classList.add("rhs-flash-right");
+      else el.classList.add("summary-flash-line");
+    });
+  }
+
+  function renderChecks(step){
+    checkPanel.innerHTML="";
+    if(!step.checks?.length) return;
+    step.checks.forEach((item,i)=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="check-item";
+      button.innerHTML=`${item.label}<small>눌러 보기</small>`;
+      button.addEventListener("click",()=>{
+        showCheckFocus(item.ids);
+        button.classList.add("done");
+        button.querySelector("small").textContent="✓ 확인 완료";
+      });
+      checkPanel.appendChild(button);
+    });
+  }
+
   function replayAnimation(step){
     if(!step.animate || !step.animation) return;
     void document.body.offsetWidth;
@@ -673,15 +723,16 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
     titleEl.textContent=s.title;
     badgeEl.textContent=`${idx+1} / ${steps.length}`;
     scriptText.textContent=s.script;
+    renderChecks(s);
     prev.disabled=idx===0;
     next.disabled=idx===steps.length-1;
     bar.style.width=`${((idx+1)/steps.length)*100}%`;
     progressText.textContent=`${idx+1}단계`;
     applyFocus(s);
     replayAnimation(s);
-    if(s.sequence==="rhs") runRhsSequence();
-    if(s.sequence==="summary_incenter") runSummaryIncenterSequence();
-    if(s.sequence==="summary_distance") runSummaryDistanceSequence();
+    if(!s.checks && s.sequence==="rhs") runRhsSequence();
+    if(!s.checks && s.sequence==="summary_incenter") runSummaryIncenterSequence();
+    if(!s.checks && s.sequence==="summary_distance") runSummaryDistanceSequence();
   }
 
   prev.addEventListener("click",()=>{if(idx>0){idx--;render();}});
