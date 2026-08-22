@@ -117,5 +117,30 @@
     "unitOrder": 1,
     "conceptOrder": 4,
     "published": true
+  },
+  {
+    "id": "inscribed-angle-arc",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원주각과 호의 관계",
+    "description": "호의 길이와 원주각의 크기 사이의 관계를 앞에서 배운 중심각의 성질을 이용해 이해합니다.",
+    "href": "./middle-3/inscribed-angle-arc/",
+    "tags": [
+      "원",
+      "원주각",
+      "호",
+      "호의 길이",
+      "중심각",
+      "원주각의 성질",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 5,
+    "published": true
   }
 ]
