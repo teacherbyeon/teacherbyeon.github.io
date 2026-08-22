@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>원주각과 중심각의 크기 v9</title>
+<style>
+:root{
+  --bg:#fff; --panel:#f7f7f8; --text:#171717; --muted:#6b7280;
+  --border:#d9dadd; --accent:#2563eb; --accent-soft:#eef4ff;
+  --focus:#f97316; --focus-soft:#fed7aa; --ok:#16803b;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif
+}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{
+  display:flex;align-items:center;gap:10px;padding:8px 0 12px;
+  border-bottom:1px solid var(--border)
+}
+.badge{padding:6px 10px;border-radius:999px;background:var(--accent-soft);font-size:14px}
+.title{font-size:18px;font-weight:750}
+.diagram{
+  margin-top:14px;min-height:540px;border:1px solid var(--border);border-radius:18px;
+  background:var(--panel);display:flex;align-items:center;justify-content:center;padding:12px
+}
+svg{width:100%;height:auto;max-height:65vh;overflow:visible}
+.subtitle{
+  text-align:center;font-size:23px;font-weight:650;line-height:1.62;
+  min-height:104px;padding:13px 14px 4px;white-space:pre-line
+}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px;padding-top:2px}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer
+}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.38;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}
+.small{font-size:14px;color:var(--muted)}
+.controls{
+  width:min(780px,100%);margin:0 auto 10px;padding:10px 12px;
+  background:#fff;border:1px solid var(--border);border-radius:14px
+}
+.controls label{display:block;font-size:15px;font-weight:700;margin-bottom:7px}
+.controls input[type=range]{width:100%}
+.readout{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-size:15px;color:var(--muted)}
+.readout b{color:var(--text)}
+.activity-note{text-align:center;color:var(--muted);font-size:14px;margin-top:6px}
+.click-math{
+  color:var(--accent);border-bottom:2px dotted var(--accent);
+  cursor:pointer;padding:0 2px;white-space:nowrap
+}
+.click-math.checked{color:var(--ok);border-bottom-color:var(--ok)}
+.checkmark{color:var(--ok);font-weight:800;margin-left:3px}
+
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}
+.off{opacity:0!important;pointer-events:none}
+.line,.circle-line{stroke:var(--text);stroke-width:3;fill:none;stroke-linecap:round}
+.helper{stroke:#7b8189;stroke-width:2.2;fill:none;stroke-dasharray:8 7;stroke-linecap:round}.hitline{stroke:transparent;stroke-width:9;fill:none;stroke-linecap:round}
+.radius{stroke:#59616c;stroke-width:2.7;fill:none;stroke-linecap:round}
+.arc-base{stroke:var(--accent);stroke-width:5;fill:none;stroke-linecap:round}
+.arc-soft{stroke:#9ec3ff;stroke-width:4;fill:none;stroke-linecap:round}
+.angle{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round}
+.angle-neutral{stroke:#4b5563;stroke-width:3;fill:none;stroke-linecap:round}
+.pt{fill:var(--text)} .ptO{fill:var(--accent)}
+.txt{fill:var(--text);font-size:24px;font-weight:750}
+.txtSm{fill:var(--muted);font-size:18px}
+.mathTxt{fill:var(--text);font-family:"Times New Roman","Cambria Math",serif;font-size:23px;font-style:italic}
+.eqTxt{fill:var(--accent);font-size:22px;font-weight:800}
+.drag{fill:var(--accent);stroke:#fff;stroke-width:3;cursor:grab;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
+.drag:active{cursor:grabbing}
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.focusLine{
+  stroke:var(--focus)!important;stroke-width:8px!important;stroke-dasharray:none!important;
+  filter:drop-shadow(0 0 7px var(--focus-soft)) drop-shadow(0 0 12px var(--focus));
+  animation:pulse .7s ease-in-out 3
+}
+.focusDot{fill:var(--focus)!important;filter:drop-shadow(0 0 8px var(--focus-soft));animation:blink .7s ease-in-out 3}
+.focusText{fill:var(--focus)!important;font-weight:900!important;filter:drop-shadow(0 0 5px var(--focus-soft));animation:blink .7s ease-in-out 3}
+.focusAngle{stroke:var(--focus)!important;stroke-width:7px!important;filter:drop-shadow(0 0 7px var(--focus-soft));animation:blink .55s ease-in-out 4}
+
+.persistAStroke{stroke:#0f766e!important;stroke-width:5px!important;filter:none!important;animation:none!important}
+.persistBStroke{stroke:#7c3aed!important;stroke-width:5px!important;filter:none!important;animation:none!important}
+.persistAText{fill:#0f766e!important;font-weight:850!important;filter:none!important;animation:none!important}
+.persistBText{fill:#7c3aed!important;font-weight:850!important;filter:none!important;animation:none!important}
+.persistADot{fill:#0f766e!important;filter:none!important;animation:none!important}
+.persistBDot{fill:#7c3aed!important;filter:none!important;animation:none!important}
+
+@keyframes pulse{0%,100%{stroke-width:7px}50%{stroke-width:10px}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+@media(max-width:820px){
+  .diagram{min-height:47vh}
+  .subtitle{font-size:20px;min-height:120px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="badge" id="badge">1 / 19</span>
+    <span class="title" id="title">삼각형의 외각 복습</span>
+  </div>
+
+  <section class="diagram">
+    <svg id="svg" viewBox="0 0 760 520" role="img" aria-label="원주각과 중심각의 관계 설명 그림">
+      <g id="base"></g>
+      <g id="lines"></g>
+      <g id="marks"></g>
+      <g id="labels"></g>
+    </svg>
+  </section>
+
+  <div id="controls"></div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="hint" id="hint"></div>
+
+  <div class="footer">
+    <button id="prev" type="button">이전</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span class="small" id="stepText">1단계</span>
+    <button id="next" class="primary" type="button">다음</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg");
+const base=document.getElementById("base"), lines=document.getElementById("lines"),
+      marks=document.getElementById("marks"), labels=document.getElementById("labels");
+const subtitle=document.getElementById("subtitle"), hint=document.getElementById("hint"),
+      controls=document.getElementById("controls"), badge=document.getElementById("badge"),
+      title=document.getElementById("title"), prev=document.getElementById("prev"),
+      next=document.getElementById("next"), bar=document.getElementById("bar"),
+      stepText=document.getElementById("stepText");
+
+function add(tag,attrs,parent=lines){
+  const e=document.createElementNS(NS,tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));
+  parent.appendChild(e); return e;
+}
+function line(P,Q,cls,key,id,parent=lines){
+  return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function dot(P,cls,key,id,r=6,parent=marks){
+  return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function text(P,s,cls,key,id,dx=0,dy=0,parent=labels){
+  const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${cls}`,"data-key":key,id},parent);
+  e.textContent=s; return e;
+}
+function path(d,cls,key,id,parent=marks){
+  return add("path",{d,class:`shape ${cls}`,"data-key":key,id},parent);
+}
+function ptOn(O,R,deg){
+  const a=(deg%360)*Math.PI/180;
+  return {x:O.x+R*Math.cos(a),y:O.y+R*Math.sin(a)};
+}
+function normDeg(d){ d%=360; if(d<0)d+=360; return d; }
+function cwDelta(start,end){
+  let d=normDeg(end)-normDeg(start);
+  if(d<0)d+=360;
+  return d;
+}
+function onCWArc(start,end,target){
+  return cwDelta(start,target) <= cwDelta(start,end);
+}
+function chooseInterceptedArc(aDeg,bDeg,pDeg){
+  const a=normDeg(aDeg), b=normDeg(bDeg), p=normDeg(pDeg);
+  if(onCWArc(a,b,p)) return {start:b,end:a}; // choose the other arc
+  return {start:a,end:b};
+}
+function circleArc(O,R,startDeg,endDeg){
+  const s=normDeg(startDeg), e=normDeg(endDeg);
+  let delta=e-s; if(delta<0)delta+=360;
+  const p1=ptOn(O,R,s), p2=ptOn(O,R,e);
+  return `M ${p1.x} ${p1.y} A ${R} ${R} 0 ${delta>180?1:0} 1 ${p2.x} ${p2.y}`;
+}
+function angleArc(V,P1,P2,r){
+  let a1=Math.atan2(P1.y-V.y,P1.x-V.x), a2=Math.atan2(P2.y-V.y,P2.x-V.x);
+  let d=a2-a1;
+  while(d<=-Math.PI)d+=2*Math.PI;
+  while(d>Math.PI)d-=2*Math.PI;
+  const s={x:V.x+r*Math.cos(a1),y:V.y+r*Math.sin(a1)};
+  const e={x:V.x+r*Math.cos(a1+d),y:V.y+r*Math.sin(a1+d)};
+  return `M ${s.x} ${s.y} A ${r} ${r} 0 0 ${d>0?1:0} ${e.x} ${e.y}`;
+}
+function angleMeasure(V,P1,P2){
+  const a={x:P1.x-V.x,y:P1.y-V.y}, b={x:P2.x-V.x,y:P2.y-V.y};
+  const dot=a.x*b.x+a.y*b.y;
+  const den=Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y);
+  return Math.acos(Math.max(-1,Math.min(1,dot/den)))*180/Math.PI;
+}
+function setLine(id,P,Q){
+  const e=document.getElementById(id);
+  e.setAttribute("x1",P.x); e.setAttribute("y1",P.y); e.setAttribute("x2",Q.x); e.setAttribute("y2",Q.y);
+}
+function setCircle(id,P){ const e=document.getElementById(id); e.setAttribute("cx",P.x); e.setAttribute("cy",P.y); }
+function setText(id,x,y,t=null){
+  const e=document.getElementById(id); e.setAttribute("x",x); e.setAttribute("y",y);
+  if(t!==null) e.textContent=t;
+}
+function setPath(id,d){ document.getElementById(id).setAttribute("d",d); }
+
+// ---------- 1~2. 삼각형의 외각 ----------
+const TA={x:225,y:355}, TB={x:405,y:155}, TC={x:535,y:355}, TD={x:665,y:355};
+line(TA,TB,"line","reviewTriangle","rAB");
+line(TB,TC,"line","reviewTriangle","rBC");
+line(TA,TC,"line","reviewTriangle","rAC");
+line(TC,TD,"line","reviewExtension","rCD");
+dot(TA,"pt","reviewPts","rA"); dot(TB,"pt","reviewPts","rB"); dot(TC,"pt","reviewPts","rC");
+text(TA,"A","txtSm","reviewPts","rAL",-22,18);
+text(TB,"B","txtSm","reviewPts","rBL",-4,-12);
+text(TC,"C","txtSm","reviewPts","rCL",-5,25);
+text(TD,"D","txtSm","reviewExtension","rDL",8,6);
+path(angleArc(TA,TB,TC,30),"angle-neutral","reviewAngles","rAngA");
+path(angleArc(TB,TC,TA,32),"angle-neutral","reviewAngles","rAngB");
+path(angleArc(TC,TD,TB,34),"angle","reviewExterior","rExterior");
+
+// ---------- 공통 원(탐색/추측용) ----------
+const O={x:385,y:260}, R=150;
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle-line","data-key":"exploreCircle",id:"exCircle"},base);
+dot(O,"ptO","exploreO","exO"); text(O,"O","txt","exploreO","exOL",12,-10);
+
+// dynamic points
+dot({x:0,y:0},"pt","exploreA","exA");
+dot({x:0,y:0},"pt","exploreB","exB");
+dot({x:0,y:0},"drag","exploreP","exP",10);
+text({x:0,y:0},"A","txtSm","exploreA","exAL");
+text({x:0,y:0},"B","txtSm","exploreB","exBL");
+text({x:0,y:0},"P","txt","exploreP","exPL");
+line({x:0,y:0},{x:0,y:0},"line","exploreSides","exPA");
+line({x:0,y:0},{x:0,y:0},"line","exploreSides","exPB");
+line({x:0,y:0},{x:0,y:0},"radius","exploreCentral","exOA");
+line({x:0,y:0},{x:0,y:0},"radius","exploreCentral","exOB");
+path("", "arc-base","exploreArc","exArc");
+path("", "angle","exploreInscribed","exAngP");
+path("", "angle","exploreCentralAngle","exAngO");
+text({x:560,y:176},"","eqTxt","exploreReadout","exRead1");
+text({x:560,y:198},"","eqTxt","exploreReadout","exRead2");
+text({x:560,y:238},"","eqTxt","exploreReadout","exRead3");
+
+// ---------- 경우 1 ----------
+const A1=ptOn(O,R,140), B1=ptOn(O,R,40), P1=ptOn(O,R,270), Q1=ptOn(O,R,90);
+dot(A1,"pt","case1Pts","c1A"); dot(B1,"pt","case1Pts","c1B"); dot(P1,"pt","case1Pts","c1P"); dot(Q1,"pt","case1Q","c1Q");
+text(A1,"A","txtSm","case1Pts","c1AL",-24,12); text(B1,"B","txtSm","case1Pts","c1BL",10,12);
+text(P1,"P","txtSm","case1Pts","c1PL",-6,-12); text(Q1,"Q","txtSm","case1Q","c1QL",-6,24);
+line(P1,A1,"line","case1Base","c1PA"); line(P1,B1,"line","case1Base","c1PB");
+line(O,A1,"radius","case1Radii","c1OA"); line(O,B1,"radius","case1Radii","c1OB");
+line(O,P1,"hitline","case1OP","c1OP"); line(O,Q1,"hitline","case1OQ","c1OQ"); line(P1,Q1,"helper","case1PQ","c1PQ");
+path(angleArc(P1,A1,O,28),"angle-neutral","case1PLabels","c1xP");
+path(angleArc(A1,P1,O,28),"angle-neutral","case1BaseAngles","c1xA");
+path(angleArc(P1,O,B1,28),"angle-neutral","case1PLabels","c1yP");
+path(angleArc(B1,O,P1,28),"angle-neutral","case1BaseAngles","c1yB");
+text({x:P1.x-48,y:P1.y+52},"x","mathTxt","case1Labels","c1xPtxt");
+text({x:A1.x+18,y:A1.y-16},"x","mathTxt","case1Labels","c1xAtxt");
+text({x:P1.x+30,y:P1.y+52},"y","mathTxt","case1Labels","c1yPtxt");
+text({x:B1.x-26,y:B1.y-8},"y","mathTxt","case1Labels","c1yBtxt");
+path(angleArc(O,A1,Q1,34),"angle","case1AOQ","c1AOQ");
+path(angleArc(O,Q1,B1,34),"angle","case1QOB","c1QOB");
+path(angleArc(P1,A1,B1,43),"angle","case1APB","c1APB");
+path(angleArc(O,B1,A1,48),"angle","case1AOB","c1AOB");
+text({x:530,y:170},"∠APB = x + y","eqTxt","case1Eq","c1Eq1",-10,0);
+text({x:530,y:210},"∠AOB = 2x + 2y","eqTxt","case1Eq","c1Eq2",-15,0);
+
+// ---------- 경우 2 ----------
+const A2=A1, B2=B1, P2=ptOn(O,R,320);
+dot(A2,"pt","case2Pts","c2A"); dot(B2,"pt","case2Pts","c2B"); dot(P2,"pt","case2Pts","c2P");
+text(A2,"A","txtSm","case2Pts","c2AL",-24,12); text(B2,"B","txtSm","case2Pts","c2BL",10,12); text(P2,"P","txtSm","case2Pts","c2PL",10,-8);
+line(P2,A2,"line","case2Base","c2PA"); line(P2,B2,"line","case2Base","c2PB");
+line(O,A2,"radius","case2Radii","c2OA"); line(O,B2,"radius","case2Radii","c2OB"); line(O,P2,"radius","case2Radii","c2OP");
+path(angleArc(B2,O,P2,28),"angle-neutral","case2BaseAngleMarks","c2OBP");
+path(angleArc(P2,B2,O,28),"angle-neutral","case2BaseAngleMarks","c2BPO");
+path(angleArc(O,B2,A2,44),"angle","case2Exterior","c2AOB");
+path(angleArc(P2,A2,B2,36),"angle","case2APB","c2APB");
+
+// ---------- 경우 3 ----------
+const A3=A1, B3=B1, P3=ptOn(O,R,360), Q3=ptOn(O,R,180);
+dot(A3,"pt","case3Pts","c3A"); dot(B3,"pt","case3Pts","c3B"); dot(P3,"pt","case3Pts","c3P"); dot(Q3,"pt","case3Q","c3Q");
+text(A3,"A","txtSm","case3Pts","c3AL",-24,12); text(B3,"B","txtSm","case3Pts","c3BL",10,12);
+text(P3,"P","txtSm","case3Pts","c3PL",10,2); text(Q3,"Q","txtSm","case3Q","c3QL",-25,2);
+line(P3,A3,"line","case3Base","c3PA"); line(P3,B3,"line","case3Base","c3PB");
+line(P3,Q3,"helper","case3PQ","c3PQ");
+line(O,A3,"radius","case3Radii","c3OA"); line(O,B3,"radius","case3Radii","c3OB"); line(O,Q3,"radius","case3OQ","c3OQ");
+path(circleArc(O,R,40,180),"arc-soft","case3ArcQB","c3ArcQB");
+path(circleArc(O,R,140,180),"arc-soft","case3ArcQA","c3ArcQA");
+path(angleArc(P3,Q3,B3,27),"angle-neutral","case3QPB","c3QPB");
+path(angleArc(P3,Q3,A3,39),"angle-neutral","case3QPA","c3QPA");
+path(angleArc(O,Q3,B3,44),"angle-neutral","case3QOB","c3QOB");
+path(angleArc(O,Q3,A3,58),"angle-neutral","case3QOA","c3QOA");
+path(angleArc(P3,A3,B3,48),"angle","case3APB","c3APB");
+path(angleArc(O,B3,A3,40),"angle","case3AOB","c3AOB");
+
+// 16단계: 두 원주각과 중심각의 크기를 x, 2x, y, 2y로 표시
+text({x:P3.x-42,y:P3.y+46},"x","mathTxt","case3XYLabels","c3X");
+text({x:O.x+36,y:O.y+58},"2x","mathTxt","case3XYLabels","c32X");
+text({x:P3.x-42,y:P3.y-6},"y","mathTxt","case3XYLabels","c3Y");
+text({x:O.x-72,y:O.y-8},"2y","mathTxt","case3XYLabels","c32Y");
+
+// 17단계에서 16단계의 x, y를 그대로 이용
+text({x:535,y:180},"∠APB = x - y","eqTxt","case3Eq","c3Eq1",-10,0);
+text({x:535,y:225},"∠AOB = 2x - 2y","eqTxt","case3Eq","c3Eq2",-18,0);
+
+// ---------- 정리 ----------
+const P4=ptOn(O,R,235), P5=ptOn(O,R,305);
+dot(A1,"pt","finalAB","fA"); dot(B1,"pt","finalAB","fB");
+text(A1,"A","txtSm","finalAB","fAL",-24,12); text(B1,"B","txtSm","finalAB","fBL",10,12);
+dot(P4,"pt","finalP","fP1"); dot(P5,"pt","finalP","fP2");
+text(P4,"P₁","txtSm","finalP","fP1L",-26,-5); text(P5,"P₂","txtSm","finalP","fP2L",10,-5);
+line(P4,A1,"line","finalChords","fP1A"); line(P4,B1,"line","finalChords","fP1B");
+line(P5,A1,"line","finalChords","fP2A"); line(P5,B1,"line","finalChords","fP2B");
+path(angleArc(P4,A1,B1,31),"angle","finalInscribed","fAng1");
+path(angleArc(P5,A1,B1,31),"angle","finalInscribed","fAng2");
+line(O,A1,"radius","finalCentral","fOA"); line(O,B1,"radius","finalCentral","fOB");
+path(circleArc(O,R,40,140),"arc-base","finalArc","fArc");
+path(angleArc(O,B1,A1,43),"angle","finalCentral","fAOB");
+
+// ---------- Steps ----------
+const steps = [
+  {
+    title:"삼각형의 외각 복습",
+    show:["reviewTriangle","reviewExtension","reviewPts"],
+    text:"삼각형의 한 외각의 크기와 그 외각에 이웃하지 않은 두 내각의 크기 사이에는 어떤 관계가 있었을까요?"
+  },
+  {
+    title:"삼각형의 외각 복습",
+    show:["reviewTriangle","reviewExtension","reviewPts","reviewAngles","reviewExterior"],
+    text:'중학교 1학년에서 배운 성질입니다. <span class="click-math" data-action="reviewExterior">삼각형의 한 외각의 크기는 그와 이웃하지 않는 두 내각의 크기의 합</span>과 같습니다.',
+    clickable:true
+  },
+  {
+    title:"원주각 탐색",
+    show:["exploreCircle","exploreO","exploreA","exploreB","exploreP","exploreSides","exploreArc","exploreInscribed"],
+    text:"호 AB와 호 AB 위에 있지 않은 원 위의 점 P에 대하여 각 APB를 원주각이라고 합니다. 호 AB에 대한 원주각을 탐색해 보세요.",
+    controlsMode:"exploreArc"
+  },
+  {
+    title:"호 AB 바꾸기",
+    show:["exploreCircle","exploreO","exploreA","exploreB","exploreP","exploreSides","exploreArc","exploreInscribed","exploreCentral","exploreCentralAngle","exploreReadout"],
+    text:"이번에는 A와 B의 위치를 바꾸어 호 AB를 크게 또는 작게 만들어 보세요. 이에 따라 원주각과 중심각의 크기는 어떻게 변하나요?",
+    controlsMode:"arcSize"
+  },
+  {
+    title:"점 P의 위치 바꾸기",
+    show:["exploreCircle","exploreO","exploreA","exploreB","exploreP","exploreSides","exploreArc","exploreInscribed","exploreCentral","exploreCentralAngle","exploreReadout"],
+    text:"호 AB를 그대로 두고 점 P의 위치를 직접 움직여 보세요. 같은 호 AB에 대한 원주각의 크기는 어떻게 되나요?",
+    controlsMode:"moveP"
+  },
+  {
+    title:"추측해 보기",
+    show:["exploreCircle","exploreO","exploreA","exploreB","exploreP","exploreSides","exploreArc","exploreInscribed","exploreCentral","exploreCentralAngle","exploreReadout"],
+    text:'탐색 결과를 바탕으로 추측해 봅시다. <span class="click-math" data-action="sameArcDyn">같은 호 AB에 대한 원주각의 크기는 모두 같고</span>, <span class="click-math" data-action="relationDyn">원주각의 크기는 중심각의 크기의 1/2</span>인 것 같습니다.',
+    clickable:true
+  },
+  {
+    title:"이제 증명해 봅시다",
+    show:["exploreCircle","exploreO","exploreA","exploreB","exploreP","exploreSides","exploreArc","exploreInscribed","exploreCentral","exploreCentralAngle","exploreReadout"],
+    text:"이제 이 추측이 왜 항상 성립하는지 경우를 나누어 증명해 봅시다. 먼저 중심 O가 원주각의 안쪽에 있는 경우부터 살펴보겠습니다."
+  },
+  {
+    title:"경우 1. 보조선 긋기",
+    show:["exploreCircle","exploreO","case1Pts","case1Q","case1Base","case1Radii","case1PQ"],
+    text:'중심 O가 ∠APB의 안쪽에 있습니다. 중심 O를 이용해 두 삼각형을 만들어 보기 위해 <span class="click-math" data-action="showC1PQ">P와 O를 지나는 직선 PQ를 그어 봅시다.</span>',
+    clickable:true
+  },
+  {
+    title:"경우 1. 두 이등변삼각형",
+    show:["exploreCircle","exploreO","case1Pts","case1Q","case1Base","case1Radii","case1PQ","case1OP"],
+    text:'이제 △OPA와 △OPB를 살펴봅시다. <span class="click-math" data-action="c1OAOP">OA = OP</span>이고, <span class="click-math" data-action="c1OBOP">OB = OP</span>이므로 두 삼각형은 각각 이등변삼각형입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 1. 각을 x, y로 두기",
+    show:["exploreCircle","exploreO","case1Pts","case1Q","case1Base","case1Radii","case1PQ","case1PLabels","case1BaseAngles","case1Labels"],
+    text:'△OPA가 이등변삼각형이므로 ∠OPA = ∠OAP = x이고, △OPB가 이등변삼각형이므로 ∠OPB = ∠OBP = y로 둘 수 있습니다. 외각의 성질을 이용하면 <span class="click-math" data-action="c1AOQ">∠AOQ = 2x</span>, <span class="click-math" data-action="c1QOB">∠QOB = 2y</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 1의 결론",
+    show:["exploreCircle","exploreO","case1Pts","case1Base","case1Radii","case1APB","case1AOB","case1Eq"],
+    text:'그림에서 ∠APB = x + y이고, ∠AOB = 2x + 2y입니다. 따라서 <span class="click-math" data-action="c1Relation">∠APB = 1/2 ∠AOB</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 2. 중심 O가 원주각의 한 변 위에 있을 때",
+    show:["exploreCircle","exploreO","case2Pts","case2Base","case2Radii"],
+    text:"이번에는 중심 O가 원주각의 한 변 AP 위에 있는 경우입니다. △OBP를 이용해 관계를 확인해 봅시다."
+  },
+  {
+    title:"경우 2의 근거",
+    show:["exploreCircle","exploreO","case2Pts","case2Base","case2Radii","case2BaseAngleMarks","case2Exterior"],
+    text:'△OBP에서 <span class="click-math" data-action="c2Radius">OB = OP</span>이므로 <span class="click-math" data-action="c2BaseAngles">두 밑각의 크기가 같습니다.</span> 또 <span class="click-math" data-action="c2Exterior">∠AOB는 △OBP의 한 외각</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 2의 결론",
+    show:["exploreCircle","exploreO","case2Pts","case2Base","case2Radii","case2APB","case2Exterior"],
+    text:'따라서 ∠AOB = ∠OBP + ∠BPO = 2∠APB입니다. 그러므로 <span class="click-math" data-action="c2Relation">∠APB = 1/2 ∠AOB</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 3. 중심 O가 원주각의 바깥쪽에 있을 때",
+    show:["exploreCircle","exploreO","case3Pts","case3Q","case3Base","case3Radii"],
+    text:'이번에는 중심 O가 원주각의 바깥쪽에 있습니다. <span class="click-math" data-action="showC3PQ">P와 O를 지나는 직선을 그어</span> 원과 다시 만나는 점을 Q라고 하겠습니다.',
+    clickable:true
+  },
+  {
+    title:"앞의 결과를 이용하기",
+    show:["exploreCircle","exploreO","case3Pts","case3Q","case3Base","case3Radii","case3PQ","case3QPB","case3QPA","case3QOB","case3QOA","case3XYLabels"],
+    text:'<span class="click-math" data-action="c3First">호 QB에 대한 원주각 ∠QPB를 x라 하면 중심각 ∠QOB는 2x</span>입니다. 또 <span class="click-math" data-action="c3Second">호 QA에 대한 원주각 ∠QPA를 y라 하면 중심각 ∠QOA는 2y</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"경우 3의 결론",
+    show:["exploreCircle","exploreO","case3Pts","case3Q","case3Base","case3Radii","case3PQ","case3APB","case3AOB","case3Eq"],
+    text:'∠APB = x - y이고, ∠AOB = 2x - 2y = 2(x - y)입니다. 따라서 <span class="click-math" data-action="c3Relation">∠APB = 1/2 ∠AOB</span>입니다.',
+    clickable:true
+  },
+  {
+    title:"같은 호에 대한 원주각",
+    show:["exploreCircle","exploreO","finalAB","finalP","finalChords","finalInscribed","finalArc"],
+    text:'같은 호 AB에 대한 <span class="click-math" data-action="sameArc">원주각의 크기는 모두 같습니다.</span>',
+    clickable:true
+  },
+  {
+    title:"원주각과 중심각의 크기 정리",
+    show:["exploreCircle","exploreO","finalAB","finalP","finalChords","finalInscribed","finalCentral","finalArc"],
+    text:'① <span class="click-math" data-action="sameArc">한 호에 대한 원주각의 크기는 모두 같다.</span><br>② <span class="click-math" data-action="finalRelation">한 호에 대한 원주각의 크기는 그 호에 대한 중심각의 크기의 1/2이다.</span>',
+    clickable:true
+  }
+];
+
+let idx=0;
+let dragging=false;
+const checkedByStep=new Map();
+let revealC1PQ=false;
+let revealC3PQ=false;
+let persistC3First=false;
+let persistC3Second=false;
+
+// Dynamic state for exploration
+let exAdeg=145, exBdeg=395, exPdeg=270;
+let fixedArcSize=100;
+
+const all=[...document.querySelectorAll("[data-key]")];
+
+function clearFocus(){
+  document.querySelectorAll(".focusLine,.focusDot,.focusText,.focusAngle").forEach(e=>{
+    e.classList.remove("focusLine","focusDot","focusText","focusAngle");
+  });
+}
+function focus(ids){
+  clearFocus();
+  ids.forEach(id=>{
+    const e=document.getElementById(id); if(!e)return;
+    if(e.tagName==="circle") e.classList.add("focusDot");
+    else if(e.tagName==="text") e.classList.add("focusText");
+    else if(e.tagName==="path") e.classList.add("focusAngle");
+    else e.classList.add("focusLine");
+  });
+  setTimeout(clearFocus,2200);
+}
+
+function clearPersistentStep16(){
+  document.querySelectorAll(".persistAStroke,.persistBStroke,.persistAText,.persistBText,.persistADot,.persistBDot").forEach(e=>{
+    e.classList.remove("persistAStroke","persistBStroke","persistAText","persistBText","persistADot","persistBDot");
+  });
+}
+
+function applyPersistent(ids, group){
+  const strokeClass = group==="A" ? "persistAStroke" : "persistBStroke";
+  const textClass = group==="A" ? "persistAText" : "persistBText";
+  const dotClass = group==="A" ? "persistADot" : "persistBDot";
+
+  ids.forEach(id=>{
+    const e=document.getElementById(id);
+    if(!e) return;
+    if(e.tagName==="text") e.classList.add(textClass);
+    else if(e.tagName==="circle") e.classList.add(dotClass);
+    else e.classList.add(strokeClass);
+  });
+}
+function updateExploreGeometry(){
+  const A=ptOn(O,R,exAdeg), B=ptOn(O,R,exBdeg), P=ptOn(O,R,exPdeg);
+  const arc=chooseInterceptedArc(exAdeg,exBdeg,exPdeg);
+  setCircle("exA",A); setCircle("exB",B); setCircle("exP",P);
+  setText("exAL",A.x-24,A.y+12); setText("exBL",B.x+10,B.y+12); setText("exPL",P.x-7,P.y-13);
+  setLine("exPA",P,A); setLine("exPB",P,B); setLine("exOA",O,A); setLine("exOB",O,B);
+  setPath("exArc",circleArc(O,R,arc.start,arc.end));
+  setPath("exAngP",angleArc(P,A,B,38));
+  setPath("exAngO",circleArc(O,42,arc.start,arc.end));
+
+  const ins=angleMeasure(P,A,B);
+  const cen=cwDelta(arc.start,arc.end);
+  const read1=document.getElementById("exRead1"), read2=document.getElementById("exRead2"), read3=document.getElementById("exRead3");
+  read1.textContent="";
+  read2.textContent=`∠APB = ${Math.round(ins*10)/10}°`;
+  read3.textContent=`∠AOB = ${Math.round(cen)}°`;
+}
+function renderControls(){
+  controls.innerHTML="";
+  const mode=steps[idx].controlsMode;
+  if(!mode) return;
+
+  const box=document.createElement("div");
+  box.className="controls";
+
+  if(mode==="exploreArc"){
+    box.innerHTML=`
+      <label for="aSlider">점 A 위치</label>
+      <input id="aSlider" type="range" min="120" max="220" value="${Math.round(exAdeg)}">
+      <label for="bSlider" style="margin-top:8px">점 B 위치</label>
+      <input id="bSlider" type="range" min="320" max="420" value="${Math.round(exBdeg)}">
+      <div class="activity-note">호 AB는 점 P를 지나지 않는 호입니다. A와 B를 움직이며 어떤 각이 원주각인지 살펴보세요.</div>`;
+    controls.appendChild(box);
+    document.getElementById("aSlider").addEventListener("input",e=>{ exAdeg=Number(e.target.value); updateExploreGeometry(); syncExploreReadout(); });
+    document.getElementById("bSlider").addEventListener("input",e=>{ exBdeg=Number(e.target.value); updateExploreGeometry(); syncExploreReadout(); });
+    syncExploreReadout();
+  }
+  if(mode==="arcSize"){
+    const curArc=cwDelta(chooseInterceptedArc(exAdeg,exBdeg,exPdeg).start, chooseInterceptedArc(exAdeg,exBdeg,exPdeg).end);
+    box.innerHTML=`
+      <label for="arcSizeSlider">호 AB 조절</label>
+      <input id="arcSizeSlider" type="range" min="40" max="260" value="${Math.round(curArc)}">
+      <div class="readout">
+        <span>∠APB = <b id="angOut"></b></span>
+        <span>∠AOB = <b id="cenOut"></b></span>
+      </div>
+      <div class="activity-note">같은 점 P에서 A와 B의 위치만 바꾸어 보세요.</div>`;
+    controls.appendChild(box);
+    document.getElementById("arcSizeSlider").addEventListener("input",e=>{
+      const alpha=Number(e.target.value);
+      exAdeg=90+alpha/2;
+      exBdeg=450-alpha/2; // equivalent to 90-alpha/2 plus 360
+      exPdeg=270;
+      fixedArcSize=alpha;
+      updateExploreGeometry();
+      syncExploreReadout();
+    });
+    syncExploreReadout();
+  }
+  if(mode==="moveP"){
+    const alpha=fixedArcSize;
+    exAdeg=90+alpha/2;
+    exBdeg=450-alpha/2;
+    box.innerHTML=`
+      <label for="pSlider">점 P 위치</label>
+      <input id="pSlider" type="range" min="200" max="340" value="${Math.round(exPdeg)}">
+      <div class="readout">
+        <span>∠APB = <b id="angOut"></b></span>
+        <span>∠AOB = <b id="cenOut"></b></span>
+      </div>
+      <div class="activity-note">슬라이더를 움직이거나 그림의 파란 점 P를 원을 따라 끌어 보세요.</div>`;
+    controls.appendChild(box);
+    document.getElementById("pSlider").addEventListener("input",e=>{ exPdeg=Number(e.target.value); updateExploreGeometry(); syncExploreReadout(); });
+    syncExploreReadout();
+  }
+}
+function syncExploreReadout(){
+  const A=ptOn(O,R,exAdeg), B=ptOn(O,R,exBdeg), P=ptOn(O,R,exPdeg);
+  const arc=chooseInterceptedArc(exAdeg,exBdeg,exPdeg);
+  const arcDeg=Math.round(cwDelta(arc.start,arc.end));
+  const ins=Math.round(angleMeasure(P,A,B)*10)/10;
+  const arcOut=document.getElementById("arcOut"), angOut=document.getElementById("angOut"), cenOut=document.getElementById("cenOut");
+  if(arcOut) arcOut.textContent=`${arcDeg}°`;
+  if(angOut) angOut.textContent=`${ins}°`;
+  if(cenOut) cenOut.textContent=`${arcDeg}°`;
+}
+function actionTargets(a){
+  return ({
+    reviewExterior:["rAngA","rAngB","rExterior"],
+    sameArcDyn:["exArc","exAngP"],
+    relationDyn:["exArc","exAngP","exAngO","exOA","exOB"],
+    showC1PQ:["c1PQ"],
+    c1OAOP:["c1OA","c1OP"],
+    c1OBOP:["c1OB","c1OP"],
+    c1AOQ:["c1AOQ","c1xP","c1xA"],
+    c1QOB:["c1QOB","c1yP","c1yB"],
+    c1Relation:["c1APB","c1AOB","c1Eq1","c1Eq2"],
+    c2Radius:["c2OB","c2OP"],
+    c2BaseAngles:["c2OBP","c2BPO"],
+    c2Exterior:["c2AOB","c2OBP","c2BPO"],
+    c2Relation:["c2APB","c2AOB"],
+    showC3PQ:["c3PQ"],
+    c3First:["c3ArcQB","c3PB","c3OQ","c3OB","c3QPB","c3QOB","c3PQ","c3X","c32X"],
+    c3Second:["c3ArcQA","c3PA","c3OQ","c3OA","c3QPA","c3QOA","c3PQ","c3Y","c32Y"],
+    c3Relation:["c3APB","c3AOB","c3OA","c3OB","c3Eq1","c3Eq2"],
+    sameArc:["fArc","fAng1","fAng2"],
+    finalRelation:["fArc","fAng1","fAOB","fOA","fOB"]
+  })[a]||[];
+}
+function revealTemporarily(ids, ms=2400){
+  ids.forEach(id=>{
+    const e=document.getElementById(id);
+    if(e) e.classList.remove("off");
+  });
+  setTimeout(()=>{
+    if(idx===15){
+      ids.forEach(id=>{
+        const e=document.getElementById(id);
+        if(e) e.classList.add("off");
+      });
+    }
+  },ms);
+}
+
+function handleAction(a){
+  if(a==="c3First"){
+    persistC3First=true;
+    document.getElementById("c3ArcQB").classList.remove("off");
+    document.getElementById("c3OQ").classList.remove("off");
+    clearPersistentStep16();
+    if(persistC3First) applyPersistent(["c3ArcQB","c3PB","c3OQ","c3OB","c3QPB","c3QOB","c3PQ","c3X","c32X"], "A");
+    if(persistC3Second) applyPersistent(["c3ArcQA","c3PA","c3OQ","c3OA","c3QPA","c3QOA","c3PQ","c3Y","c32Y"], "B");
+    return;
+  }
+  if(a==="c3Second"){
+    persistC3Second=true;
+    document.getElementById("c3ArcQA").classList.remove("off");
+    document.getElementById("c3OQ").classList.remove("off");
+    clearPersistentStep16();
+    if(persistC3First) applyPersistent(["c3ArcQB","c3PB","c3OQ","c3OB","c3QPB","c3QOB","c3PQ","c3X","c32X"], "A");
+    if(persistC3Second) applyPersistent(["c3ArcQA","c3PA","c3OQ","c3OA","c3QPA","c3QOA","c3PQ","c3Y","c32Y"], "B");
+    return;
+  }
+  if(a==="showC1PQ"){
+    revealC1PQ=true;
+    document.getElementById("c1PQ").classList.remove("off");
+    document.getElementById("c1Q").classList.remove("off");
+    document.getElementById("c1QL").classList.remove("off");
+    const pq=document.getElementById("c1PQ");
+    pq.classList.remove("draw");
+    void pq.offsetWidth;
+    pq.classList.add("draw");
+    setTimeout(()=>pq.classList.remove("draw"),1200);
+  }
+  if(a==="showC3PQ"){
+    revealC3PQ=true;
+    document.getElementById("c3PQ").classList.remove("off");
+  }
+  if(a==="c1AOQ"){
+    const e=document.getElementById("c1AOQ");
+    e.classList.remove("off");
+    setTimeout(()=>{ if(idx===9) e.classList.add("off"); },2400);
+  }
+  if(a==="c1QOB"){
+    const e=document.getElementById("c1QOB");
+    e.classList.remove("off");
+    setTimeout(()=>{ if(idx===9) e.classList.add("off"); },2400);
+  }
+  focus(actionTargets(a));
+}
+function bindClickable(){
+  const checked=checkedByStep.get(idx)||new Set();
+  document.querySelectorAll(".click-math").forEach(el=>{
+    const a=el.dataset.action;
+    if(checked.has(a)){
+      el.classList.add("checked");
+      if(!el.querySelector(".checkmark")){
+        const c=document.createElement("span"); c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+      }
+    }
+    el.addEventListener("click",()=>{
+      handleAction(a);
+      checked.add(a); checkedByStep.set(idx,checked);
+      el.classList.add("checked");
+      if(!el.querySelector(".checkmark")){
+        const c=document.createElement("span"); c.className="checkmark"; c.textContent="✓"; el.appendChild(c);
+      }
+    });
+  });
+}
+function render(){
+  clearFocus();
+  const s=steps[idx];
+  all.forEach(e=>e.classList.toggle("off", !s.show.includes(e.getAttribute("data-key"))));
+
+  // 8단계: 처음에는 보조선 PQ와 점 Q를 보여 주지 않고, 문장을 눌렀을 때 나타낸다.
+  if(idx===7 && !revealC1PQ){
+    document.getElementById("c1PQ").classList.add("off");
+    document.getElementById("c1Q").classList.add("off");
+    document.getElementById("c1QL").classList.add("off");
+  }
+
+  // 15단계에서는 문장을 누르기 전까지 PQ를 숨긴다.
+  // 16단계부터는 앞 단계에서 그은 보조선 PQ가 점선으로 그대로 남는다.
+  if(idx===14 && !revealC3PQ){
+    document.getElementById("c3PQ").classList.add("off");
+  }
+
+  // 16단계에서는 OA, OB와 네 각 및 x, 2x, y, 2y는 계속 보인다.
+  // 두 호와 OQ는 해당 관계를 눌렀을 때만 추가로 나타난다.
+  if(idx===15){
+    ["c3ArcQB","c3ArcQA","c3OQ"].forEach(id=>{
+      document.getElementById(id).classList.add("off");
+    });
+    clearPersistentStep16();
+    if(persistC3First){
+      document.getElementById("c3ArcQB").classList.remove("off");
+      document.getElementById("c3OQ").classList.remove("off");
+      applyPersistent(["c3ArcQB","c3PB","c3OQ","c3OB","c3QPB","c3QOB","c3PQ","c3X","c32X"], "A");
+    }
+    if(persistC3Second){
+      document.getElementById("c3ArcQA").classList.remove("off");
+      document.getElementById("c3OQ").classList.remove("off");
+      applyPersistent(["c3ArcQA","c3PA","c3OQ","c3OA","c3QPA","c3QOA","c3PQ","c3Y","c32Y"], "B");
+    }
+  } else {
+    clearPersistentStep16();
+  }
+  badge.textContent=`${idx+1} / ${steps.length}`;
+  title.textContent=s.title;
+  subtitle.innerHTML=s.text;
+  hint.textContent=s.clickable ? "밑줄 친 글자를 눌러 그림에서 확인하세요." : "";
+  prev.disabled=idx===0; next.disabled=idx===steps.length-1;
+  bar.style.width=`${(idx+1)/steps.length*100}%`;
+  stepText.textContent=`${idx+1}단계`;
+  renderControls();
+  bindClickable();
+}
+document.getElementById("exP").addEventListener("pointerdown",e=>{
+  if(steps[idx].controlsMode!=="moveP") return;
+  dragging=true; e.currentTarget.setPointerCapture(e.pointerId);
+});
+document.getElementById("exP").addEventListener("pointermove",e=>{
+  if(!dragging || steps[idx].controlsMode!=="moveP") return;
+  const q=svg.createSVGPoint(); q.x=e.clientX; q.y=e.clientY;
+  const p=q.matrixTransform(svg.getScreenCTM().inverse());
+  let deg=Math.atan2(p.y-O.y,p.x-O.x)*180/Math.PI;
+  deg=normDeg(deg);
+  if(deg<200) deg=200;
+  if(deg>340) deg=340;
+  exPdeg=deg;
+  updateExploreGeometry();
+  syncExploreReadout();
+  const slider=document.getElementById("pSlider");
+  if(slider) slider.value=Math.round(deg);
+});
+document.getElementById("exP").addEventListener("pointerup",()=>dragging=false);
+document.getElementById("exP").addEventListener("pointercancel",()=>dragging=false);
+
+prev.addEventListener("click",()=>{ if(idx>0){ idx--; render(); }});
+next.addEventListener("click",()=>{ if(idx<steps.length-1){ idx++; render(); }});
+document.addEventListener("keydown",e=>{
+  const tag=document.activeElement?.tagName;
+  if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
+  if(e.key==="ArrowRight" && idx<steps.length-1){ idx++; render(); }
+  if(e.key==="ArrowLeft" && idx>0){ idx--; render(); }
+});
+
+updateExploreGeometry();
+render();
+})();
+</script>
+</body>
+</html>
+
