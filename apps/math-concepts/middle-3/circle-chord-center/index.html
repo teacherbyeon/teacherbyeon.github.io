@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>원의 현의 수직이등분선 성질 v3</title>
+<style>
+:root{--bg:#fff;--panel:#f7f7f8;--text:#171717;--muted:#6b7280;--border:#d9d9de;--accent:#2563eb;--focus:#ff7a00;--soft:#ffd59e}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.app{max-width:1080px;margin:0 auto;padding:14px}.top{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--border)}
+.badge{padding:6px 10px;border-radius:999px;background:#eef4ff;font-size:14px}.title{font-weight:700;font-size:18px}
+.diagram{margin-top:14px;min-height:550px;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:12px}
+svg{width:100%;height:auto;max-height:68vh;overflow:visible}.subtitle{padding:12px 14px 4px;text-align:center;font-size:25px;font-weight:600;line-height:1.6;min-height:92px;white-space:pre-line}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}button:disabled{opacity:.38}.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}.small{font-size:14px;color:var(--muted)}
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}.off{opacity:0!important;pointer-events:none}
+.circle-line,.base{stroke:var(--text);stroke-width:3;fill:none;stroke-linecap:round}.radius{stroke:var(--muted);stroke-width:2.5;fill:none;stroke-linecap:round}
+.bisector,.perp{stroke:var(--accent);stroke-width:4.5;fill:none;stroke-linecap:round}.pt{fill:var(--text)}.ptO{fill:var(--accent)}
+.txt{fill:var(--text);font-size:24px;font-weight:700}.txtSmall{fill:var(--muted);font-size:18px}.eq{fill:var(--accent);font-size:23px;font-weight:800}
+.conclusion{fill:var(--accent);font-size:23px;font-weight:800}.final-summary{font-size:18px!important;letter-spacing:-0.2px}.right{stroke:var(--text);stroke-width:2.2;fill:none}.tick{stroke:var(--focus);stroke-width:4;stroke-linecap:round}
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1s ease forwards}@keyframes draw{to{stroke-dashoffset:0}}
+.blink{animation:blink .8s ease-in-out 3}@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+.focusLine{stroke:var(--focus)!important;stroke-width:8px!important;stroke-dasharray:none!important;filter:drop-shadow(0 0 7px var(--soft)) drop-shadow(0 0 12px var(--focus));animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{stroke-width:7px}50%{stroke-width:10px}}.focusDot{fill:var(--focus)!important;filter:drop-shadow(0 0 8px var(--soft));animation:blink .8s ease-in-out infinite}
+.focusText{fill:var(--focus)!important;font-weight:900!important;filter:drop-shadow(0 0 5px var(--soft));animation:blink .8s ease-in-out infinite}
+.focusRight{stroke:var(--focus)!important;stroke-width:5px!important;filter:drop-shadow(0 0 8px var(--soft));animation:blink .6s ease-in-out 4}
+@media(max-width:820px){.diagram{min-height:48vh}.subtitle{font-size:22px;min-height:104px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><span class="badge" id="badge">1 / 17</span><span class="title" id="title">원의 중심과 현</span></div>
+  <section class="diagram">
+    <svg id="svg" viewBox="0 0 760 560" role="img" aria-label="원의 현과 수직이등분선의 성질 설명 그림">
+      <g id="circleLayer"></g><g id="lineLayer"></g><g id="markLayer"></g><g id="textLayer"></g>
+    </svg>
+  </section>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="footer">
+    <button id="prev">이전</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span class="small" id="stepText">1단계</span>
+    <button class="primary" id="next">다음</button>
+  </div>
+</div>
+<script>
+(()=>{
+const NS="http://www.w3.org/2000/svg";
+const circleLayer=document.getElementById("circleLayer"),lineLayer=document.getElementById("lineLayer"),markLayer=document.getElementById("markLayer"),textLayer=document.getElementById("textLayer");
+const O={x:300,y:285},R=175;
+const pc=d=>{const a=d*Math.PI/180;return{x:O.x+R*Math.cos(a),y:O.y+R*Math.sin(a)}};
+const A=pc(218),B=pc(338),C=pc(62),M={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
+const unit=(P,Q)=>{const dx=Q.x-P.x,dy=Q.y-P.y,l=Math.hypot(dx,dy);return{x:dx/l,y:dy/l}};
+function add(tag,a,p=lineLayer){const e=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));p.appendChild(e);return e}
+function ln(P,Q,cls,key,id,p=lineLayer){return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${cls}`,"data-key":key,id},p)}
+function dot(P,cls,key,id){return add("circle",{cx:P.x,cy:P.y,r:6,class:`shape ${cls}`,"data-key":key,id},markLayer)}
+function tx(P,s,cls,key,id,dx=0,dy=0){const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${cls}`,"data-key":key,id},textLayer);e.textContent=s;return e}
+
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle-line","data-key":"circle",id:"circle"},circleLayer);
+dot(O,"ptO","O","pointO"); tx(O,"O","txt","O","labelO",12,-10);
+dot(A,"pt","A","pointA");dot(B,"pt","B","pointB");dot(C,"pt","C","pointC");dot(M,"pt","M","pointM");
+tx(A,"A","txt","A","labelA",-28,16);tx(B,"B","txt","B","labelB",12,14);tx(C,"C","txt","C","labelC",10,-12);tx(M,"M","txtSmall","M","labelM",-8,25);
+ln(A,B,"base","AB","ABline");ln(A,C,"base","AC","ACline");ln(B,C,"base","BC","BCline");
+ln(O,A,"radius","radii","OAline");ln(O,B,"radius","radii","OBline");ln(O,C,"radius","radii","OCline");
+
+const om=unit(M,O),P1={x:O.x-om.x*225,y:O.y-om.y*225},P2={x:O.x+om.x*225,y:O.y+om.y*225};
+ln(P1,P2,"bisector","perpBisector","perpBisectorLine");ln(O,M,"perp","OM","OMline");
+const ab=unit(M,B),s=16;
+function right(sign,id){const u={x:ab.x*sign,y:ab.y*sign},p1={x:M.x+u.x*s,y:M.y+u.y*s},p2={x:p1.x+om.x*s,y:p1.y+om.y*s},p3={x:M.x+om.x*s,y:M.y+om.y*s};
+return add("polyline",{points:`${M.x},${M.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}`,class:"shape right","data-key":"rightMarks",id},markLayer)}
+right(-1,"rightA");right(1,"rightB");
+function tick(P,Q,t,id){const x=P.x+(Q.x-P.x)*t,y=P.y+(Q.y-P.y)*t,u=unit(P,Q),n={x:-u.y,y:u.x},L=10;return add("line",{x1:x-n.x*L,y1:y-n.y*L,x2:x+n.x*L,y2:y+n.y*L,class:"shape tick","data-key":"equalMarks",id},markLayer)}
+tick(A,M,.55,"tickAM");tick(M,B,.45,"tickBM");
+
+tx({x:575,y:205},"OA = OB = OC","eq","eqRadii","eqRadiiText",-65,0);
+tx({x:575,y:190},"OA = OB","eq","proofEq1","proofEq1Text",-48,0);
+tx({x:575,y:245},"OM = OM","eq","proofEq2","proofEq2Text",-50,0);
+tx({x:575,y:300},"∠OMA = ∠OMB = 90°","eq","proofEq3","proofEq3Text",-105,0);
+tx({x:575,y:370},"△OAM ≡ △OBM","eq","proofCong","proofCongText",-85,0);
+tx({x:575,y:245},"AM = BM","eq","eqChord","eqChordText",-45,0);
+tx({x:380,y:58},"원의 현의 수직이등분선은 그 원의 중심을 지난다.","conclusion","conclusion1","conclusion1Text",-235,0);
+tx({x:380,y:58},"원의 중심에서 현에 내린 수선은 그 현을 수직이등분한다.","conclusion","conclusion2","conclusion2Text",-270,0);
+const fs1=add("text",{x:485,y:190,class:"shape eq final-summary","data-key":"finalSummary",id:"finalSummary1"},textLayer);
+const fs1a=add("tspan",{x:485,dy:0},fs1); fs1a.textContent="① 현의 수직이등분선은";
+const fs1b=add("tspan",{x:505,dy:28},fs1); fs1b.textContent="원의 중심 O를 지난다.";
+
+const fs2=add("text",{x:485,y:285,class:"shape eq final-summary","data-key":"finalSummary",id:"finalSummary2"},textLayer);
+const fs2a=add("tspan",{x:485,dy:0},fs2); fs2a.textContent="② 중심 O에서 현에 내린 수선은";
+const fs2b=add("tspan",{x:505,dy:28},fs2); fs2b.textContent="그 현을 수직이등분한다.";
+
+const steps=[
+{title:"원의 중심과 현",show:["circle","O"],sub:"원의 중심과 현 사이에는 어떤 특별한 관계가 있을까요?",seq:"intro"},
+{title:"현 AB 그리기",show:["circle","O","AB","A","B"],sub:"먼저 원 O에 현 AB를 그어 봅시다.",anim:["ABline"],focus:["pointA","labelA","pointB","labelB"]},
+{title:"점 C와 △ABC",show:["circle","O","AB","A","B","C","AC","BC"],sub:"원 위에 AB와 다른 점 C를 잡고, A와 C, B와 C를 연결해 △ABC를 만들어 봅시다.",seq:"triangle"},
+{title:"세 반지름 비교",show:["circle","O","AB","A","B","C","AC","BC","radii","eqRadii"],sub:"OA, OB, OC는 모두 같은 원의 반지름입니다. 따라서 OA = OB = OC입니다.",seq:"radii"},
+{title:"점 O는 △ABC의 외심",show:["circle","O","AB","A","B","C","AC","BC","radii"],sub:"점 O는 △ABC의 세 꼭짓점 A, B, C에서 같은 거리에 있으므로 △ABC의 외심입니다.",seq:"circumcenter"},
+{title:"AB의 수직이등분선",show:["circle","O","AB","A","B","C","AC","BC","perpBisector","M"],sub:"외심은 세 변의 수직이등분선이 만나는 점이므로, AB의 수직이등분선도 점 O를 지납니다.",anim:["perpBisectorLine"],focus:["perpBisectorLine","pointO","labelO"]},
+{title:"첫 번째 성질",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"원의 현의 수직이등분선은 그 원의 중심을 지납니다.",seq:"property1"},
+{title:"이번에는 반대로",show:["circle","O","AB","A","B"],sub:"이번에는 반대로 생각해 봅시다. 원의 중심 O에서 현 AB에 수선을 내려 보겠습니다.",seq:"intro"},
+{title:"중심에서 현에 수선",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"O에서 현 AB에 내린 수선의 발을 M이라고 하겠습니다.",seq:"perpendicular"},
+{title:"증명할 내용",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"점 M은 현 AB의 중점일까요? 즉, AM = BM일까요?",seq:"question"},
+{title:"두 직각삼각형 비교",show:["circle","O","AB","A","B","OM","M","rightMarks","radii"],sub:"△OAM과 △OBM을 비교해 봅시다.\nOA = OB, OM은 공통인 변이고, ∠OMA = ∠OMB = 90°입니다.",seq:"rhsParts"},
+{title:"직각삼각형의 합동",show:["circle","O","AB","A","B","OM","M","rightMarks","radii","proofEq1","proofEq2","proofEq3","proofCong"],sub:"따라서 두 직각삼각형은 빗변과 다른 한 변의 길이가 각각 같으므로 서로 합동입니다.",seq:"rhsProof"},
+{title:"AM = BM",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","eqChord"],sub:"두 삼각형이 합동이므로 대응하는 변의 길이가 같습니다. 따라서 AM = BM입니다.",seq:"equalChord"},
+{title:"두 번째 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"원의 중심에서 현에 내린 수선은 그 현을 수직이등분합니다.",seq:"property2"},
+{title:"정리 1",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"1. 원의 현의 수직이등분선은 그 원의 중심을 지난다.",seq:"summary1"},
+{title:"정리 2",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"2. 원의 중심에서 현에 내린 수선은 그 현을 수직이등분한다.",seq:"summary2"},
+{title:"현의 수직이등분선의 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","finalSummary"],sub:"현의 수직이등분선의 성질",seq:"finalSummary"}
+];
+
+let idx=0,timers=[];
+const all=[...document.querySelectorAll("[data-key]")],badge=document.getElementById("badge"),title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
+function clear(){timers.forEach(clearTimeout);timers=[];document.querySelectorAll(".draw,.blink,.focusLine,.focusDot,.focusText,.focusRight").forEach(e=>e.classList.remove("draw","blink","focusLine","focusDot","focusText","focusRight"))}
+function focus(ids){document.querySelectorAll(".focusLine,.focusDot,.focusText,.focusRight").forEach(e=>e.classList.remove("focusLine","focusDot","focusText","focusRight"));ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;if(e.tagName==="circle")e.classList.add("focusDot");else if(e.tagName==="text")e.classList.add("focusText");else if(e.classList.contains("right"))e.classList.add("focusRight");else e.classList.add("focusLine")})}
+function later(ms,fn){timers.push(setTimeout(fn,ms))}
+function seq(name){
+ if(name==="intro")document.getElementById("pointO").classList.add("blink"),document.getElementById("labelO").classList.add("blink");
+ if(name==="triangle"){document.getElementById("pointC").classList.add("blink");document.getElementById("labelC").classList.add("blink");later(900,()=>document.getElementById("ACline").classList.add("draw"));later(1600,()=>document.getElementById("BCline").classList.add("draw"))}
+ if(name==="radii"){focus(["OAline"]);later(1300,()=>focus(["OBline"]));later(2600,()=>focus(["OCline"]));later(3900,()=>focus(["OAline","OBline","OCline","eqRadiiText"]));later(6300,()=>focus([]))}
+ if(name==="circumcenter"){focus(["pointA","labelA"]);later(1100,()=>focus(["pointB","labelB"]));later(2200,()=>focus(["pointC","labelC"]));later(3300,()=>focus(["pointO","labelO"]));later(5500,()=>focus([]))}
+ if(name==="property1"){focus(["perpBisectorLine"]);later(1600,()=>focus(["pointO","labelO"]));later(3000,()=>focus(["perpBisectorLine","pointO","labelO","conclusion1Text"]));later(6200,()=>focus([]))}
+ if(name==="perpendicular"){document.getElementById("OMline").classList.add("draw");later(1000,()=>focus(["rightA","rightB"]));later(1900,()=>{document.getElementById("pointM").classList.add("blink");document.getElementById("labelM").classList.add("blink")});later(4200,()=>focus([]))}
+ if(name==="question"){focus(["pointM","labelM"]);later(1200,()=>focus(["ABline"]));later(3300,()=>focus([]))}
+ if(name==="rhsParts"){focus(["OAline","OBline"]);later(2200,()=>focus(["OMline"]));later(4400,()=>focus(["rightA","rightB"]));later(6800,()=>focus([]))}
+ if(name==="rhsProof"){["proofEq1Text","proofEq2Text","proofEq3Text","proofCongText"].forEach(id=>document.getElementById(id).style.opacity="0");[["proofEq1Text",0],["proofEq2Text",1300],["proofEq3Text",2600],["proofCongText",4100]].forEach(([id,ms])=>later(ms,()=>{document.getElementById(id).style.opacity="1";focus([id])}));later(6500,()=>focus([]))}
+ if(name==="equalChord"){focus(["tickAM","tickBM","eqChordText"]);later(4500,()=>focus([]))}
+ if(name==="property2"){focus(["OMline"]);later(1300,()=>focus(["rightA","rightB"]));later(2600,()=>focus(["tickAM","tickBM"]));later(4100,()=>focus(["OMline","rightA","rightB","tickAM","tickBM","conclusion2Text"]));later(7000,()=>focus([]))}
+ if(name==="summary1"){document.getElementById("perpBisectorLine").classList.add("draw");later(1300,()=>focus(["pointO","labelO"]));later(2800,()=>focus(["perpBisectorLine","pointO","labelO","conclusion1Text"]));later(6100,()=>focus([]))}
+ if(name==="summary2"){document.getElementById("OMline").classList.add("draw");later(1200,()=>focus(["rightA","rightB"]));later(2400,()=>focus(["tickAM","tickBM"]));later(3900,()=>focus(["OMline","rightA","rightB","tickAM","tickBM","conclusion2Text"]));later(6800,()=>focus([]))}
+ if(name==="finalSummary"){
+   document.getElementById("OMline").classList.add("draw");
+   later(1200,()=>focus(["pointO","labelO","finalSummary1"]));
+   later(3000,()=>focus(["rightA","rightB","tickAM","tickBM","finalSummary2"]));
+   later(5000,()=>focus(["OMline","pointO","labelO","rightA","rightB","tickAM","tickBM","finalSummary1","finalSummary2"]));
+   later(8000,()=>focus([]));
+ }
+}
+function render(){
+ clear();const s=steps[idx];all.forEach(e=>e.classList.toggle("off",!s.show.includes(e.getAttribute("data-key"))));
+ ["proofEq1Text","proofEq2Text","proofEq3Text","proofCongText"].forEach(id=>document.getElementById(id).style.opacity="");
+ badge.textContent=`${idx+1} / ${steps.length}`;title.textContent=s.title;subtitle.textContent=s.sub;prev.disabled=idx===0;next.disabled=idx===steps.length-1;bar.style.width=`${(idx+1)/steps.length*100}%`;stepText.textContent=`${idx+1}단계`;
+ if(s.anim){void document.body.offsetWidth;s.anim.forEach(id=>document.getElementById(id).classList.add("draw"))}
+ if(s.focus)focus(s.focus);if(s.seq)seq(s.seq)
+}
+prev.addEventListener("click",()=>{if(idx>0){idx--;render()}});next.addEventListener("click",()=>{if(idx<steps.length-1){idx++;render()}});
+document.addEventListener("keydown",e=>{if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}if(e.key==="ArrowLeft"&&idx>0){idx--;render()}if(e.key===" "){e.preventDefault();render()}});
+render();
+})();
+</script>
+</body>
+</html>
