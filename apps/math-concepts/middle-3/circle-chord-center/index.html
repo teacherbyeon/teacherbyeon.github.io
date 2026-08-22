@@ -11,7 +11,7 @@
 .badge{padding:6px 10px;border-radius:999px;background:#eef4ff;font-size:14px}.title{font-weight:700;font-size:18px}
 .diagram{margin-top:14px;min-height:550px;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:12px}
 svg{width:100%;height:auto;max-height:68vh;overflow:visible}.subtitle{padding:12px 14px 4px;text-align:center;font-size:25px;font-weight:600;line-height:1.6;min-height:92px;white-space:pre-line}
-.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer}
+.check-panel{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:8px auto 2px;max-width:1000px}.check-item{min-width:170px;padding:10px 13px}.check-item small{display:block;margin-top:4px;color:var(--muted);font-size:12px}.check-item.done{border-color:var(--accent);background:#eef4ff}.check-item.done small{color:var(--accent);font-weight:800}.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:11px 16px;font-size:16px;cursor:pointer}
 button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}button:disabled{opacity:.38}.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
 .progress>div{height:100%;background:var(--accent);transition:width .25s}.small{font-size:14px;color:var(--muted)}
 .shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}.off{opacity:0!important;pointer-events:none}
@@ -37,6 +37,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}bu
     </svg>
   </section>
   <div class="subtitle" id="subtitle"></div>
+  <div class="check-panel" id="checkPanel"></div>
   <div class="footer">
     <button id="prev">이전</button>
     <div class="progress"><div id="bar"></div></div>
@@ -93,24 +94,24 @@ const steps=[
 {title:"원의 중심과 현",show:["circle","O"],sub:"원의 중심과 현 사이에는 어떤 특별한 관계가 있을까요?",seq:"intro"},
 {title:"현 AB 그리기",show:["circle","O","AB","A","B"],sub:"먼저 원 O에 현 AB를 그어 봅시다.",anim:["ABline"],focus:["pointA","labelA","pointB","labelB"]},
 {title:"점 C와 △ABC",show:["circle","O","AB","A","B","C","AC","BC"],sub:"원 위에 AB와 다른 점 C를 잡고, A와 C, B와 C를 연결해 △ABC를 만들어 봅시다.",seq:"triangle"},
-{title:"세 반지름 비교",show:["circle","O","AB","A","B","C","AC","BC","radii","eqRadii"],sub:"OA, OB, OC는 모두 같은 원의 반지름입니다. 따라서 OA = OB = OC입니다.",seq:"radii"},
-{title:"점 O는 △ABC의 외심",show:["circle","O","AB","A","B","C","AC","BC","radii"],sub:"점 O는 △ABC의 세 꼭짓점 A, B, C에서 같은 거리에 있으므로 △ABC의 외심입니다.",seq:"circumcenter"},
+{title:"세 반지름 비교",show:["circle","O","AB","A","B","C","AC","BC","radii","eqRadii"],sub:"OA, OB, OC는 모두 같은 원의 반지름입니다. 따라서 OA = OB = OC입니다.",checks:[{label:"반지름 OA",ids:["OAline"]},{label:"반지름 OB",ids:["OBline"]},{label:"반지름 OC",ids:["OCline"]},{label:"OA = OB = OC",ids:["OAline","OBline","OCline","eqRadiiText"]}]},
+{title:"점 O는 △ABC의 외심",show:["circle","O","AB","A","B","C","AC","BC","radii"],sub:"점 O는 △ABC의 세 꼭짓점 A, B, C에서 같은 거리에 있으므로 △ABC의 외심입니다.",checks:[{label:"꼭짓점 A에서 같은 거리",ids:["pointA","labelA","pointO","labelO"]},{label:"꼭짓점 B에서 같은 거리",ids:["pointB","labelB","pointO","labelO"]},{label:"꼭짓점 C에서 같은 거리",ids:["pointC","labelC","pointO","labelO"]},{label:"점 O는 외심",ids:["pointA","pointB","pointC","pointO","labelO"]}]},
 {title:"AB의 수직이등분선",show:["circle","O","AB","A","B","C","AC","BC","perpBisector","M"],sub:"외심은 세 변의 수직이등분선이 만나는 점이므로, AB의 수직이등분선도 점 O를 지납니다.",anim:["perpBisectorLine"],focus:["perpBisectorLine","pointO","labelO"]},
-{title:"첫 번째 성질",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"원의 현의 수직이등분선은 그 원의 중심을 지납니다.",seq:"property1"},
+{title:"첫 번째 성질",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"원의 현의 수직이등분선은 그 원의 중심을 지납니다.",checks:[{label:"현 AB의 수직이등분선",ids:["perpBisectorLine"]},{label:"원의 중심 O",ids:["pointO","labelO"]},{label:"첫 번째 성질 확인",ids:["perpBisectorLine","pointO","labelO","conclusion1Text"]}]},
 {title:"이번에는 반대로",show:["circle","O","AB","A","B"],sub:"이번에는 반대로 생각해 봅시다. 원의 중심 O에서 현 AB에 수선을 내려 보겠습니다.",seq:"intro"},
-{title:"중심에서 현에 수선",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"O에서 현 AB에 내린 수선의 발을 M이라고 하겠습니다.",seq:"perpendicular"},
-{title:"증명할 내용",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"점 M은 현 AB의 중점일까요? 즉, AM = BM일까요?",seq:"question"},
-{title:"두 직각삼각형 비교",show:["circle","O","AB","A","B","OM","M","rightMarks","radii"],sub:"△OAM과 △OBM을 비교해 봅시다.\nOA = OB, OM은 공통인 변이고, ∠OMA = ∠OMB = 90°입니다.",seq:"rhsParts"},
-{title:"직각삼각형의 합동",show:["circle","O","AB","A","B","OM","M","rightMarks","radii","proofEq1","proofEq2","proofEq3","proofCong"],sub:"따라서 두 직각삼각형은 빗변과 다른 한 변의 길이가 각각 같으므로 서로 합동입니다.",seq:"rhsProof"},
-{title:"AM = BM",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","eqChord"],sub:"두 삼각형이 합동이므로 대응하는 변의 길이가 같습니다. 따라서 AM = BM입니다.",seq:"equalChord"},
-{title:"두 번째 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"원의 중심에서 현에 내린 수선은 그 현을 수직이등분합니다.",seq:"property2"},
-{title:"정리 1",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"1. 원의 현의 수직이등분선은 그 원의 중심을 지난다.",seq:"summary1"},
-{title:"정리 2",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"2. 원의 중심에서 현에 내린 수선은 그 현을 수직이등분한다.",seq:"summary2"},
-{title:"현의 수직이등분선의 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","finalSummary"],sub:"현의 수직이등분선의 성질",seq:"finalSummary"}
+{title:"중심에서 현에 수선",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"O에서 현 AB에 내린 수선의 발을 M이라고 하겠습니다.",checks:[{label:"중심 O에서 내린 수선 OM",ids:["OMline"]},{label:"두 직각",ids:["rightA","rightB"]},{label:"수선의 발 M",ids:["pointM","labelM"]}]},
+{title:"증명할 내용",show:["circle","O","AB","A","B","OM","M","rightMarks"],sub:"점 M은 현 AB의 중점일까요? 즉, AM = BM일까요?",checks:[{label:"점 M 확인",ids:["pointM","labelM"]},{label:"현 AB 확인",ids:["ABline"]},{label:"AM과 BM 비교하기",ids:["pointA","pointM","pointB","ABline"]}]},
+{title:"두 직각삼각형 비교",show:["circle","O","AB","A","B","OM","M","rightMarks","radii"],sub:"△OAM과 △OBM을 비교해 봅시다.\nOA = OB, OM은 공통인 변이고, ∠OMA = ∠OMB = 90°입니다.",checks:[{label:"OA = OB",ids:["OAline","OBline"]},{label:"OM은 공통인 변",ids:["OMline"]},{label:"∠OMA = ∠OMB = 90°",ids:["rightA","rightB"]}]},
+{title:"직각삼각형의 합동",show:["circle","O","AB","A","B","OM","M","rightMarks","radii","proofEq1","proofEq2","proofEq3","proofCong"],sub:"따라서 두 직각삼각형은 빗변과 다른 한 변의 길이가 각각 같으므로 서로 합동입니다.",checks:[{label:"OA = OB",ids:["OAline","OBline","proofEq1Text"]},{label:"OM = OM",ids:["OMline","proofEq2Text"]},{label:"두 각은 90°",ids:["rightA","rightB","proofEq3Text"]},{label:"△OAM ≡ △OBM",ids:["OAline","OBline","OMline","rightA","rightB","proofCongText"]}]},
+{title:"AM = BM",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","eqChord"],sub:"두 삼각형이 합동이므로 대응하는 변의 길이가 같습니다. 따라서 AM = BM입니다.",checks:[{label:"AM 확인",ids:["tickAM"]},{label:"BM 확인",ids:["tickBM"]},{label:"AM = BM",ids:["tickAM","tickBM","eqChordText"]}]},
+{title:"두 번째 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"원의 중심에서 현에 내린 수선은 그 현을 수직이등분합니다.",checks:[{label:"중심에서 내린 수선 OM",ids:["OMline"]},{label:"현 AB와 수직",ids:["rightA","rightB"]},{label:"AM = BM",ids:["tickAM","tickBM"]},{label:"두 번째 성질 확인",ids:["OMline","rightA","rightB","tickAM","tickBM","conclusion2Text"]}]},
+{title:"정리 1",show:["circle","O","AB","A","B","perpBisector","M","conclusion1"],sub:"1. 원의 현의 수직이등분선은 그 원의 중심을 지난다.",checks:[{label:"현의 수직이등분선",ids:["perpBisectorLine"]},{label:"원의 중심 O",ids:["pointO","labelO"]},{label:"정리 1 확인",ids:["perpBisectorLine","pointO","labelO","conclusion1Text"]}]},
+{title:"정리 2",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","conclusion2"],sub:"2. 원의 중심에서 현에 내린 수선은 그 현을 수직이등분한다.",checks:[{label:"중심에서 내린 수선",ids:["OMline"]},{label:"수직 확인",ids:["rightA","rightB"]},{label:"이등분 확인",ids:["tickAM","tickBM"]},{label:"정리 2 확인",ids:["OMline","rightA","rightB","tickAM","tickBM","conclusion2Text"]}]},
+{title:"현의 수직이등분선의 성질",show:["circle","O","AB","A","B","OM","M","rightMarks","equalMarks","finalSummary"],sub:"현의 수직이등분선의 성질",checks:[{label:"성질 ① 확인",ids:["pointO","labelO","finalSummary1"]},{label:"성질 ② 확인",ids:["rightA","rightB","tickAM","tickBM","finalSummary2"]},{label:"두 성질 함께 보기",ids:["OMline","pointO","labelO","rightA","rightB","tickAM","tickBM","finalSummary1","finalSummary2"]}]}
 ];
 
 let idx=0,timers=[];
-const all=[...document.querySelectorAll("[data-key]")],badge=document.getElementById("badge"),title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
+const all=[...document.querySelectorAll("[data-key]")],badge=document.getElementById("badge"),title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),checkPanel=document.getElementById("checkPanel"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
 function clear(){timers.forEach(clearTimeout);timers=[];document.querySelectorAll(".draw,.blink,.focusLine,.focusDot,.focusText,.focusRight").forEach(e=>e.classList.remove("draw","blink","focusLine","focusDot","focusText","focusRight"))}
 function focus(ids){document.querySelectorAll(".focusLine,.focusDot,.focusText,.focusRight").forEach(e=>e.classList.remove("focusLine","focusDot","focusText","focusRight"));ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;if(e.tagName==="circle")e.classList.add("focusDot");else if(e.tagName==="text")e.classList.add("focusText");else if(e.classList.contains("right"))e.classList.add("focusRight");else e.classList.add("focusLine")})}
 function later(ms,fn){timers.push(setTimeout(fn,ms))}
@@ -136,12 +137,26 @@ function seq(name){
    later(8000,()=>focus([]));
  }
 }
+function renderChecks(step){
+ checkPanel.innerHTML="";
+ if(!step.checks?.length)return;
+ step.checks.forEach(item=>{
+  const button=document.createElement("button");
+  button.type="button";button.className="check-item";
+  button.innerHTML=`${item.label}<small>눌러 보기</small>`;
+  button.addEventListener("click",()=>{
+   focus(item.ids);button.classList.add("done");
+   button.querySelector("small").textContent="✓ 확인 완료";
+  });
+  checkPanel.appendChild(button);
+ });
+}
 function render(){
  clear();const s=steps[idx];all.forEach(e=>e.classList.toggle("off",!s.show.includes(e.getAttribute("data-key"))));
  ["proofEq1Text","proofEq2Text","proofEq3Text","proofCongText"].forEach(id=>document.getElementById(id).style.opacity="");
- badge.textContent=`${idx+1} / ${steps.length}`;title.textContent=s.title;subtitle.textContent=s.sub;prev.disabled=idx===0;next.disabled=idx===steps.length-1;bar.style.width=`${(idx+1)/steps.length*100}%`;stepText.textContent=`${idx+1}단계`;
+ badge.textContent=`${idx+1} / ${steps.length}`;title.textContent=s.title;subtitle.textContent=s.sub;renderChecks(s);prev.disabled=idx===0;next.disabled=idx===steps.length-1;bar.style.width=`${(idx+1)/steps.length*100}%`;stepText.textContent=`${idx+1}단계`;
  if(s.anim){void document.body.offsetWidth;s.anim.forEach(id=>document.getElementById(id).classList.add("draw"))}
- if(s.focus)focus(s.focus);if(s.seq)seq(s.seq)
+ if(s.focus)focus(s.focus);if(s.seq&&!s.checks)seq(s.seq)
 }
 prev.addEventListener("click",()=>{if(idx>0){idx--;render()}});next.addEventListener("click",()=>{if(idx<steps.length-1){idx++;render()}});
 document.addEventListener("keydown",e=>{if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}if(e.key==="ArrowLeft"&&idx>0){idx--;render()}if(e.key===" "){e.preventDefault();render()}});
