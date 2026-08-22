@@ -92,5 +92,30 @@
     "unitOrder": 1,
     "conceptOrder": 3,
     "published": true
+  },
+  {
+    "id": "inscribed-central-angle",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원주각과 중심각의 관계",
+    "description": "같은 호에 대한 원주각과 중심각의 크기 관계를 탐구하고 세 가지 경우로 나누어 이해합니다.",
+    "href": "./middle-3/inscribed-central-angle/",
+    "tags": [
+      "원",
+      "원주각",
+      "중심각",
+      "호",
+      "원주각의 성질",
+      "삼각형의 외각",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 4,
+    "published": true
   }
 ]
