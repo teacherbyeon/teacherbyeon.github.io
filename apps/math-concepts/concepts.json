@@ -14,7 +14,12 @@
       "내접원",
       "각의 이등분선"
     ],
-    "published": true
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 2,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 1
   },
   {
     "id": "circle-chord-center",
@@ -32,6 +37,35 @@
       "수직이등분선",
       "원의 성질"
     ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 1
+  },
+  {
+    "id": "circle-chord-length",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원의 현의 길이에 관한 성질",
+    "description": "원의 중심에서 현까지의 거리와 현의 길이 사이의 관계를 움직여 관찰하고 두 성질을 이해합니다.",
+    "href": "./middle-3/circle-chord-length/",
+    "tags": [
+      "원",
+      "현",
+      "현의 길이",
+      "원의 중심",
+      "중심에서 현까지의 거리",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 2,
     "published": true
   }
 ]
