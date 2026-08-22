@@ -15,5 +15,23 @@
       "각의 이등분선"
     ],
     "published": true
+  },
+  {
+    "id": "circle-chord-center",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원의 중심과 현의 관계",
+    "description": "단계별 그림과 강조 애니메이션으로 현의 수직이등분선과 원의 중심의 관계를 이해하는 개념 강의",
+    "href": "./middle-3/circle-chord-center/",
+    "tags": [
+      "원",
+      "원의 중심",
+      "현",
+      "수직이등분선",
+      "원의 성질"
+    ],
+    "published": true
   }
 ]
