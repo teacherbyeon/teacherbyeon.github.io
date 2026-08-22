@@ -172,8 +172,8 @@ text.focus-text{font-weight:900}
 <body>
 <div class="app" id="app">
   <div class="toolbar">
-    <span class="badge" id="stepBadge">1 / 17</span>
-    <strong id="stepTitle">삼각형을 살펴보기</strong>
+    <span class="badge" id="stepBadge">1 / 18</span>
+    <strong id="stepTitle">삼각형의 세 각의 이등분선</strong>
     <span class="spacer"></span>
     <a class="back" href="../../">← 개념 학습관</a>
   </div>
@@ -334,6 +334,16 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
   text({x:360,y:92},"세 내각의 이등분선은 한 점에서 만난다","eq","conclusion",-190,0,textLayer,"conclusionText");
 
   const steps = [
+    {
+      title:"삼각형의 세 각의 이등분선",
+      show:["triangle","vertexDots","vertexLabels"],
+      animate:["labelA","labelB","labelC","dotA","dotB","dotC"],
+      animation:"blink-now",
+      focus:[],
+      dimOthers:false,
+      script:"삼각형의 세 내각의 이등분선에는 어떤 관계가 있을까요?",
+      cue:"앞으로 살펴볼 내용을 짐작할 수 있도록 질문을 먼저 제시합니다."
+    },
     {
       title:"삼각형을 살펴보기",
       show:["triangle","vertexDots","vertexLabels"],
