@@ -167,5 +167,30 @@
     "unitOrder": 1,
     "conceptOrder": 6,
     "published": true
+  },
+  {
+    "id": "tangent-chord-angle",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원의 접선과 현이 이루는 각",
+    "description": "접선과 현이 이루는 각이 그 내부의 호에 대한 원주각과 같은 이유를 세 가지 경우로 나누어 이해합니다.",
+    "href": "./middle-3/tangent-chord-angle/",
+    "tags": [
+      "원",
+      "접선",
+      "현",
+      "접선과 현이 이루는 각",
+      "원주각",
+      "호",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 7,
+    "published": true
   }
 ]
