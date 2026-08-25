@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>원의 접선과 현이 이루는 각 v5</title>
+<style>
+:root{
+  --bg:#fff;--panel:#f7f7f8;--text:#171717;--muted:#6b7280;--border:#d9dadd;
+  --blue:#2563eb;--blueSoft:#eef4ff;--orange:#f97316;--orangeSoft:#fed7aa;
+  --green:#16803b;--bad:#b91c1c;--arc:#e11d48;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--border)}
+.badge{padding:6px 10px;border-radius:999px;background:var(--blueSoft);font-size:14px}
+.title{font-size:18px;font-weight:800}
+.diagram{margin-top:14px;min-height:535px;border:1px solid var(--border);border-radius:18px;background:var(--panel);display:flex;align-items:center;justify-content:center;padding:12px}
+svg{width:100%;height:auto;max-height:65vh;overflow:visible}
+.subtitle{text-align:center;font-size:23px;font-weight:650;line-height:1.62;min-height:108px;padding:13px 14px 4px;white-space:pre-line}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:10px 16px;font-size:16px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--blue)}
+.small{font-size:14px;color:var(--muted)}
+.controls,.exercise{width:min(820px,100%);margin:0 auto 10px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center}
+.controls label{display:block;font-size:15px;font-weight:800;margin-bottom:7px}
+.controls input[type=range]{width:100%}
+.readout{display:flex;justify-content:center;gap:12px 22px;flex-wrap:wrap;color:var(--muted);font-size:16px;margin-top:7px}
+.readout b{color:var(--text)}
+.note{font-size:14px;color:var(--muted);margin-top:7px}
+.answer{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:20px;font-weight:800}
+.answer input{width:92px;text-align:center;padding:9px;border:2px solid #bcc3cc;border-radius:10px;font-size:20px}
+.feedback{min-height:30px;margin-top:8px;font-weight:750}
+.feedback.ok{color:var(--green)} .feedback.bad{color:var(--bad)}
+.solution{margin-top:8px;background:#f1faf4;color:var(--green);border-radius:10px;padding:9px;font-size:18px;font-weight:800}
+.click-math{color:var(--blue);border-bottom:2px dotted var(--blue);cursor:pointer;padding:0 2px;white-space:nowrap}
+.click-math.checked{color:var(--green);border-bottom-color:var(--green)}
+.checkmark{color:var(--green);font-weight:900;margin-left:3px}
+
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}
+.off{opacity:0!important;pointer-events:none}
+.circle,.line,.chord,.radius,.tangent,.helper{fill:none;stroke:var(--text);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.radius{stroke:#626b76;stroke-width:2.7}
+.helper{stroke:#7b8189;stroke-width:2.3;stroke-dasharray:7 7}
+.arcMark{fill:none;stroke:var(--arc);stroke-width:5;stroke-linecap:round}
+.angle{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round}
+.angleN{fill:none;stroke:#4b5563;stroke-width:3;stroke-linecap:round}
+.right{fill:none;stroke:#4b5563;stroke-width:3}
+.pt{fill:var(--text)} .ptO{fill:var(--blue)} .drag{fill:var(--blue);stroke:#fff;stroke-width:3}
+.txt{fill:var(--text);font-size:24px;font-weight:800}.lab{fill:var(--muted);font-size:18px}.eq{fill:var(--blue);font-size:22px;font-weight:850}
+.focusLine{stroke:var(--orange)!important;stroke-width:8px!important;animation:pulse .7s 3;filter:drop-shadow(0 0 6px var(--orangeSoft))}
+.focusAngle{stroke:var(--orange)!important;stroke-width:7px!important;animation:blink .55s 4;filter:drop-shadow(0 0 6px var(--orangeSoft))}
+.focusText{fill:var(--orange)!important;font-weight:900!important;animation:blink .7s 3}
+.drawLine{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawLine 1s ease forwards}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+@keyframes pulse{50%{stroke-width:10px}}@keyframes blink{50%{opacity:.18}}
+.ghost{fill:none;stroke:#b8bec7;stroke-width:2;stroke-dasharray:5 6;opacity:.65}
+.limitNote{fill:#6b7280;font-size:18px;font-weight:700}
+@media(max-width:820px){.subtitle{font-size:20px}.diagram{min-height:47vh}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><span class="badge" id="badge">1 / 16</span><span class="title" id="title"></span></div>
+  <section class="diagram">
+    <svg id="svg" viewBox="0 0 760 520" aria-label="원의 접선과 현이 이루는 각">
+      <g id="base"></g><g id="lines"></g><g id="marks"></g><g id="labels"></g>
+    </svg>
+  </section>
+  <div id="controls"></div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="hint" id="hint"></div>
+  <div class="footer">
+    <button id="prev">이전</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span class="small" id="stepText"></span>
+    <button id="next" class="primary">다음</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg"),base=document.getElementById("base"),lines=document.getElementById("lines"),marks=document.getElementById("marks"),labels=document.getElementById("labels");
+const title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),hint=document.getElementById("hint"),controls=document.getElementById("controls"),badge=document.getElementById("badge"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
+
+function add(tag,a,p=lines){const e=document.createElementNS(NS,tag);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));p.appendChild(e);return e}
+function ln(P,Q,c,k,id,p=lines){return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${c}`,"data-key":k,id},p)}
+function dot(P,c,k,id,r=6,p=marks){return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${c}`,"data-key":k,id},p)}
+function tx(P,s,c,k,id,dx=0,dy=0,p=labels){const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${c}`,"data-key":k,id},p);e.textContent=s;return e}
+function ph(d,c,k,id,p=marks){return add("path",{d,class:`shape ${c}`,"data-key":k,id},p)}
+function pt(O,R,d){const a=d*Math.PI/180;return{x:O.x+R*Math.cos(a),y:O.y+R*Math.sin(a)}}
+function nd(d){d%=360;if(d<0)d+=360;return d}
+function circleArc(O,R,s,e){s=nd(s);e=nd(e);let d=e-s;if(d<0)d+=360;const p1=pt(O,R,s),p2=pt(O,R,e);return`M ${p1.x} ${p1.y} A ${R} ${R} 0 ${d>180?1:0} 1 ${p2.x} ${p2.y}`}
+function angleArc(V,P1,P2,r){let a1=Math.atan2(P1.y-V.y,P1.x-V.x),a2=Math.atan2(P2.y-V.y,P2.x-V.x),d=a2-a1;while(d<=-Math.PI)d+=2*Math.PI;while(d>Math.PI)d-=2*Math.PI;const s={x:V.x+r*Math.cos(a1),y:V.y+r*Math.sin(a1)},e={x:V.x+r*Math.cos(a1+d),y:V.y+r*Math.sin(a1+d)};return`M ${s.x} ${s.y} A ${r} ${r} 0 0 ${d>0?1:0} ${e.x} ${e.y}`}
+function angleMeasure(V,P1,P2){const a={x:P1.x-V.x,y:P1.y-V.y},b={x:P2.x-V.x,y:P2.y-V.y},den=Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y);return Math.acos(Math.max(-1,Math.min(1,(a.x*b.x+a.y*b.y)/den)))*180/Math.PI}
+function setL(id,P,Q){const e=document.getElementById(id);e.setAttribute("x1",P.x);e.setAttribute("y1",P.y);e.setAttribute("x2",Q.x);e.setAttribute("y2",Q.y)}
+function setC(id,P){const e=document.getElementById(id);e.setAttribute("cx",P.x);e.setAttribute("cy",P.y)}
+function setT(id,x,y,t){const e=document.getElementById(id);e.setAttribute("x",x);e.setAttribute("y",y);if(t!==undefined)e.textContent=t}
+function setP(id,d){document.getElementById(id).setAttribute("d",d)}
+function rightMark(V,P1,P2,size=13){
+  const u1={x:P1.x-V.x,y:P1.y-V.y},u2={x:P2.x-V.x,y:P2.y-V.y};
+  const l1=Math.hypot(u1.x,u1.y),l2=Math.hypot(u2.x,u2.y);
+  const a={x:V.x+u1.x/l1*size,y:V.y+u1.y/l1*size},c={x:V.x+u2.x/l2*size,y:V.y+u2.y/l2*size},b={x:a.x+(c.x-V.x),y:a.y+(c.y-V.y)};
+  return`M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y}`;
+}
+
+// ---------- 탐색 장면 ----------
+const O={x:330,y:245},R=145,A=pt(O,R,90),T={x:585,y:A.y};
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle","data-key":"actCircle"},base);
+ln({x:135,y:A.y},T,"tangent","actTangent","actAT");
+dot(O,"ptO","actCenter","actO");tx(O,"O","lab","actCenter","actOL",10,-8);
+dot(A,"pt","actFixed","actA");tx(A,"A","lab","actFixed","actAL",-7,24);
+dot(T,"pt","actFixed","actT",5);tx(T,"T","lab","actFixed","actTL",8,7);
+dot({x:0,y:0},"drag","actB","actB",10);tx({x:0,y:0},"B","lab","actB","actBL");
+dot({x:0,y:0},"pt","actP","actP",6);tx({x:0,y:0},"P","lab","actP","actPL");
+ln(A,A,"chord","actABOnly","actAB");ln(A,A,"chord","actInscribedSides","actAP");ln(A,A,"chord","actInscribedSides","actPB");
+ph("","angle","actTangentAngle","actBAT");ph("","angle","actInscribedAngle","actBPA");
+ph("","arcMark","actArc","actArcAB");
+tx({x:520,y:155},"","eq","actRead","actV1");tx({x:520,y:198},"","eq","actRead","actV2");tx({x:520,y:241},"","eq","actRead","actType");
+
+let bDeg=320;
+function pDegFor(b){return b<270?(b+90)/2:(90+b)/2}
+function updateActivity(){
+  const B=pt(O,R,bDeg),P=pt(O,R,pDegFor(bDeg));
+  setC("actB",B);setC("actP",P);
+  setT("actBL",B.x+8,B.y-8);setT("actPL",P.x-22,P.y-6);
+  setL("actAB",A,B);setL("actAP",A,P);setL("actPB",P,B);
+  setP("actBAT",angleArc(A,T,B,33));setP("actBPA",angleArc(P,B,A,31));
+  // ∠BAT 내부에 있는 호 AB.
+  // B가 어느 위치에 있더라도 B에서 시작하여 원의 오른쪽을 지나 A로 가는 호가
+  // 접선 AT와 현 AB가 이루는 각의 내부에 놓인다.
+  setP("actArcAB",circleArc(O,R,bDeg,450));
+  const v1=angleMeasure(A,T,B),v2=angleMeasure(P,B,A);
+  document.getElementById("actV1").textContent=`∠BAT = ${v1.toFixed(1)}°`;
+  document.getElementById("actV2").textContent=`∠BPA = ${v2.toFixed(1)}°`;
+  document.getElementById("actType").textContent=v1<89.5?"예각":v1>90.5?"둔각":"직각";
+  const s=document.getElementById("bSlider");if(s)s.value=bDeg;
+}
+updateActivity();
+
+// ---------- 직각 증명 ----------
+const Or={x:330,y:245},Rr=145,Ar=pt(Or,Rr,90),Br=pt(Or,Rr,270),Pr=pt(Or,Rr,180),Tr={x:585,y:Ar.y};
+add("circle",{cx:Or.x,cy:Or.y,r:Rr,class:"shape circle","data-key":"rightCircle"},base);
+ln({x:135,y:Ar.y},Tr,"tangent","rightTangent","rAT");
+ln(Ar,Br,"chord","rightDiameter","rAB");ln(Pr,Ar,"chord","rightChords","rPA");ln(Pr,Br,"chord","rightChords","rPB");
+dot(Or,"ptO","rightCenter","rO");dot(Ar,"pt","rightPts","rA");dot(Br,"pt","rightPts","rB");dot(Pr,"pt","rightPts","rP");dot(Tr,"pt","rightPts","rT",5);
+tx(Or,"O","lab","rightCenter","rOL",10,-8);tx(Ar,"A","lab","rightPts","rAL",-7,24);tx(Br,"B","lab","rightPts","rBL",-7,-10);tx(Pr,"P","lab","rightPts","rPL",-24,5);tx(Tr,"T","lab","rightPts","rTL",8,7);
+ph(rightMark(Ar,Tr,Br,14),"right","rightMarks","rRightA");ph(angleArc(Pr,Br,Ar,29),"angle","rightMarks","rBPA");
+ph(circleArc(Or,Rr,270,450),"arcMark","rightSemi","rSemi");
+
+// ---------- 예각 증명 ----------
+const Oa={x:315,y:245},Ra=145,Aa=pt(Oa,Ra,90),Ca=pt(Oa,Ra,270),Ba=pt(Oa,Ra,320),Pa=pt(Oa,Ra,205),Ta={x:585,y:Aa.y};
+add("circle",{cx:Oa.x,cy:Oa.y,r:Ra,class:"shape circle","data-key":"acuteCircle"},base);
+ln({x:120,y:Aa.y},Ta,"tangent","acuteTangent","aAT");
+ln(Aa,Ba,"chord","acuteMain","aAB");ln(Pa,Aa,"chord","acuteMain","aPA");ln(Pa,Ba,"chord","acuteMain","aPB");
+ln(Aa,Ca,"helper","acuteAux","aAC");ln(Pa,Ca,"helper","acuteAux","aPC");
+dot(Oa,"ptO","acuteCenter","aO");for(const [k,P] of Object.entries({A:Aa,B:Ba,C:Ca,P:Pa})){dot(P,"pt","acutePts","a"+k)}
+dot(Ta,"pt","acutePts","aT",5);
+tx(Oa,"O","lab","acuteCenter","aOL",10,-8);tx(Aa,"A","lab","acutePts","aAL",-7,24);tx(Ba,"B","lab","acutePts","aBL",8,-6);tx(Ca,"C","lab","acutePts","aCL",-7,-10);tx(Pa,"P","lab","acutePts","aPL",-24,4);tx(Ta,"T","lab","acutePts","aTL",8,7);
+ph(rightMark(Aa,Ta,Ca,13),"right","acuteRight","aRightA");ph(rightMark(Pa,Ca,Aa,11),"right","acuteRight","aRightP");
+ph(angleArc(Aa,Ca,Ba,25),"angleN","acuteSameArcAngles","aCAB");ph(angleArc(Pa,Ca,Ba,25),"angleN","acuteSameArcAngles","aCPB");
+ph(circleArc(Oa,Ra,270,320),"arcMark","acuteArcBC","aArcBC");
+ph(angleArc(Aa,Ta,Ba,33),"angle","acuteTarget","aBAT");ph(angleArc(Pa,Ba,Aa,32),"angle","acuteTarget","aBPA");
+tx({x:505,y:164},"∠CAT = ∠CPA = 90°","eq","acuteEq1","aEq1");
+tx({x:505,y:208},"∠CAB = ∠CPB","eq","acuteEq2","aEq2");
+tx({x:480,y:300},"∠BAT = ∠CAT - ∠CAB","eq","acuteEq3","aEq3");
+tx({x:480,y:342},"∠BPA = ∠CPA - ∠CPB","eq","acuteEq4","aEq4");
+
+// ---------- 둔각 증명 ----------
+const Oo={x:315,y:245},Ro=145,Ao=pt(Oo,Ro,90),Co=pt(Oo,Ro,270),Bo=pt(Oo,Ro,220),Po=pt(Oo,Ro,155),To={x:585,y:Ao.y};
+add("circle",{cx:Oo.x,cy:Oo.y,r:Ro,class:"shape circle","data-key":"obtCircle"},base);
+ln({x:120,y:Ao.y},To,"tangent","obtTangent","oAT");
+ln(Ao,Bo,"chord","obtMain","oAB");ln(Po,Ao,"chord","obtMain","oPA");ln(Po,Bo,"chord","obtMain","oPB");
+ln(Ao,Co,"helper","obtAux","oAC");ln(Po,Co,"helper","obtAux","oPC");
+dot(Oo,"ptO","obtCenter","oO");for(const [k,P] of Object.entries({A:Ao,B:Bo,C:Co,P:Po})){dot(P,"pt","obtPts","o"+k)}
+dot(To,"pt","obtPts","oT",5);
+tx(Oo,"O","lab","obtCenter","oOL",10,-8);tx(Ao,"A","lab","obtPts","oAL",-7,24);tx(Bo,"B","lab","obtPts","oBL",-20,-4);tx(Co,"C","lab","obtPts","oCL",-7,-10);tx(Po,"P","lab","obtPts","oPL",-24,4);tx(To,"T","lab","obtPts","oTL",8,7);
+ph(rightMark(Ao,To,Co,13),"right","obtRight","oRightA");ph(rightMark(Po,Co,Ao,11),"right","obtRight","oRightP");
+ph(angleArc(Ao,Bo,Co,25),"angleN","obtSameArcAngles","oBAC");ph(angleArc(Po,Bo,Co,25),"angleN","obtSameArcAngles","oBPC");
+ph(circleArc(Oo,Ro,220,270),"arcMark","obtArcBC","oArcBC");
+ph(angleArc(Ao,To,Bo,35),"angle","obtTarget","oBAT");ph(angleArc(Po,Bo,Ao,34),"angle","obtTarget","oBPA");
+tx({x:505,y:160},"∠CAT = ∠CPA = 90°","eq","obtEq1","oEq1");
+tx({x:505,y:202},"∠BAC = ∠BPC","eq","obtEq2","oEq2");
+tx({x:470,y:294},"∠BAT = ∠BAC + ∠CAT","eq","obtEq3","oEq3");
+tx({x:470,y:336},"∠BPA = ∠BPC + ∠CPA","eq","obtEq4","oEq4");
+
+// ---------- 최종 정리 ----------
+const Os={x:330,y:245},Rs=145,As=pt(Os,Rs,90),Bs=pt(Os,Rs,325),Ps=pt(Os,Rs,205),Ts={x:585,y:As.y};
+add("circle",{cx:Os.x,cy:Os.y,r:Rs,class:"shape circle","data-key":"sumCircle"},base);
+ln({x:135,y:As.y},Ts,"tangent","sumTangent","sAT");ln(As,Bs,"chord","sumChords","sAB");ln(Ps,As,"chord","sumChords","sPA");ln(Ps,Bs,"chord","sumChords","sPB");
+dot(As,"pt","sumPts","sA");dot(Bs,"pt","sumPts","sB");dot(Ps,"pt","sumPts","sP");dot(Ts,"pt","sumPts","sT",5);
+tx(As,"A","lab","sumPts","sAL",-7,24);tx(Bs,"B","lab","sumPts","sBL",8,-6);tx(Ps,"P","lab","sumPts","sPL",-24,4);tx(Ts,"T","lab","sumPts","sTL",8,7);
+ph(angleArc(As,Ts,Bs,33),"angle","sumAngles","sBAT");ph(angleArc(Ps,Bs,As,32),"angle","sumAngles","sBPA");
+ph(circleArc(Os,Rs,325,450),"arcMark","sumArc","sArcAB");
+
+
+// ---------- 마지막 직관 장면: P가 A에 가까워질 때 ----------
+const Ol={x:320,y:245},Rl=145,Al=pt(Ol,Rl,90),Bl=pt(Ol,Rl,325),Tl={x:585,y:Al.y};
+add("circle",{cx:Ol.x,cy:Ol.y,r:Rl,class:"shape circle","data-key":"limCircle"},base);
+ln({x:120,y:Al.y},Tl,"tangent","limTangent","lAT");
+ln(Al,Bl,"chord","limAB","lAB");
+dot(Al,"pt","limFixed","lA");dot(Bl,"pt","limFixed","lB");dot(Tl,"pt","limFixed","lT",5);
+tx(Al,"A","lab","limFixed","lAL",-7,24);tx(Bl,"B","lab","limFixed","lBL",8,-6);tx(Tl,"T","lab","limFixed","lTL",8,7);
+ph(angleArc(Al,Tl,Bl,33),"angle","limTarget","lBAT");
+ph(circleArc(Ol,Rl,325,450),"arcMark","limArc","lArcAB");
+
+// 몇 개의 이전 위치를 희미하게 보여 주어 '다가감'의 방향을 직관적으로 느끼게 함
+[195,160,125].forEach((d,i)=>{
+  const G=pt(Ol,Rl,d);
+  ln(G,Al,"ghost","limGhost","lGA"+i);
+});
+
+dot({x:0,y:0},"drag","limP","lP",10);
+tx({x:0,y:0},"P","lab","limP","lPL");
+ln(Al,Al,"chord","limSecants","lPA");
+ln(Al,Bl,"chord","limSecants","lPB");
+ph("","angle","limAngle","lBPA");
+tx({x:505,y:165},"","eq","limRead","lRead1");
+tx({x:505,y:207},"","eq","limRead","lRead2");
+tx({x:505,y:265},"P → A","limitNote","limRead","lArrow");
+
+let limitPDeg=205;
+function updateLimit(){
+  const Pn=pt(Ol,Rl,limitPDeg);
+  setC("lP",Pn);
+  setT("lPL",Pn.x-24,Pn.y-7);
+  setL("lPA",Pn,Al);
+  setL("lPB",Pn,Bl);
+  setP("lBPA",angleArc(Pn,Bl,Al,31));
+  const bat=angleMeasure(Al,Tl,Bl);
+  const bpa=angleMeasure(Pn,Bl,Al);
+  document.getElementById("lRead1").textContent=`∠BAT = ${bat.toFixed(1)}°`;
+  document.getElementById("lRead2").textContent=`∠BPA = ${bpa.toFixed(1)}°`;
+  const s=document.getElementById("limitSlider");
+  if(s)s.value=limitPDeg;
+}
+updateLimit();
+
+// ---------- 확인 문제 1 ----------
+const Q1O={x:320,y:250},Q1R=135,Q1A=pt(Q1O,Q1R,90),Q1B=pt(Q1O,Q1R,330),Q1C=pt(Q1O,Q1R,270),Q1T={x:555,y:Q1A.y};
+add("circle",{cx:Q1O.x,cy:Q1O.y,r:Q1R,class:"shape circle","data-key":"q1Circle"},base);
+ln({x:125,y:Q1A.y},Q1T,"tangent","q1Tangent","q1AT");ln(Q1A,Q1B,"chord","q1Lines","q1AB");ln(Q1A,Q1C,"chord","q1Lines","q1AC");ln(Q1C,Q1B,"chord","q1Lines","q1CB");
+ph(angleArc(Q1A,Q1T,Q1B,28),"angle","q1Angles","q162");ph(angleArc(Q1C,Q1A,Q1B,25),"angleN","q1Angles","q1x");
+tx(Q1A,"62°","eq","q1Labs","q162T",18,-18);tx(Q1C,"x","eq","q1Labs","q1xT",11,26);
+
+// ---------- 확인 문제 2 ----------
+const Q2O={x:320,y:250},Q2R=135,Q2A=pt(Q2O,Q2R,90),Q2B=pt(Q2O,Q2R,15),Q2C=pt(Q2O,Q2R,335),Q2T={x:555,y:Q2A.y};
+add("circle",{cx:Q2O.x,cy:Q2O.y,r:Q2R,class:"shape circle","data-key":"q2Circle"},base);
+ln({x:125,y:Q2A.y},Q2T,"tangent","q2Tangent","q2AT");ln(Q2A,Q2B,"chord","q2Lines","q2AB");ln(Q2B,Q2C,"chord","q2Lines","q2BC");ln(Q2A,Q2C,"chord","q2Lines","q2AC");
+ph(angleArc(Q2B,Q2A,Q2C,27),"angleN","q2Angles","q2120");ph(angleArc(Q2A,{x:125,y:Q2A.y},Q2C,31),"angle","q2Angles","q2x");
+tx(Q2B,"120°","eq","q2Labs","q2120T",-78,5);tx(Q2A,"x","eq","q2Labs","q2xT",-32,-10);
+
+// ---------- 확인 문제 3 ----------
+const Q3O={x:320,y:250},Q3R=135,Q3A=pt(Q3O,Q3R,90),Q3B=pt(Q3O,Q3R,300),Q3C=pt(Q3O,Q3R,190),Q3T={x:555,y:Q3A.y};
+add("circle",{cx:Q3O.x,cy:Q3O.y,r:Q3R,class:"shape circle","data-key":"q3Circle"},base);
+ln({x:125,y:Q3A.y},Q3T,"tangent","q3Tangent","q3AT");ln(Q3A,Q3B,"chord","q3Lines","q3AB");ln(Q3B,Q3C,"chord","q3Lines","q3BC");ln(Q3C,Q3A,"chord","q3Lines","q3CA");
+ph(angleArc(Q3C,Q3B,Q3A,27),"angleN","q3Angles","q380");ph(angleArc(Q3A,{x:125,y:Q3A.y},Q3C,28),"angle","q3Angles","q340");ph(angleArc(Q3A,Q3C,Q3B,26),"angleN","q3Angles","q3x");
+tx(Q3C,"80°","eq","q3Labs","q380T",25,5);tx(Q3A,"40°","eq","q3Labs","q340T",-72,-18);tx(Q3A,"x","eq","q3Labs","q3xT",13,-34);
+
+let idx=0;
+let acuteAuxShown=false, obtAuxShown=false;
+const checked=new Map();
+const exState={q1:{a:"",ok:false},q2:{a:"",ok:false},q3:{a:"",ok:false}};
+
+const steps=[
+  {title:"접선과 현이 이루는 각",show:["actCircle","actTangent","actFixed","actB","actABOnly","actTangentAngle"],text:'원 위의 점 A에서 그은 접선 AT와, 접점 A를 지나는 현 AB가 이루는 <span class="click-math" data-a="defineTangentChord">∠BAT</span>를 살펴봅시다. 이와 같은 각을 원의 접선과 현이 이루는 각이라고 합니다.',clickable:true},
+  {title:"비교할 원주각 만들기",show:["actCircle","actTangent","actFixed","actB","actP","actABOnly","actInscribedSides","actTangentAngle","actInscribedAngle","actArc"],text:'이제 ∠BAT의 내부에 있는 <span class="click-math" data-a="introArc">호 AB</span>를 살펴봅시다. 호 AB 위에 있지 않은 원 위의 점 P를 잡고 A, B와 연결하면 <span class="click-math" data-a="introInscribed">∠BPA는 호 AB에 대한 원주각</span>입니다. 두 각의 크기를 비교해 볼까요?',clickable:true},
+  {title:"직접 탐색하기",show:["actCircle","actTangent","actCenter","actFixed","actB","actP","actABOnly","actInscribedSides","actTangentAngle","actInscribedAngle","actArc","actRead"],text:"점 B를 움직여 ∠BAT가 예각, 직각, 둔각이 되도록 바꾸어 보세요. 그때마다 ∠BAT와 ∠BPA의 크기를 비교해 봅시다.",activity:true},
+  {title:"추측해 보기",show:["actCircle","actTangent","actFixed","actB","actP","actABOnly","actInscribedSides","actTangentAngle","actInscribedAngle","actArc","actRead"],text:'직각일 때도, 예각일 때도, 둔각일 때도 두 각의 크기는 같습니다. <span class="click-math" data-a="actCompare">∠BAT = ∠BPA</span>인 것 같습니다. 왜 항상 그런지 알아봅시다.',clickable:true},
+  {title:"경우 1. ∠BAT가 직각일 때",show:["rightCircle","rightTangent","rightCenter","rightPts","rightDiameter","rightChords","rightMarks","rightSemi"],text:'∠BAT가 직각이면 <span class="click-math" data-a="diameter">현 AB는 원의 지름</span>입니다. 따라서 <span class="click-math" data-a="semicircle">∠BPA는 반원에 대한 원주각</span>이므로 90°입니다. 따라서 ∠BAT = ∠BPA입니다.',clickable:true},
+  {title:"경우 2. ∠BAT가 예각일 때",show:["acuteCircle","acuteTangent","acuteCenter","acutePts","acuteMain"],text:'이번에는 ∠BAT가 예각인 경우입니다. <span class="click-math" data-a="acuteAux">지름 AC와 선분 PC를 그어 봅시다.</span>',clickable:true},
+  {title:"두 가지 관계 확인하기",show:["acuteCircle","acuteTangent","acuteCenter","acutePts","acuteMain","acuteAux","acuteRight","acuteSameArcAngles","acuteArcBC","acuteEq1","acuteEq2"],text:'먼저 <span class="click-math" data-a="acuteRight">∠CAT = ∠CPA = 90°</span>임을 확인할 수 있습니다. 또 <span class="click-math" data-a="acuteSame">∠CAB와 ∠CPB는 같은 호 BC에 대한 원주각</span>이므로 ∠CAB = ∠CPB입니다.',clickable:true},
+  {title:"예각인 경우의 결론",show:["acuteCircle","acuteTangent","acutePts","acuteMain","acuteAux","acuteRight","acuteSameArcAngles","acuteTarget","acuteEq1","acuteEq2","acuteEq3","acuteEq4"],text:'<span class="click-math" data-a="acuteDiff1">∠BAT = ∠CAT - ∠CAB</span>이고, <span class="click-math" data-a="acuteDiff2">∠BPA = ∠CPA - ∠CPB</span>입니다. 두 식에서 대응하는 각의 크기가 같으므로 ∠BAT = ∠BPA입니다.',clickable:true},
+  {title:"경우 3. ∠BAT가 둔각일 때",show:["obtCircle","obtTangent","obtCenter","obtPts","obtMain"],text:'마지막으로 ∠BAT가 둔각인 경우입니다. 이번에도 <span class="click-math" data-a="obtAux">지름 AC와 선분 PC를 그어 봅시다.</span>',clickable:true},
+  {title:"둔각인 경우의 관계",show:["obtCircle","obtTangent","obtCenter","obtPts","obtMain","obtAux","obtRight","obtSameArcAngles","obtArcBC","obtEq1","obtEq2"],text:'<span class="click-math" data-a="obtRight">∠CAT = ∠CPA = 90°</span>이고, <span class="click-math" data-a="obtSame">∠BAC와 ∠BPC는 같은 호 BC에 대한 원주각</span>이므로 ∠BAC = ∠BPC입니다.',clickable:true},
+  {title:"둔각인 경우의 결론",show:["obtCircle","obtTangent","obtPts","obtMain","obtAux","obtRight","obtSameArcAngles","obtTarget","obtEq1","obtEq2","obtEq3","obtEq4"],text:'이번에는 각의 합을 이용합니다. <span class="click-math" data-a="obtSum1">∠BAT = ∠BAC + ∠CAT</span>이고, <span class="click-math" data-a="obtSum2">∠BPA = ∠BPC + ∠CPA</span>입니다. 따라서 이 경우에도 ∠BAT = ∠BPA입니다.',clickable:true},
+  {title:"성질 정리",show:["sumCircle","sumTangent","sumPts","sumChords","sumAngles","sumArc"],text:'정리해 봅시다. <span class="click-math" data-a="summary">원의 접선과 그 접점을 지나는 현이 이루는 각의 크기는 그 각의 내부에 있는 호에 대한 원주각의 크기와 같습니다.</span> 즉, ∠BAT = ∠BPA입니다.',clickable:true},
+  {title:"스스로 확인하기 ①",show:["q1Circle","q1Tangent","q1Lines","q1Angles","q1Labs"],text:"접선 AT와 현 AB가 이루는 각이 62°입니다. 같은 호 AB에 대한 원주각 x의 크기를 구해 보세요.",exercise:"q1"},
+  {title:"스스로 확인하기 ②",show:["q2Circle","q2Tangent","q2Lines","q2Angles","q2Labs"],text:"∠ABC = 120°입니다. 접선과 현 AC가 이루는 각 x의 크기를 구해 보세요.",exercise:"q2"},
+  {title:"스스로 확인하기 ③",show:["q3Circle","q3Tangent","q3Lines","q3Angles","q3Labs"],text:"접선과 현 AC가 이루는 각이 40°이고 ∠ACB = 80°입니다. ∠BAC = x의 크기를 구해 보세요.",exercise:"q3"},
+  {title:"직관적으로 다시 바라보기",show:["limCircle","limTangent","limFixed","limAB","limTarget","limArc","limGhost","limP","limSecants","limAngle","limRead"],text:"마지막으로 증명과는 다른 방식으로 직관적으로 바라봅시다. 점 P를 A에 한없이 가까이 움직여 보세요. P가 A에 가까워질수록 선분 PA는 접선 AT의 방향에 가까워지고, 선분 PB는 현 AB의 방향에 가까워집니다. 따라서 원주각 ∠BPA가 접선과 현이 이루는 각 ∠BAT에 겹쳐지는 모습을 볼 수 있습니다. 훗날 극한을 배우면 이 생각을 더 엄밀하게 다룰 수도 있습니다.",limitActivity:true}
+];
+
+const all=[...document.querySelectorAll("[data-key]")];
+
+function clearFocus(){document.querySelectorAll(".focusLine,.focusAngle,.focusText").forEach(e=>e.classList.remove("focusLine","focusAngle","focusText"))}
+function focus(ids){clearFocus();ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;if(e.tagName==="text")e.classList.add("focusText");else if(e.tagName==="path")e.classList.add("focusAngle");else e.classList.add("focusLine")});setTimeout(clearFocus,2200)}
+function targets(a){
+  return({
+    defineTangentChord:["actAT","actAB","actBAT"],
+    introArc:["actArcAB"],
+    introInscribed:["actAP","actPB","actBPA","actArcAB"],
+    actCompare:["actBAT","actBPA"],
+    diameter:["rAB","rO"],
+    semicircle:["rSemi","rBPA"],
+    acuteAux:["aAC","aPC"],
+    acuteRight:["aRightA","aRightP","aEq1"],
+    acuteSame:["aCAB","aCPB","aArcBC","aEq2"],
+    acuteDiff1:["aBAT","aRightA","aCAB","aEq3"],
+    acuteDiff2:["aBPA","aRightP","aCPB","aEq4"],
+    obtAux:["oAC","oPC"],
+    obtRight:["oRightA","oRightP","oEq1"],
+    obtSame:["oBAC","oBPC","oArcBC","oEq2"],
+    obtSum1:["oBAT","oBAC","oRightA","oEq3"],
+    obtSum2:["oBPA","oBPC","oRightP","oEq4"],
+    summary:["sBAT","sBPA","sArcAB"]
+  })[a]||[]
+}
+function drawAux(ids){
+  ids.forEach(id=>{
+    const e=document.getElementById(id);
+    if(!e)return;
+    e.classList.remove("off","drawLine");
+    void e.getBoundingClientRect();
+    e.classList.add("drawLine");
+    setTimeout(()=>e.classList.remove("drawLine"),1100);
+  });
+}
+function handleClick(a){
+  if(a==="acuteAux"){
+    acuteAuxShown=true;
+    drawAux(["aAC","aPC"]);
+    return;
+  }
+  if(a==="obtAux"){
+    obtAuxShown=true;
+    drawAux(["oAC","oPC"]);
+    return;
+  }
+  focus(targets(a));
+}
+function bindClickable(){
+  const set=checked.get(idx)||new Set();
+  document.querySelectorAll(".click-math").forEach(el=>{
+    const a=el.dataset.a;
+    if(set.has(a)){el.classList.add("checked");if(!el.querySelector(".checkmark")){const c=document.createElement("span");c.className="checkmark";c.textContent="✓";el.appendChild(c)}}
+    el.onclick=()=>{
+      handleClick(a);
+      set.add(a);checked.set(idx,set);el.classList.add("checked");
+      if(!el.querySelector(".checkmark")){const c=document.createElement("span");c.className="checkmark";c.textContent="✓";el.appendChild(c)}
+    }
+  })
+}
+
+function renderExercise(k){
+  controls.innerHTML="";
+  const box=document.createElement("div");box.className="exercise";
+  const st=exState[k],ans=k==="q1"?"62":k==="q2"?"120":"60";
+  box.innerHTML=`<div class="answer"><span>x =</span><input id="ans" inputmode="numeric" value="${st.a}"><span>°</span><button id="check" class="primary">확인</button></div><div id="fb" class="feedback ${st.ok?"ok":""}">${st.ok?"정답입니다.":""}</div>${st.ok?`<div class="solution">${k==="q1"?"x = 62°":k==="q2"?"접선과 현이 이루는 각 = 같은 호에 대한 원주각이므로 x = 120°":"∠ABC = 40°, 따라서 x = 180° - 80° - 40° = 60°"}</div>`:""}`;
+  controls.appendChild(box);
+  const inp=document.getElementById("ans"),btn=document.getElementById("check");
+  const go=()=>{st.a=inp.value;const v=inp.value.trim().replace("°","");if(v===ans){st.ok=true;renderExercise(k)}else{st.ok=false;const fb=document.getElementById("fb");fb.className="feedback bad";fb.textContent=k==="q3"?"먼저 접선과 현 AC가 이루는 40°와 같은 원주각을 찾아보세요.":"접선과 현이 이루는 각과 같은 호에 대한 원주각의 관계를 떠올려 보세요."}};
+  btn.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()}
+}
+
+function renderControls(){
+  controls.innerHTML="";
+  if(steps[idx].activity){
+    controls.innerHTML=`<div class="controls"><label for="bSlider">점 B의 위치</label><input id="bSlider" type="range" min="205" max="335" value="${bDeg}"><div class="readout"><span>∠BAT = <b id="out1"></b></span><span>∠BPA = <b id="out2"></b></span><span>현재: <b id="outType"></b></span></div><div class="note">슬라이더를 움직여 예각, 직각, 둔각의 경우를 모두 확인해 보세요.</div></div>`;
+    const s=document.getElementById("bSlider");
+    const sync=()=>{document.getElementById("out1").textContent=document.getElementById("actV1").textContent.replace("∠BAT = ","");document.getElementById("out2").textContent=document.getElementById("actV2").textContent.replace("∠BPA = ","");document.getElementById("outType").textContent=document.getElementById("actType").textContent};
+    s.oninput=e=>{bDeg=Number(e.target.value);updateActivity();sync()};sync();
+  }
+  if(steps[idx].exercise)renderExercise(steps[idx].exercise);
+  if(steps[idx].limitActivity){
+    controls.innerHTML=`<div class="controls">
+      <label for="limitSlider">점 P를 A 쪽으로 움직여 보기</label>
+      <input id="limitSlider" type="range" min="96" max="205" value="${limitPDeg}">
+      <div class="readout">
+        <span>∠BAT = <b id="limitOut1"></b></span>
+        <span>∠BPA = <b id="limitOut2"></b></span>
+      </div>
+      <div class="note">오른쪽으로 갈수록 P가 A에서 멀어지고, 왼쪽 끝으로 갈수록 P가 A에 매우 가까워집니다.</div>
+    </div>`;
+    const slider=document.getElementById("limitSlider");
+    const sync=()=>{
+      document.getElementById("limitOut1").textContent=document.getElementById("lRead1").textContent.replace("∠BAT = ","");
+      document.getElementById("limitOut2").textContent=document.getElementById("lRead2").textContent.replace("∠BPA = ","");
+    };
+    slider.oninput=e=>{limitPDeg=Number(e.target.value);updateLimit();sync();};
+    updateLimit();sync();
+  }
+}
+
+function render(){
+  clearFocus();
+  const s=steps[idx];
+  all.forEach(e=>e.classList.toggle("off",!s.show.includes(e.dataset.key)));
+
+  // 예각/둔각 도입 화면에서는 보조선을 문장을 누르기 전까지 감춘다.
+  if(s.title==="경우 2. ∠BAT가 예각일 때" && !acuteAuxShown){
+    ["aAC","aPC"].forEach(id=>document.getElementById(id).classList.add("off"));
+  }
+  if(s.title==="경우 3. ∠BAT가 둔각일 때" && !obtAuxShown){
+    ["oAC","oPC"].forEach(id=>document.getElementById(id).classList.add("off"));
+  }
+  if(s.title==="경우 2. ∠BAT가 예각일 때" && acuteAuxShown){
+    ["aAC","aPC"].forEach(id=>document.getElementById(id).classList.remove("off"));
+  }
+  if(s.title==="경우 3. ∠BAT가 둔각일 때" && obtAuxShown){
+    ["oAC","oPC"].forEach(id=>document.getElementById(id).classList.remove("off"));
+  }
+
+  badge.textContent=`${idx+1} / ${steps.length}`;title.textContent=s.title;subtitle.innerHTML=s.text;
+  hint.textContent=s.clickable?"밑줄 친 글자를 눌러 그림에서 확인하세요.":"";
+  prev.disabled=idx===0;next.disabled=idx===steps.length-1;bar.style.width=`${(idx+1)/steps.length*100}%`;stepText.textContent=`${idx+1}단계`;
+  renderControls();bindClickable();
+}
+prev.onclick=()=>{if(idx>0){idx--;render()}};next.onclick=()=>{if(idx<steps.length-1){idx++;render()}};
+document.addEventListener("keydown",e=>{if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}if(e.key==="ArrowLeft"&&idx>0){idx--;render()}});
+render();
+})();
+</script>
+</body>
+</html>
