@@ -142,5 +142,30 @@
     "unitOrder": 1,
     "conceptOrder": 5,
     "published": true
+  },
+  {
+    "id": "cyclic-quadrilateral",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "원에 내접하는 사각형의 성질",
+    "description": "원에 내접하는 사각형에서 마주 보는 두 각의 합이 180°가 되는 이유를 원주각의 성질로 이해합니다.",
+    "href": "./middle-3/cyclic-quadrilateral/",
+    "tags": [
+      "원",
+      "내접",
+      "사각형",
+      "원에 내접하는 사각형",
+      "대각",
+      "원주각",
+      "원의 성질"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 6,
+    "published": true
   }
 ]
