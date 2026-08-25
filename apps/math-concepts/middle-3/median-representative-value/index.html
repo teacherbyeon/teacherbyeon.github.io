@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>중앙값은 무엇일까? v1</title>
+<style>
+:root{
+  --bg:#ffffff;--panel:#f7f8fa;--text:#171717;--muted:#6b7280;--border:#d8dbe1;
+  --blue:#2563eb;--blueSoft:#edf4ff;--orange:#f97316;--green:#16803b;--red:#dc2626;
+  --teal:#0f766e;--violet:#7c3aed;--gray:#a3a3a3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--border)}
+.badge{padding:6px 10px;border-radius:999px;background:var(--blueSoft);font-size:14px}
+.title{font-size:19px;font-weight:850}
+.stage{margin-top:14px;min-height:520px;border:1px solid var(--border);border-radius:18px;background:var(--panel);padding:16px;display:flex;flex-direction:column;justify-content:center}
+.scene{width:100%;max-width:920px;margin:0 auto}
+.subtitle{text-align:center;font-size:22px;font-weight:650;line-height:1.65;min-height:108px;padding:13px 14px 4px;white-space:pre-line}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:10px 16px;font-size:16px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--blue)}
+.small{font-size:14px;color:var(--muted)}
+
+.question{font-size:28px;font-weight:900;text-align:center;line-height:1.45;margin-bottom:24px}
+.big-number{font-size:62px;font-weight:950;text-align:center;color:var(--blue);margin:10px 0}
+.unit{text-align:center;color:var(--muted);font-size:18px}
+.choice-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.choice-row button{min-width:180px;padding:14px 18px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.subtitle{font-size:19px}.question{font-size:24px}}
+.data-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0}
+.data-chip{min-width:64px;padding:12px 10px;border-radius:12px;border:1px solid var(--border);background:#fff;text-align:center;font-size:20px;font-weight:850}
+.data-chip.boss{background:#fff2e8;border-color:#fdba74;color:#b45309}
+.role{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.formula{text-align:center;font-size:25px;font-weight:850;line-height:1.6;margin:16px 0}
+.formula .hi{color:var(--orange)}
+.callout{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:18px;line-height:1.55}
+.callout strong{color:var(--blue)}
+.click{color:var(--blue);border-bottom:2px dotted var(--blue);cursor:pointer}
+.click.checked{color:var(--green);border-bottom-color:var(--green)}
+.tick{margin-left:4px;color:var(--green);font-weight:900}
+.crossed{opacity:.26;text-decoration:line-through}
+.median{outline:4px solid #86efac;background:#f0fdf4!important;color:#166534}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:700px;margin:18px auto}
+.compare .value{font-size:46px;font-weight:950;text-align:center}
+.compare .label{text-align:center;font-size:18px;color:var(--muted)}
+.meanCard .value{color:var(--blue)} .medianCard .value{color:var(--teal)}
+.chart-wrap{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px}
+svg{width:100%;height:auto;display:block}
+.bar{fill:#93c5fd}.bar.boss{fill:#fdba74}.bar-label{font-size:14px;fill:#555}.axis{stroke:#555;stroke-width:2}
+.controls{margin:14px auto 0;max-width:820px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+.controls label{display:block;font-weight:850;margin-bottom:8px}
+.controls input[type=range]{width:100%}
+.readout{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:18px}
+.readout b{font-size:22px}
+.note{font-size:14px;color:var(--muted);text-align:center;margin-top:8px}
+.answer{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:20px;font-weight:850}
+.answer input{width:100px;text-align:center;padding:9px;border:2px solid #c4c8cf;border-radius:10px;font-size:20px}
+.feedback{min-height:28px;margin-top:8px;font-weight:800;text-align:center}
+.feedback.ok{color:var(--green)} .feedback.bad{color:var(--red)}
+.solution{margin-top:8px;padding:10px;background:#f0fdf4;border-radius:10px;text-align:center;color:#166534;font-size:18px;font-weight:850}
+.definition{font-size:24px;line-height:1.6;text-align:center}
+.definition strong{color:var(--red)}
+.qbox{font-size:21px;font-weight:800;text-align:center;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><span class="badge" id="badge">1 / 12</span><span class="title" id="title"></span></div>
+  <section class="stage"><div id="scene" class="scene"></div></section>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="hint" id="hint"></div>
+  <div class="footer">
+    <button id="prev">이전</button>
+    <div class="progress"><div id="bar"></div></div>
+    <span class="small" id="stepText"></span>
+    <button id="next" class="primary">다음</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+const scene=document.getElementById("scene"), title=document.getElementById("title"), subtitle=document.getElementById("subtitle"),
+hint=document.getElementById("hint"), badge=document.getElementById("badge"), prev=document.getElementById("prev"),
+next=document.getElementById("next"), bar=document.getElementById("bar"), stepText=document.getElementById("stepText");
+
+const income=[80,90,90,100,100,110,110,120,1000];
+const kick=[6,5,7,4,6,7,23,6];
+let idx=0,bossIncome=1000,peel=0;
+const state={odd:{a:"",ok:false},even:{a:"",ok:false},kick:{mean:"",median:"",ok:false}};
+const checked=new Map();
+
+const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
+const median=a=>{const b=[...a].sort((x,y)=>x-y),n=b.length;return n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2};
+
+function chips(arr,{roles=false,medianIndex=null,cross=0}={}){
+  return `<div class="data-row">${
+    arr.map((v,i)=>{
+      const cls=["data-chip"];
+      if(roles && i===arr.length-1)cls.push("boss");
+      if(medianIndex===i)cls.push("median");
+      if(i<cross || i>=arr.length-cross)cls.push("crossed");
+      return `<div class="${cls.join(" ")}">${v}${roles?`<span class="role">${i===arr.length-1?"사장":"아르바이트생"}</span>`:""}</div>`;
+    }).join("")
+  }</div>`;
+}
+function barChart(arr, bossLast=false){
+  const W=820,H=300,pad=48,max=Math.max(...arr)*1.08,bw=(W-pad*2)/arr.length*0.66,gap=(W-pad*2)/arr.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" aria-label="막대그래프"><line class="axis" x1="${pad}" y1="${H-pad}" x2="${W-pad+10}" y2="${H-pad}"/>`;
+  arr.forEach((v,i)=>{
+    const h=(v/max)*(H-pad*2),x=pad+i*gap+gap*0.17,y=H-pad-h;
+    s+=`<rect class="bar ${bossLast&&i===arr.length-1?"boss":""}" x="${x}" y="${y}" width="${bw}" height="${h}" rx="5"/>`;
+    s+=`<text class="bar-label" x="${x+bw/2}" y="${H-pad+20}" text-anchor="middle">${i+1}</text>`;
+    s+=`<text class="bar-label" x="${x+bw/2}" y="${Math.max(18,y-6)}" text-anchor="middle">${v}</text>`;
+  });
+  return s+`</svg>`;
+}
+
+function step1(){
+  scene.innerHTML=`<div class="question">어느 가게에서 일하는 9명의 한 달 수입은<br><span style="color:var(--blue)">평균 200만 원</span>입니다.</div>
+  <div class="big-number">200만 원</div><div class="unit">9명의 평균 한 달 수입</div>
+  <div class="choice-row">
+    <button data-c="a">대부분 200만 원 안팎일 것 같다</button>
+    <button data-c="b">아르바이트생들도 꽤 버나 보다</button>
+    <button data-c="c">평균만으로는 잘 모르겠다</button>
+  </div>`;
+  scene.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{scene.querySelectorAll("[data-c]").forEach(x=>x.style.outline="");b.style.outline="3px solid #93c5fd"});
+}
+function step2(){
+  scene.innerHTML=`<div class="grid2">
+    <div class="card"><div class="qbox">실제 한 달 수입은 다음과 같습니다. <span style="font-size:15px;color:var(--muted)">(단위: 만 원)</span></div>${chips(income,{roles:true})}</div>
+    <div class="chart-wrap">${barChart(income,true)}</div>
+  </div>`;
+}
+function step3(){
+  scene.innerHTML=`<div class="card">
+    <div class="qbox">계산은 정말 맞을까요?</div>
+    <div class="formula">(${income.join(" + ")}) ÷ 9 = <span class="hi">200</span></div>
+    <div class="callout">평균은 분명 <strong>200만 원</strong>입니다. 그런데 실제로는 9명 중 8명의 수입이 80~120만 원이고, 사장 한 명만 1000만 원입니다.</div>
+    <div class="qbox" style="margin-top:20px">평균 200만 원이 이 자료의 중심을 잘 나타낸다고 할 수 있을까요?</div>
+  </div>`;
+}
+function step4(){
+  scene.innerHTML=`<div class="definition">자료 전체의 중심 경향이나 특징을 대표적으로 나타내는 값을<br><strong>대표값</strong>이라고 합니다.</div>
+  <div class="qbox" style="margin-top:30px">그렇다면 이 자료를 대표할 만한 다른 값은 없을까요?</div>
+  <div class="callout" style="margin-top:18px">평균이 항상 나쁜 것은 아닙니다. 다만 <strong>매우 크거나 작은 값</strong>이 있을 때는 평균이 자료의 전형적인 모습을 잘 보여 주지 못할 수 있습니다.</div>`;
+}
+function step5(){
+  const arr=[...income].sort((a,b)=>a-b);
+  scene.innerHTML=`<div class="qbox">자료를 작은 값부터 늘어놓고, 양쪽에서 하나씩 지워 봅시다.</div>
+  ${chips(arr,{medianIndex:peel===4?4:null,cross:peel})}
+  <div class="choice-row">
+    <button id="peelBtn" class="primary">${peel<4?"양쪽에서 하나씩 지우기":"가운데 값 확인"}</button>
+    <button id="resetPeel">다시 보기</button>
+  </div>`;
+  document.getElementById("peelBtn").onclick=()=>{if(peel<4)peel++;render();};
+  document.getElementById("resetPeel").onclick=()=>{peel=0;render();};
+}
+function step6(){
+  scene.innerHTML=`<div class="compare">
+    <div class="card meanCard"><div class="label">평균</div><div class="value">200만 원</div></div>
+    <div class="card medianCard"><div class="label">중앙값</div><div class="value">100만 원</div></div>
+  </div>
+  <div class="qbox">이 가게에서 일하는 사람들의 일반적인 수입을 나타내기에는 어느 값이 더 자연스러워 보이나요?</div>
+  <div class="callout">중앙값이 언제나 평균보다 좋은 것은 아닙니다. <strong>이 자료처럼 극단적으로 큰 값이 있을 때</strong> 중앙값이 자료의 중심을 더 잘 보여 주는 경우가 있습니다.</div>`;
+}
+function step7(){
+  const arr=[80,90,90,100,100,110,110,120,bossIncome];
+  scene.innerHTML=`<div class="grid2">
+    <div class="chart-wrap">${barChart(arr,true)}</div>
+    <div class="card">
+      <div class="qbox">사장의 수입만 바꾸어 봅시다.</div>
+      <div class="controls">
+        <label for="bossSlider">사장 수입: <span id="bossVal">${bossIncome}</span>만 원</label>
+        <input id="bossSlider" type="range" min="200" max="1500" step="10" value="${bossIncome}">
+        <div class="readout"><span>평균 <b id="meanOut">${mean(arr).toFixed(1)}</b>만 원</span><span>중앙값 <b id="medianOut">${median(arr)}</b>만 원</span></div>
+        <div class="note">사장의 수입만 크게 바뀔 때 평균과 중앙값이 어떻게 달라지는지 관찰하세요.</div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("bossSlider").oninput=e=>{bossIncome=Number(e.target.value);render();};
+}
+function step8(){
+  scene.innerHTML=`<div class="definition">자료를 작은 값부터 크기순으로 나열했을 때<br><strong>중앙에 위치한 값</strong>을 그 자료의 중앙값이라고 합니다.</div>
+  <div class="qbox" style="margin-top:28px">그런데 자료의 개수가 짝수라면 가운데 값이 하나가 아닙니다. 그때는 어떻게 해야 할까요?</div>`;
+}
+function inputBox(kind,prompt,ans,solution){
+  const st=state[kind];
+  scene.innerHTML=`<div class="card"><div class="qbox">${prompt}</div>
+  <div id="dataArea"></div>
+  <div class="answer"><span>중앙값 =</span><input id="ans" inputmode="decimal" value="${st.a}"><button id="check" class="primary">확인</button></div>
+  <div id="fb" class="feedback ${st.ok?"ok":""}">${st.ok?"정답입니다.":""}</div>${st.ok?`<div class="solution">${solution}</div>`:""}</div>`;
+  const go=()=>{st.a=document.getElementById("ans").value;const v=Number(st.a);if(v===ans){st.ok=true;render()}else{st.ok=false;const fb=document.getElementById("fb");fb.className="feedback bad";fb.textContent="먼저 자료를 작은 값부터 차례로 나열해 보세요."}};
+  document.getElementById("check").onclick=go;document.getElementById("ans").onkeydown=e=>{if(e.key==="Enter")go()};
+}
+function step9(){
+  inputBox("odd","자료가 9, 7, 10, 8, 24일 때 중앙값을 구해 보세요.",9,"7, 8, 9, 10, 24 → 가운데 값은 9");
+  document.getElementById("dataArea").innerHTML=chips([9,7,10,8,24]);
+}
+function step10(){
+  inputBox("even","자료가 10, 15, 4, 17, 11, 14일 때 중앙값을 구해 보세요.",12.5,"4, 10, 11, 14, 15, 17 → 가운데 두 값 11과 14의 평균은 12.5");
+  document.getElementById("dataArea").innerHTML=chips([10,15,4,17,11,14]);
+}
+function step11(){
+  const st=state.kick;
+  scene.innerHTML=`<div class="card">
+    <div class="qbox">학생 8명이 제기차기를 한 횟수입니다.</div>${chips(kick)}
+    <div class="answer">
+      <span>평균 =</span><input id="m1" inputmode="decimal" value="${st.mean}">
+      <span>중앙값 =</span><input id="m2" inputmode="decimal" value="${st.median}">
+      <button id="checkKick" class="primary">확인</button>
+    </div>
+    <div id="fb" class="feedback ${st.ok?"ok":""}">${st.ok?"정답입니다. 평균은 8회, 중앙값은 6회입니다.":""}</div>
+    ${st.ok?`<div class="solution">23회라는 큰 값 때문에 평균은 8회까지 올라갑니다. 이 자료의 일반적인 모습을 나타내기에는 중앙값 6회가 더 자연스럽습니다.</div>`:""}
+  </div>`;
+  const go=()=>{st.mean=document.getElementById("m1").value;st.median=document.getElementById("m2").value;if(Number(st.mean)===8&&Number(st.median)===6){st.ok=true;render()}else{st.ok=false;const fb=document.getElementById("fb");fb.className="feedback bad";fb.textContent="평균을 계산하고, 자료를 크기순으로 정리하여 가운데 두 값을 확인해 보세요."}};
+  document.getElementById("checkKick").onclick=go;
+}
+function step12(){
+  scene.innerHTML=`<div class="grid2">
+    <div class="card"><div class="qbox" style="color:var(--blue)">평균</div><div class="callout">모든 자료의 값을 이용하여 계산합니다.<br><br><strong>극단적으로 크거나 작은 값의 영향을 크게 받을 수 있습니다.</strong></div></div>
+    <div class="card"><div class="qbox" style="color:var(--teal)">중앙값</div><div class="callout">자료를 크기순으로 나열했을 때 가운데 위치한 값입니다.<br><br><strong>극단값의 영향을 평균보다 적게 받습니다.</strong></div></div>
+  </div>
+  <div class="qbox" style="margin-top:26px">평균과 중앙값 중 어느 것이 항상 더 좋은 대표값일까요?</div>
+  <div class="callout" style="margin-top:12px;text-align:center"><strong>자료의 특징과 상황에 따라 적절한 대표값을 선택해야 합니다.</strong></div>`;
+}
+
+const steps=[
+  {title:"평균만 보고 예상하기",text:"어느 가게에서 일하는 9명의 한 달 수입의 평균은 200만 원입니다. 평균만 보고 우리는 어떤 모습을 떠올리게 될까요?",render:step1},
+  {title:"실제 자료를 살펴보기",text:"이제 실제 자료를 봅시다. 대부분의 수입은 80만 원에서 120만 원 사이인데, 사장 한 명의 수입만 1000만 원입니다.",render:step2},
+  {title:"평균을 의심해 보기",text:"계산은 틀리지 않았습니다. 그런데 평균 200만 원이 이 자료의 중심을 잘 나타낸다고 말하기는 어려워 보입니다.",render:step3},
+  {title:"대표값이 필요하다",text:"자료 전체의 중심 경향이나 특징을 하나의 값으로 나타내고 싶을 때가 있습니다. 이런 값을 대표값이라고 합니다.",render:step4},
+  {title:"가운데 값을 찾아보기",text:"평균 말고 다른 방법을 생각해 봅시다. 자료를 크기순으로 놓고 양쪽 끝을 하나씩 지워 보면 가운데에 100만 원이 남습니다.",render:step5},
+  {title:"평균과 중앙값 비교",text:"이 자료의 평균은 200만 원이고 중앙값은 100만 원입니다. 이 상황에서는 중앙값이 일반적인 수입을 더 자연스럽게 보여 줍니다.",render:step6},
+  {title:"극단값을 움직여 보기",text:"사장의 수입만 바꾸어 보세요. 큰 값 하나가 움직일 때 평균은 크게 변하지만 중앙값은 그대로 유지되는 모습을 확인할 수 있습니다.",render:step7},
+  {title:"중앙값의 뜻",text:"자료를 작은 값부터 크기순으로 나열했을 때 중앙에 위치한 값을 중앙값이라고 합니다.",render:step8},
+  {title:"자료의 개수가 홀수일 때",text:"자료의 개수가 홀수이면 정가운데에 있는 하나의 값이 중앙값입니다.",render:step9},
+  {title:"자료의 개수가 짝수일 때",text:"자료의 개수가 짝수이면 가운데에 있는 두 값의 평균을 중앙값으로 합니다.",render:step10},
+  {title:"어떤 대표값이 더 적절할까?",text:"제기차기 자료에서도 큰 값 하나가 평균에 영향을 줍니다. 평균과 중앙값을 직접 구하고 어느 값이 더 적절한지 생각해 봅시다.",render:step11},
+  {title:"정리",text:"평균과 중앙값 중 하나가 언제나 더 좋은 것은 아닙니다. 자료의 특징과 상황에 따라 적절한 대표값을 선택해야 합니다.",render:step12}
+];
+
+function render(){
+  const s=steps[idx];
+  title.textContent=s.title;subtitle.textContent=s.text;hint.textContent="";
+  s.render();
+  badge.textContent=`${idx+1} / ${steps.length}`;
+  stepText.textContent=`${idx+1}단계`;
+  bar.style.width=`${(idx+1)/steps.length*100}%`;
+  prev.disabled=idx===0;next.disabled=idx===steps.length-1;
+}
+prev.onclick=()=>{if(idx>0){idx--;render()}};
+next.onclick=()=>{if(idx<steps.length-1){idx++;render()}};
+document.addEventListener("keydown",e=>{
+  if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;
+  if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}
+  if(e.key==="ArrowLeft"&&idx>0){idx--;render()}
+});
+render();
+})();
+</script>
+</body>
+</html>
