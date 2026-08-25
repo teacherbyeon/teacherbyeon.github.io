@@ -192,5 +192,30 @@
     "unitOrder": 1,
     "conceptOrder": 7,
     "published": true
+  },
+  {
+    "id": "median-representative-value",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "자료와 가능성",
+    "unit": "대푯값과 산포도",
+    "title": "대표값과 중앙값",
+    "description": "극단값이 있는 자료에서 평균과 중앙값을 비교하고 상황에 알맞은 대표값을 선택하는 방법을 이해합니다.",
+    "href": "./middle-3/median-representative-value/",
+    "tags": [
+      "통계",
+      "자료",
+      "대푯값",
+      "평균",
+      "중앙값",
+      "극단값",
+      "자료와 가능성"
+    ],
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 2,
+    "unitOrder": 1,
+    "conceptOrder": 2,
+    "published": true
   }
 ]
