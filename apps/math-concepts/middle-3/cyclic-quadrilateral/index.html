@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>원에 내접하는 사각형의 성질 v5</title>
+<style>
+:root{--text:#171717;--muted:#6b7280;--line:#d9dadd;--panel:#f7f7f8;--blue:#2563eb;--orange:#f97316;--green:#16803b;--red:#e11d48}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--text);background:white}
+.app{max-width:1120px;margin:auto;padding:14px}.top{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0 12px}
+.badge{background:#eef4ff;border-radius:999px;padding:6px 10px;font-size:14px}.title{font-weight:800;font-size:18px}
+.diagram{margin-top:14px;min-height:530px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;align-items:center;justify-content:center}
+svg{width:100%;height:auto;max-height:65vh}.subtitle{text-align:center;font-size:23px;font-weight:650;line-height:1.62;min-height:108px;padding:14px 12px 4px}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px}.footer{display:flex;gap:10px;align-items:center;justify-content:center;padding-top:10px}
+button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-size:16px;cursor:pointer}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button:disabled{opacity:.4}
+.progress{height:8px;background:#ececf0;border-radius:99px;overflow:hidden;flex:1;max-width:430px}.progress div{height:100%;background:var(--blue)}
+.small{font-size:14px;color:var(--muted)}.controls,.exercise{width:min(800px,100%);margin:0 auto 10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.readout{display:flex;justify-content:center;gap:12px 22px;flex-wrap:wrap;color:var(--muted)}.readout b{color:var(--text)}.note{font-size:14px;color:var(--muted);margin-top:7px}
+.answer{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:20px;font-weight:800}.answer input{width:90px;text-align:center;padding:8px;border:2px solid #bcc3cc;border-radius:10px;font-size:20px}
+.feedback{min-height:28px;margin-top:8px;font-weight:750}.ok{color:var(--green)}.bad{color:#b91c1c}.solution{margin-top:8px;background:#f1faf4;color:var(--green);border-radius:10px;padding:8px;font-size:18px;font-weight:800}
+.click{color:var(--blue);border-bottom:2px dotted var(--blue);cursor:pointer;white-space:nowrap}.click.checked{color:var(--green);border-bottom-color:var(--green)}
+.shape{transition:.2s}.off{opacity:0!important;pointer-events:none}.circle,.quad,.radius{fill:none;stroke:var(--text);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.radius{stroke:#626b76;stroke-width:2.6}
+.arc1{fill:none;stroke:var(--red);stroke-width:5;stroke-linecap:round}.arc2{fill:none;stroke:#8ab4f8;stroke-width:5;stroke-linecap:round}
+.angle{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round}.angN{fill:none;stroke:#4b5563;stroke-width:3;stroke-linecap:round}
+.pt{fill:var(--text)}.drag{fill:var(--blue);stroke:#fff;stroke-width:3;cursor:grab}.center{fill:var(--blue)}
+.txt{fill:var(--text);font-size:24px;font-weight:800}.lab{fill:var(--muted);font-size:18px}.eq{fill:var(--blue);font-size:22px;font-weight:800}.math{fill:var(--text);font:italic 23px "Times New Roman",serif}
+.focusLine{stroke:var(--orange)!important;stroke-width:8px!important;animation:pulse .7s 3}.focusAngle{stroke:var(--orange)!important;stroke-width:7px!important;animation:blink .55s 4}.focusText{fill:var(--orange)!important;font-weight:900!important;animation:blink .7s 3}
+@keyframes pulse{50%{stroke-width:10px}}@keyframes blink{50%{opacity:.18}}
+.persistA{stroke:#0f766e!important;fill:none!important;stroke-width:5px!important}.persistAT{fill:#0f766e!important;font-weight:900}.persistC{stroke:#7c3aed!important;fill:none!important;stroke-width:5px!important}.persistCT{fill:#7c3aed!important;font-weight:900}
+@media(max-width:820px){.subtitle{font-size:20px}.diagram{min-height:47vh}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top"><span class="badge" id="badge">1 / 13</span><span class="title" id="title"></span></div>
+<div class="diagram"><svg id="svg" viewBox="0 0 760 520"><g id="base"></g><g id="lines"></g><g id="marks"></g><g id="labels"></g></svg></div>
+<div id="controls"></div><div class="subtitle" id="subtitle"></div><div class="hint" id="hint"></div>
+<div class="footer"><button id="prev">이전</button><div class="progress"><div id="bar"></div></div><span class="small" id="stepText"></span><button id="next" class="primary">다음</button></div>
+</div>
+<script>
+(()=>{
+const NS="http://www.w3.org/2000/svg",svg=document.getElementById("svg"),base=document.getElementById("base"),lines=document.getElementById("lines"),marks=document.getElementById("marks"),labels=document.getElementById("labels");
+const title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),hint=document.getElementById("hint"),controls=document.getElementById("controls"),badge=document.getElementById("badge"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
+function add(tag,a,p=lines){const e=document.createElementNS(NS,tag);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));p.appendChild(e);return e}
+function ln(P,Q,c,k,id,p=lines){return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${c}`,"data-key":k,id},p)}
+function dot(P,c,k,id,r=6,p=marks){return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${c}`,"data-key":k,id},p)}
+function tx(P,s,c,k,id,dx=0,dy=0,p=labels){const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${c}`,"data-key":k,id},p);e.textContent=s;return e}
+function ph(d,c,k,id,p=marks){return add("path",{d,class:`shape ${c}`,"data-key":k,id},p)}
+function pt(O,R,d){const a=d*Math.PI/180;return{x:O.x+R*Math.cos(a),y:O.y+R*Math.sin(a)}}
+function nd(d){d%=360;if(d<0)d+=360;return d}
+function arc(O,R,s,e){s=nd(s);e=nd(e);let d=e-s;if(d<0)d+=360;const p1=pt(O,R,s),p2=pt(O,R,e);return`M ${p1.x} ${p1.y} A ${R} ${R} 0 ${d>180?1:0} 1 ${p2.x} ${p2.y}`}
+function ang(V,P1,P2,r){let a1=Math.atan2(P1.y-V.y,P1.x-V.x),a2=Math.atan2(P2.y-V.y,P2.x-V.x),d=a2-a1;while(d<=-Math.PI)d+=2*Math.PI;while(d>Math.PI)d-=2*Math.PI;const s={x:V.x+r*Math.cos(a1),y:V.y+r*Math.sin(a1+d*0)},e={x:V.x+r*Math.cos(a1+d),y:V.y+r*Math.sin(a1+d)};return`M ${s.x} ${s.y} A ${r} ${r} 0 0 ${d>0?1:0} ${e.x} ${e.y}`}
+function measure(V,P1,P2){const a={x:P1.x-V.x,y:P1.y-V.y},b={x:P2.x-V.x,y:P2.y-V.y},den=Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y);return Math.acos(Math.max(-1,Math.min(1,(a.x*b.x+a.y*b.y)/den)))*180/Math.PI}
+function setL(id,P,Q){const e=document.getElementById(id);e.setAttribute("x1",P.x);e.setAttribute("y1",P.y);e.setAttribute("x2",Q.x);e.setAttribute("y2",Q.y)}
+function setC(id,P){const e=document.getElementById(id);e.setAttribute("cx",P.x);e.setAttribute("cy",P.y)}
+function setT(id,x,y,t){const e=document.getElementById(id);e.setAttribute("x",x);e.setAttribute("y",y);if(t!==undefined)e.textContent=t}
+function setP(id,d){document.getElementById(id).setAttribute("d",d)}
+
+const O={x:330,y:260},R=155;
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle","data-key":"exCircle"},base);
+["A","B","C","D"].forEach(k=>{dot({x:0,y:0},"drag","exPts","ex"+k,10);tx({x:0,y:0},k,"lab","exPts","ex"+k+"L")});
+["AB","BC","CD","DA"].forEach(k=>ln(O,O,"quad","exQuad","ex"+k));
+["A","B","C","D"].forEach(k=>ph("","angle","exAngles","exAng"+k));
+["A","B","C","D"].forEach((k,i)=>tx({x:545,y:145+i*38},"","eq","exVals","exVal"+k));
+tx({x:515,y:325},"","eq","exSums","sumAC");tx({x:515,y:365},"","eq","exSums","sumBD");
+const exD={A:242,B:158,C:82,D:18},sec={A:[205,285],B:[120,195],C:[45,115],D:[330,405]};
+function exPt(k){return pt(O,R,exD[k])}
+function updateEx(){const A=exPt("A"),B=exPt("B"),C=exPt("C"),D=exPt("D"),P={A,B,C,D},off={A:[-18,-14],B:[-24,10],C:[7,22],D:[10,8]};for(const k of["A","B","C","D"]){setC("ex"+k,P[k]);setT("ex"+k+"L",P[k].x+off[k][0],P[k].y+off[k][1])}setL("exAB",A,B);setL("exBC",B,C);setL("exCD",C,D);setL("exDA",D,A);setP("exAngA",ang(A,B,D,28));setP("exAngB",ang(B,A,C,28));setP("exAngC",ang(C,B,D,28));setP("exAngD",ang(D,C,A,28));const v={A:measure(A,B,D),B:measure(B,A,C),C:measure(C,B,D),D:measure(D,C,A)};for(const k of["A","B","C","D"])document.getElementById("exVal"+k).textContent=`∠${k} = ${v[k].toFixed(1)}°`;document.getElementById("sumAC").textContent=`∠A + ∠C = ${(v.A+v.C).toFixed(1)}°`;document.getElementById("sumBD").textContent=`∠B + ∠D = ${(v.B+v.D).toFixed(1)}°`}
+updateEx();
+
+const A=pt(O,R,240),B=pt(O,R,158),C=pt(O,R,78),D=pt(O,R,18);
+add("circle",{cx:O.x,cy:O.y,r:R,class:"shape circle","data-key":"pfCircle"},base);dot(O,"center","pfCenter","pfO");tx(O,"O","txt","pfCenter","pfOL",12,-10);
+for(const [k,P] of Object.entries({A,B,C,D})){dot(P,"pt","pfPts","pf"+k);const o={A:[-18,-14],B:[-25,9],C:[6,22],D:[10,8]}[k];tx(P,k,"lab","pfPts","pf"+k+"L",o[0],o[1])}
+ln(A,B,"quad","pfQuad","pfAB");ln(B,C,"quad","pfQuad","pfBC");ln(C,D,"quad","pfQuad","pfCD");ln(D,A,"quad","pfQuad","pfDA");
+ph(ang(A,B,D,30),"angN","angA","pfAngA");ph(ang(C,B,D,30),"angN","angC","pfAngC");ph(ang(B,A,C,30),"angN","angB","pfAngB");ph(ang(D,C,A,30),"angN","angD","pfAngD");
+ph(arc(O,R,18,158),"arc1","arcBCD","pfArcBCD");ph(arc(O,R,158,18),"arc2","arcBAD","pfArcBAD");
+ln(O,B,"radius","pfRadii","pfOB");ln(O,D,"radius","pfRadii","pfOD");
+ph(arc(O,44,18,158),"angN","centA","pfCentA");ph(arc(O,34,158,18),"angN","centC","pfCentC");tx({x:O.x-3,y:O.y+60},"a","math","centLabs","labA");tx({x:O.x-53,y:O.y-5},"c","math","centLabs","labC");
+tx({x:540,y:160},"∠A = 1/2 a","eq","eqA","eqA");tx({x:540,y:200},"∠C = 1/2 c","eq","eqC","eqC");tx({x:530,y:295},"a + c = 360°","eq","eqSum","eqSum");tx({x:515,y:338},"∠A + ∠C = 180°","eq","eqRes","eqRes");
+
+const O1={x:330,y:260},R1=135,E=pt(O1,R1,238),F=pt(O1,R1,160),G=pt(O1,R1,83),H=pt(O1,R1,15);
+add("circle",{cx:O1.x,cy:O1.y,r:R1,class:"shape circle","data-key":"q1Circle"},base);ln(E,F,"quad","q1Quad","q1a");ln(F,G,"quad","q1Quad","q1b");ln(G,H,"quad","q1Quad","q1c");ln(H,E,"quad","q1Quad","q1d");ph(ang(F,E,G,20),"angle","q1Angles","q1given");ph(ang(H,G,E,20),"angle","q1Angles","q1x");tx(F,"75°","eq","q1Labs","q175",-48,20);tx(H,"x","eq","q1Labs","q1xT",18,-8);
+
+const O2={x:330,y:260},R2=135,J=pt(O2,R2,230),K=pt(O2,R2,150),L=pt(O2,R2,75),M=pt(O2,R2,8);
+const KL={x:L.x-K.x,y:L.y-K.y}, KLlen=Math.hypot(KL.x,KL.y);
+const X={x:K.x-90*KL.x/KLlen,y:K.y-90*KL.y/KLlen};
+add("circle",{cx:O2.x,cy:O2.y,r:R2,class:"shape circle","data-key":"q2Circle"},base);ln(J,K,"quad","q2Quad","q2a");ln(K,L,"quad","q2Quad","q2b");ln(L,M,"quad","q2Quad","q2c");ln(M,J,"quad","q2Quad","q2d");ln(K,X,"quad","q2Ext","q2ext");ph(ang(K,X,J,20),"angle","q2Angles","q285");ph(ang(K,J,L,21),"angN","q2Angles","q2x");ph(ang(M,L,J,21),"angN","q2Angles","q2y");tx(K,"85°","eq","q2Labs","q285T",-70,-18);tx(K,"x","eq","q2Labs","q2xT",36,-2);tx(M,"y","eq","q2Labs","q2yT",18,-10);
+
+let idx=0,drag=null,reveal=false,pA=false,pC=false;const checked=new Map(),state={q1:{a:"",ok:false},q2x:{a:"",ok:false},q2y:{a:"",ok:false}};
+const steps=[
+["개념 열기",["exCircle","exPts","exQuad"],"원에 내접하는 사각형에는 어떤 성질이 있을까요? 원 위의 네 점 A, B, C, D를 움직여 사각형의 모양을 바꾸면서 살펴봅시다."],
+["직접 탐색하기",["exCircle","exPts","exQuad","exAngles","exVals","exSums"],"원 위의 점 A, B, C, D를 움직여 보세요. 서로 마주 보는 ∠A와 ∠C, ∠B와 ∠D의 크기를 각각 더하면 어떤 규칙이 보이나요?","drag"],
+["추측해 보기",["exCircle","exPts","exQuad","exAngles","exSums"],"사각형의 모양은 달라져도 ∠A + ∠C, ∠B + ∠D는 항상 180°가 되는 것 같습니다. 왜 항상 그런지 알아봅시다."],
+["마주 보는 두 원주각",["pfCircle","pfPts","pfQuad","angA","angC"],'먼저 마주 보는 <span class="click" data-a="anglesAC">∠A와 ∠C</span>를 살펴봅시다. 두 각은 모두 원주각이므로 앞에서 배운 원주각과 중심각의 관계를 이용할 수 있습니다.',"click"],
+["∠A가 바라보는 호",["pfCircle","pfPts","pfQuad","angA","arcBCD"],'∠A는 A가 들어 있지 않은 <span class="click" data-a="arcA">호 BCD</span>를 바라보는 원주각입니다.',"click"],
+["∠A와 중심각",["pfCircle","pfPts","pfQuad","angA","arcBCD","pfCenter"],'<span class="click" data-a="reveal">중심 O와 B, D를 연결해 봅시다.</span> 호 BCD에 대한 중심각의 크기를 a라고 하면 <span class="click" data-a="relA">∠A = 1/2 a</span>입니다.',"click"],
+["∠C도 같은 방법으로",["pfCircle","pfPts","pfQuad","angA","angC","arcBCD","arcBAD","pfCenter","pfRadii","centA","centC","centLabs","eqA","eqC"],'∠C는 C가 들어 있지 않은 <span class="click" data-a="arcC">호 BAD</span>를 바라봅니다. 이 호에 대한 중심각의 크기를 c라고 하면 <span class="click" data-a="relC">∠C = 1/2 c</span>입니다.',"click"],
+["두 각을 더해 보기",["pfCircle","pfPts","pfQuad","angA","angC","pfCenter","pfRadii","centA","centC","centLabs","eqA","eqC","eqSum","eqRes"],'∠A + ∠C = 1/2(a + c)입니다. 그런데 <span class="click" data-a="full">a + c = 360°</span>이므로 <span class="click" data-a="res">∠A + ∠C = 180°</span>입니다.',"click"],
+["다른 두 각도",["pfCircle","pfPts","pfQuad","angB","angD"],'같은 방법으로 <span class="click" data-a="bd">∠B + ∠D = 180°</span>임을 알 수 있습니다.',"click"],
+["성질 정리",["pfCircle","pfPts","pfQuad","angA","angB","angC","angD"],'원에 내접하는 사각형에서 <span class="click" data-a="sum">마주 보는 두 각의 크기의 합은 180°</span>입니다. 즉, ∠A + ∠C = 180°, ∠B + ∠D = 180°입니다.',"click"],
+["스스로 확인하기 ①",["q1Circle","q1Quad","q1Angles","q1Labs"],"한 각의 크기가 75°이고, 그와 마주 보는 각의 크기를 x라고 하겠습니다. x의 크기를 구해 보세요.","q1"],
+["스스로 확인하기 ②",["q2Circle","q2Quad","q2Ext","q2Angles","q2Labs"],"먼저 85°와 한 직선 위에 있는 x의 크기를 구해 보세요.","q2x"],
+["스스로 확인하기 ②",["q2Circle","q2Quad","q2Ext","q2Angles","q2Labs"],"이번 시간에 배운 원에 내접하는 사각형의 성질을 이용하여 y의 크기를 구해 보세요.","q2y"]
+];
+const all=[...document.querySelectorAll("[data-key]")];
+for(const k of["A","B","C","D"]){const el=document.getElementById("ex"+k);el.addEventListener("pointerdown",e=>{if(steps[idx][3]!=="drag")return;drag=k;el.setPointerCapture(e.pointerId)});el.addEventListener("pointermove",e=>{if(drag!==k||steps[idx][3]!=="drag")return;const q=svg.createSVGPoint();q.x=e.clientX;q.y=e.clientY;const p=q.matrixTransform(svg.getScreenCTM().inverse());let d=nd(Math.atan2(p.y-O.y,p.x-O.x)*180/Math.PI);if(k==="D"&&d<300)d+=360;const [lo,hi]=sec[k];exD[k]=Math.max(lo,Math.min(hi,d));updateEx()});el.addEventListener("pointerup",()=>drag=null);el.addEventListener("pointercancel",()=>drag=null)}
+function clearFocus(){document.querySelectorAll(".focusLine,.focusAngle,.focusText").forEach(e=>e.classList.remove("focusLine","focusAngle","focusText"))}
+function foc(ids){clearFocus();ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;if(e.tagName==="text")e.classList.add("focusText");else if(e.tagName==="path")e.classList.add("focusAngle");else e.classList.add("focusLine")});setTimeout(clearFocus,2200)}
+function clearPersist(){document.querySelectorAll(".persistA,.persistAT,.persistC,.persistCT").forEach(e=>e.classList.remove("persistA","persistAT","persistC","persistCT"))}
+function persist(ids,c){ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;e.classList.add(e.tagName==="text"?(c==="A"?"persistAT":"persistCT"):(c==="A"?"persistA":"persistC"))})}
+function targets(a){return({anglesAC:["pfAngA","pfAngC"],arcA:["pfAB","pfDA","pfAngA","pfArcBCD"],arcC:["pfBC","pfCD","pfAngC","pfArcBAD"],full:["pfCentA","pfCentC","labA","labC","eqSum"],res:["pfAngA","pfAngC","eqRes"],bd:["pfAngB","pfAngD"],sum:["pfAngA","pfAngB","pfAngC","pfAngD"]})[a]||[]}
+function pairFocus(first,second){
+  clearFocus();
+  first.forEach(id=>{
+    const e=document.getElementById(id); if(e) e.classList.add("focusAngle");
+  });
+  setTimeout(()=>{
+    clearFocus();
+    second.forEach(id=>{
+      const e=document.getElementById(id); if(e) e.classList.add("focusAngle");
+    });
+  },1450);
+  setTimeout(clearFocus,2900);
+}
+function action(a){
+  if(a==="reveal"){
+    reveal=true;
+    ["pfOB","pfOD","pfCentA","labA"].forEach(id=>document.getElementById(id).classList.remove("off"));
+    foc(["pfOB","pfOD"]);
+    return;
+  }
+  if(a==="relA"){
+    pA=true; clearPersist();
+    if(pA)persist(["pfArcBCD","pfAngA","pfOB","pfOD","pfCentA","labA","eqA"],"A");
+    if(pC)persist(["pfArcBAD","pfAngC","pfOB","pfOD","pfCentC","labC","eqC"],"C");
+    return;
+  }
+  if(a==="relC"){
+    pC=true; clearPersist();
+    if(pA)persist(["pfArcBCD","pfAngA","pfOB","pfOD","pfCentA","labA","eqA"],"A");
+    if(pC)persist(["pfArcBAD","pfAngC","pfOB","pfOD","pfCentC","labC","eqC"],"C");
+    return;
+  }
+  if(a==="sum"){
+    pairFocus(["pfAngA","pfAngC"],["pfAngB","pfAngD"]);
+    return;
+  }
+  foc(targets(a));
+}
+function bind(){const s=checked.get(idx)||new Set();document.querySelectorAll(".click").forEach(el=>{const a=el.dataset.a;if(s.has(a)){el.classList.add("checked");if(!el.textContent.endsWith("✓"))el.append("✓")}el.onclick=()=>{action(a);s.add(a);checked.set(idx,s);el.classList.add("checked");if(!el.textContent.endsWith("✓"))el.append("✓")}})}
+function exercise(k){controls.innerHTML="";const box=document.createElement("div");box.className="exercise";const st=state[k],ans=k==="q1"?"105":k==="q2x"?"95":"85",name=k==="q2y"?"y":"x";box.innerHTML=`<div class="answer"><span>${name} =</span><input id="inp" inputmode="numeric" value="${st.a}"><span>°</span><button id="chk" class="primary">확인</button></div><div id="fb" class="feedback ${st.ok?"ok":""}">${st.ok?"정답입니다.":""}</div>${st.ok?`<div class="solution">${k==="q1"?"x = 180° - 75° = 105°":k==="q2y"?"x + y = 180°, x + 85° = 180°이므로 y = 85°":"x = 180° - 85° = 95°"}</div>`:""}`;controls.appendChild(box);const inp=document.getElementById("inp"),chk=document.getElementById("chk");const go=()=>{st.a=inp.value;const v=inp.value.trim().replace("°","");if(v===ans){st.ok=true;exercise(k)}else{st.ok=false;const fb=document.getElementById("fb");fb.className="feedback bad";fb.textContent=k==="q2y"?"x + y = 180°이고 x + 85° = 180°입니다. 두 식을 비교해 보세요.":k==="q2x"?"85°와 x는 한 직선 위에 있는 두 각입니다.":"마주 보는 두 각의 크기의 합을 떠올려 보세요."}};chk.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()}}
+function render(){clearFocus();clearPersist();const s=steps[idx];all.forEach(e=>e.classList.toggle("off",!s[1].includes(e.dataset.key)));if(idx===5){["pfOB","pfOD","pfCentA","labA"].forEach(id=>document.getElementById(id).classList.add("off"));if(reveal)["pfOB","pfOD","pfCentA","labA"].forEach(id=>document.getElementById(id).classList.remove("off"))}if(idx===6){if(pA)persist(["pfArcBCD","pfAngA","pfOB","pfOD","pfCentA","labA","eqA"],"A");if(pC)persist(["pfArcBAD","pfAngC","pfOB","pfOD","pfCentC","labC","eqC"],"C")}badge.textContent=`${idx+1} / ${steps.length}`;title.textContent=s[0];subtitle.innerHTML=s[2];hint.textContent=s[3]==="click"?"밑줄 친 글자를 눌러 그림에서 확인하세요.":"";prev.disabled=idx===0;next.disabled=idx===steps.length-1;bar.style.width=`${(idx+1)/steps.length*100}%`;stepText.textContent=`${idx+1}단계`;controls.innerHTML="";if(s[3]==="drag")controls.innerHTML='<div class="controls"><div class="readout"><span><b>파란 점 A, B, C, D</b>를 원을 따라 움직여 보세요.</span></div><div class="note">사각형의 모양이 달라져도 마주 보는 두 각의 합을 계속 관찰해 보세요.</div></div>';if(["q1","q2x","q2y"].includes(s[3]))exercise(s[3]);bind()}
+prev.onclick=()=>{if(idx>0){idx--;render()}};next.onclick=()=>{if(idx<steps.length-1){idx++;render()}};document.addEventListener("keydown",e=>{if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}if(e.key==="ArrowLeft"&&idx>0){idx--;render()}});render();
+})();
+</script>
+</body>
+</html>
