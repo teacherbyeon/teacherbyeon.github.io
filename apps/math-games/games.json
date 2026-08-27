@@ -1,0 +1,25 @@
+[
+  {
+    "id": "root-timing",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "수와 연산",
+    "unit": "제곱근과 실수",
+    "title": "제곱근 타이밍 게임",
+    "description": "넓이가 n인 정사각형의 한 변이 √n이 되는 순간을 맞히며 제곱근의 의미를 익힙니다.",
+    "href": "./middle-3/root-timing/",
+    "tags": [
+      "제곱근",
+      "정사각형",
+      "넓이",
+      "타이밍",
+      "중3"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "gameOrder": 1
+  }
+]
