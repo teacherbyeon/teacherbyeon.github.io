@@ -217,5 +217,30 @@
     "unitOrder": 1,
     "conceptOrder": 2,
     "published": true
+  },
+  {
+    "id": "parallelogram-properties",
+    "school": "중학교",
+    "grade": "2학년",
+    "area": "도형과 측정",
+    "unit": "삼각형과 사각형의 성질",
+    "title": "평행사변형의 성질",
+    "description": "평행사변형의 두 쌍의 대변과 대각이 각각 같고 두 대각선이 서로를 이등분하는 이유를 탐구합니다.",
+    "href": "./middle-2/parallelogram-properties/",
+    "tags": [
+      "사각형",
+      "평행사변형",
+      "대변",
+      "대각",
+      "대각선",
+      "합동",
+      "삼각형과 사각형의 성질"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 2,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 2
   }
 ]
