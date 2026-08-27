@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>평행사변형의 성질 v4</title>
+<style>
+:root{--bg:#fff;--panel:#f7f8fa;--text:#171717;--muted:#6b7280;--border:#d9dce2;--blue:#2563eb;--blueSoft:#eef4ff;--orange:#f97316;--orangeSoft:#fed7aa;--green:#16803b;--teal:#0f766e;--violet:#7c3aed;--red:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.app{max-width:1120px;margin:0 auto;padding:14px}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--border)}
+.badge{padding:6px 10px;border-radius:999px;background:var(--blueSoft);font-size:14px}
+.title{font-size:19px;font-weight:850}
+.diagram{margin-top:14px;min-height:520px;border:1px solid var(--border);border-radius:18px;background:var(--panel);display:flex;align-items:center;justify-content:center;padding:12px}
+svg{width:100%;height:auto;max-height:64vh;overflow:visible}
+.subtitle{text-align:center;font-size:22px;font-weight:650;line-height:1.62;min-height:108px;padding:13px 14px 4px;white-space:pre-line}
+.hint{text-align:center;color:var(--muted);font-size:14px;min-height:24px}
+.footer{display:flex;align-items:center;gap:10px;justify-content:center;padding-top:10px}
+button{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:10px 16px;font-size:16px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.progress{height:8px;background:#ececf0;border-radius:999px;overflow:hidden;flex:1;max-width:430px}
+.progress>div{height:100%;background:var(--blue)}
+.small{font-size:14px;color:var(--muted)}
+.controls,.exercise{width:min(850px,100%);margin:0 auto 10px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center}
+.controls label{display:block;font-size:15px;font-weight:800;margin-bottom:7px}
+.controls input[type=range]{width:100%}.note{font-size:14px;color:var(--muted);margin-top:7px}
+.click-math{color:var(--blue);border-bottom:2px dotted var(--blue);cursor:pointer;padding:0 2px;white-space:nowrap}
+.click-math.checked{color:var(--green);border-bottom-color:var(--green)}.checkmark{color:var(--green);font-weight:900;margin-left:3px}
+.answer{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:20px;font-weight:800}
+.answer input{width:92px;text-align:center;padding:9px;border:2px solid #bcc3cc;border-radius:10px;font-size:20px}
+.feedback{min-height:30px;margin-top:8px;font-weight:750}.feedback.ok{color:var(--green)}.feedback.bad{color:var(--red)}
+.solution{margin-top:8px;background:#f1faf4;color:var(--green);border-radius:10px;padding:9px;font-size:18px;font-weight:800}
+.shape{transition:opacity .2s,stroke .2s,fill .2s,filter .2s}.off{opacity:0!important;pointer-events:none}
+.poly{fill:none;stroke:var(--text);stroke-width:3.2;stroke-linejoin:round}.diag{fill:none;stroke:#667085;stroke-width:2.8;stroke-linecap:round}
+.pt{fill:var(--text)}.ptO{fill:var(--blue)}.lab{fill:var(--text);font-size:23px;font-weight:850}.eq{fill:var(--blue);font-size:21px;font-weight:850}
+.tickline{stroke:#4b5563;stroke-width:3}.angle{fill:none;stroke:#4b5563;stroke-width:3.4;stroke-linecap:round}.parallelMark{fill:none;stroke:#4b5563;stroke-width:3}
+.overlayTri{fill:rgba(124,58,237,.14);stroke:var(--violet);stroke-width:3}.overlayMove{transform-origin:332.5px 250px;animation:halfturn 1.2s ease forwards}
+@keyframes halfturn{to{transform:rotate(180deg)}}.drawLine{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawLine 1s ease forwards}@keyframes drawLine{to{stroke-dashoffset:0}}
+.focusLine{stroke:var(--orange)!important;stroke-width:8px!important;animation:pulse .7s 3;filter:drop-shadow(0 0 6px var(--orangeSoft))}
+.focusAngle{stroke:var(--orange)!important;stroke-width:7px!important;animation:blink .55s 4;filter:drop-shadow(0 0 6px var(--orangeSoft))}
+.focusText{fill:var(--orange)!important;font-weight:900!important;animation:blink .7s 3}
+.pairTeal{stroke:var(--teal)!important;stroke-width:6px!important}
+.pairViolet{stroke:var(--violet)!important;stroke-width:6px!important}
+.pairBlue{stroke:var(--blue)!important;stroke-width:6px!important}
+.triCheck{fill:rgba(249,115,22,.12);stroke:var(--orange);stroke-width:5;animation:blink .55s 4}
+@keyframes pulse{50%{stroke-width:10px}}@keyframes blink{50%{opacity:.18}}
+@media(max-width:820px){.subtitle{font-size:19px}.diagram{min-height:47vh}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="topbar"><span class="badge" id="badge">1 / 14</span><span class="title" id="title"></span></div>
+<section class="diagram"><svg id="svg" viewBox="0 0 760 520"><g id="base"></g><g id="lines"></g><g id="marks"></g><g id="labels"></g></svg></section>
+<div id="controls"></div><div class="subtitle" id="subtitle"></div><div class="hint" id="hint"></div>
+<div class="footer"><button id="prev">이전</button><div class="progress"><div id="bar"></div></div><span class="small" id="stepText"></span><button id="next" class="primary">다음</button></div>
+</div>
+<script>
+(()=>{
+const NS="http://www.w3.org/2000/svg",svg=document.getElementById("svg"),base=document.getElementById("base"),lines=document.getElementById("lines"),marks=document.getElementById("marks"),labels=document.getElementById("labels");
+const title=document.getElementById("title"),subtitle=document.getElementById("subtitle"),hint=document.getElementById("hint"),controls=document.getElementById("controls"),badge=document.getElementById("badge"),prev=document.getElementById("prev"),next=document.getElementById("next"),bar=document.getElementById("bar"),stepText=document.getElementById("stepText");
+function add(tag,a,p=lines){const e=document.createElementNS(NS,tag);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));p.appendChild(e);return e}
+function ln(P,Q,c,k,id,p=lines){return add("line",{x1:P.x,y1:P.y,x2:Q.x,y2:Q.y,class:`shape ${c}`,"data-key":k,id},p)}
+function dot(P,c,k,id,r=6,p=marks){return add("circle",{cx:P.x,cy:P.y,r,class:`shape ${c}`,"data-key":k,id},p)}
+function tx(P,s,c,k,id,dx=0,dy=0,p=labels){const e=add("text",{x:P.x+dx,y:P.y+dy,class:`shape ${c}`,"data-key":k,id},p);e.textContent=s;return e}
+function ph(d,c,k,id,p=marks){return add("path",{d,class:`shape ${c}`,"data-key":k,id},p)}
+function pg(pts,c,k,id,p=base){return add("polygon",{points:pts.map(P=>`${P.x},${P.y}`).join(" "),class:`shape ${c}`,"data-key":k,id},p)}
+function setL(id,P,Q){const e=document.getElementById(id);e.setAttribute("x1",P.x);e.setAttribute("y1",P.y);e.setAttribute("x2",Q.x);e.setAttribute("y2",Q.y)}
+function setC(id,P){const e=document.getElementById(id);e.setAttribute("cx",P.x);e.setAttribute("cy",P.y)}
+function setT(id,x,y){const e=document.getElementById(id);e.setAttribute("x",x);e.setAttribute("y",y)}
+function setP(id,d){document.getElementById(id).setAttribute("d",d)}function setPoly(id,pts){document.getElementById(id).setAttribute("points",pts.map(P=>`${P.x},${P.y}`).join(" "))}
+function angleArc(V,P1,P2,r){let a1=Math.atan2(P1.y-V.y,P1.x-V.x),a2=Math.atan2(P2.y-V.y,P2.x-V.x),d=a2-a1;while(d<=-Math.PI)d+=2*Math.PI;while(d>Math.PI)d-=2*Math.PI;const s={x:V.x+r*Math.cos(a1),y:V.y+r*Math.sin(a1)},e={x:V.x+r*Math.cos(a1+d),y:V.y+r*Math.sin(a1+d)};return`M ${s.x} ${s.y} A ${r} ${r} 0 0 ${d>0?1:0} ${e.x} ${e.y}`}
+function mid(P,Q){return{x:(P.x+Q.x)/2,y:(P.y+Q.y)/2}}
+function tick(P,Q,at=.5,len=13,sep=0){const x=P.x+(Q.x-P.x)*at,y=P.y+(Q.y-P.y)*at,dx=Q.x-P.x,dy=Q.y-P.y,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,ux=dx/L,uy=dy/L,cx=x+ux*sep,cy=y+uy*sep;return`M ${cx-nx*len/2} ${cy-ny*len/2} L ${cx+nx*len/2} ${cy+ny*len/2}`}
+function parallelMarks(P,Q,count=1){const M=mid(P,Q),dx=Q.x-P.x,dy=Q.y-P.y,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,nx=-dy/L,ny=dx/L;let d="";for(let i=0;i<count;i++){const sh=(i-(count-1)/2)*12,cx=M.x+ux*sh,cy=M.y+uy*sh;d+=`M ${cx-ux*6-nx*5} ${cy-uy*6-ny*5} L ${cx+nx*5} ${cy+ny*5} L ${cx+ux*6-nx*5} ${cy+uy*6-ny*5} `}return d}
+
+const A={x:235,y:135},D={x:500,y:135},B={x:165,y:365},C={x:430,y:365},O=mid(A,C);
+pg([A,D,C,B],"poly","quad","qPoly");
+for(const [n,P] of Object.entries({A,D,B,C})){dot(P,"pt","quadPts","q"+n);tx(P,n,"lab","quadPts","q"+n+"L",n==="A"?-18:n==="D"?8:n==="B"?-22:8,n==="A"||n==="D"?-8:22)}
+ln(A,C,"diag","diagAC","qAC");
+ph(parallelMarks(A,D,1),"parallelMark","parallelADBC","pAD");ph(parallelMarks(B,C,1),"parallelMark","parallelADBC","pBC");ph(parallelMarks(A,B,2),"parallelMark","parallelABDC","pAB");ph(parallelMarks(D,C,2),"parallelMark","parallelABDC","pDC");
+pg([C,D,A],"overlayTri","overlay","overlayCDA",marks);
+pg([A,B,C],"overlayTri off","triChecks","triABC",marks);pg([C,D,A],"overlayTri off","triChecks","triCDA",marks);
+ph(angleArc(A,B,C,27),"angle","ang1","aBAC");ph(angleArc(C,D,A,27),"angle","ang1","aDCA");ph(angleArc(C,B,A,30),"angle","ang2","aBCA");ph(angleArc(A,D,C,30),"angle","ang2","aCAD");
+ph(tick(A,C,.5,17),"tickline","commonAC","tAC");
+ph(tick(A,B,.52,15),"tickline","oppSides1","tAB");ph(tick(D,C,.52,15),"tickline","oppSides1","tDC");
+ph(tick(A,D,.48,15,-7)+tick(A,D,.52,15,7),"tickline","oppSides2","tAD");ph(tick(B,C,.48,15,-7)+tick(B,C,.52,15,7),"tickline","oppSides2","tBC");
+ph(angleArc(A,B,D,34),"angle","oppAngles1","qAngA");ph(angleArc(C,D,B,34),"angle","oppAngles1","qAngC");ph(angleArc(B,A,C,34),"angle","oppAngles2","qAngB");ph(angleArc(D,A,C,34),"angle","oppAngles2","qAngD");
+tx({x:500,y:185},"AB ∥ DC → ∠BAC = ∠DCA","eq","proofEq1","peq1");tx({x:500,y:230},"AC는 공통인 변","eq","proofEq2","peq2");tx({x:500,y:275},"AD ∥ BC → ∠BCA = ∠CAD","eq","proofEq3","peq3");tx({x:500,y:338},"△ABC ≡ △CDA (ASA)","eq","proofEq4","peq4");
+
+let skew=0,proofLayout=false;const dA={x:235,y:135},dD={x:500,y:135},dB={x:165,y:365},dC={x:430,y:365};
+function diagShape(){
+  if(proofLayout)return{A:{x:150,y:145},D:{x:355,y:145},B:{x:100,y:355},C:{x:305,y:355}};
+  const s=skew;return{A:{...dA},D:{x:dD.x+s,y:dD.y},B:{x:dB.x-s*.25,y:dB.y},C:{x:dC.x+s*.75,y:dC.y}}
+}
+let ds=diagShape(),dO=mid(ds.A,ds.C);
+pg([ds.A,ds.D,ds.C,ds.B],"poly","dquad","dPoly");
+for(const n of ["A","B","C","D"]){dot(ds[n],"pt","dpts","d"+n);tx(ds[n],n,"lab","dpts","d"+n+"L",n==="A"?-18:n==="D"?8:n==="B"?-22:8,n==="A"||n==="D"?-8:22)}
+ln(ds.A,ds.C,"diag","ddiags","dAC");ln(ds.B,ds.D,"diag","ddiags","dBD");
+ln(ds.A,dO,"diag off","dHalfSegAC","dOA");ln(dO,ds.C,"diag off","dHalfSegAC","dOC");
+ln(ds.B,dO,"diag off","dHalfSegBD","dOB");ln(dO,ds.D,"diag off","dHalfSegBD","dOD");
+dot(dO,"ptO","dcenter","dO",7);tx(dO,"O","lab","dcenter","dOL",10,-8);
+ph(angleArc(ds.B,ds.A,dO,26),"angle","dAng1","dABO");ph(angleArc(ds.D,ds.C,dO,26),"angle","dAng1","dCDO");ph(angleArc(ds.A,ds.B,dO,26),"angle","dAng2","dBAO");ph(angleArc(ds.C,ds.D,dO,26),"angle","dAng2","dDCO");
+ph(tick(ds.A,ds.B,.52,15),"tickline","dSideEq","dABtick");ph(tick(ds.C,ds.D,.52,15),"tickline","dSideEq","dCDtick");
+ph(tick(ds.A,ds.D,.48,15,-7)+tick(ds.A,ds.D,.52,15,7),"tickline","dSideEq2","dADtick");ph(tick(ds.B,ds.C,.48,15,-7)+tick(ds.B,ds.C,.52,15,7),"tickline","dSideEq2","dBCtick");
+ph(angleArc(ds.A,ds.B,ds.D,34),"angle","dOppAnglesAC","dAngA");ph(angleArc(ds.C,ds.D,ds.B,34),"angle","dOppAnglesAC","dAngC");ph(angleArc(ds.B,ds.A,ds.C,34),"angle","dOppAnglesBD","dAngB");ph(angleArc(ds.D,ds.A,ds.C,34),"angle","dOppAnglesBD","dAngD");
+ph(tick(ds.A,dO,.5,15),"tickline","dHalf1","dAOtick");ph(tick(dO,ds.C,.5,15),"tickline","dHalf1","dOCtick");ph(tick(ds.B,dO,.5,15,-6)+tick(ds.B,dO,.5,15,6),"tickline","dHalf2","dBOtick");ph(tick(dO,ds.D,.5,15,-6)+tick(dO,ds.D,.5,15,6),"tickline","dHalf2","dODtick");
+tx({x:470,y:180},"∠ABO = ∠CDO","eq","dEq1","deq1");tx({x:470,y:224},"∠BAO = ∠DCO","eq","dEq2","deq2");tx({x:470,y:268},"AB = CD","eq","dEq3","deq3");tx({x:470,y:322},"△OAB ≡ △OCD","eq","dEq4","deq4");tx({x:470,y:368},"OA = OC,  OB = OD","eq","dEq5","deq5");
+function updateDiagScene(){ds=diagShape();dO=mid(ds.A,ds.C);setPoly("dPoly",[ds.A,ds.D,ds.C,ds.B]);for(const n of ["A","B","C","D"]){setC("d"+n,ds[n]);setT("d"+n+"L",ds[n].x+(n==="A"?-18:n==="D"?8:n==="B"?-22:8),ds[n].y+(n==="A"||n==="D"?-8:22))}setL("dAC",ds.A,ds.C);setL("dBD",ds.B,ds.D);
+setL("dOA",ds.A,dO);setL("dOC",dO,ds.C);setL("dOB",ds.B,dO);setL("dOD",dO,ds.D);
+setC("dO",dO);setT("dOL",dO.x+10,dO.y-8);setP("dABO",angleArc(ds.B,ds.A,dO,26));setP("dCDO",angleArc(ds.D,ds.C,dO,26));setP("dBAO",angleArc(ds.A,ds.B,dO,26));setP("dDCO",angleArc(ds.C,ds.D,dO,26));setP("dABtick",tick(ds.A,ds.B,.52,15));setP("dCDtick",tick(ds.C,ds.D,.52,15));setP("dAOtick",tick(ds.A,dO,.5,15));setP("dOCtick",tick(dO,ds.C,.5,15));setP("dBOtick",tick(ds.B,dO,.5,15,-6)+tick(ds.B,dO,.5,15,6));setP("dODtick",tick(dO,ds.D,.5,15,-6)+tick(dO,ds.D,.5,15,6));
+setP("dADtick",tick(ds.A,ds.D,.48,15,-7)+tick(ds.A,ds.D,.52,15,7));setP("dBCtick",tick(ds.B,ds.C,.48,15,-7)+tick(ds.B,ds.C,.52,15,7));
+setP("dAngA",angleArc(ds.A,ds.B,ds.D,34));setP("dAngC",angleArc(ds.C,ds.D,ds.B,34));setP("dAngB",angleArc(ds.B,ds.A,ds.C,34));setP("dAngD",angleArc(ds.D,ds.A,ds.C,34))}
+
+const eA={x:235,y:145},eD={x:485,y:145},eB={x:175,y:350},eC={x:425,y:350};
+pg([eA,eD,eC,eB],"poly","exQuad","ePoly");for(const [n,P] of Object.entries({A:eA,D:eD,B:eB,C:eC})){tx(P,n,"lab","exLabs","e"+n+"L",n==="A"?-18:n==="D"?8:n==="B"?-22:8,n==="A"||n==="D"?-8:22)}
+tx({x:350,y:115},"7 cm","eq","exLabs","e7",-24,0);tx({x:510,y:250},"4 cm","eq","exLabs","e4");tx({x:150,y:250},"x cm","eq","exLabs","exx",-35,0);tx({x:325,y:395},"y cm","eq","exLabs","eyy",-18,0);
+
+let idx=0,acShown=false,overlayDone=false,diagsShown=false;const checked=new Map(),exState={x:"",y:"",ok:false},all=[...document.querySelectorAll("[data-key]")];
+const steps=[
+{title:"생각해요",show:["quad","quadPts"],text:"평행사변형 ABCD를 대각선으로 잘라 두 삼각형을 만들면, 두 삼각형은 서로 완전히 포개질까요? 먼저 예상해 봅시다."},
+{title:"대각선 AC 그어 보기",show:["quad","quadPts"],text:'<span class="click-math" data-a="drawAC">대각선 AC를 그어 봅시다.</span> 그러면 △ABC와 △CDA가 생깁니다.',clickable:true},
+{title:"두 삼각형 포개 보기",show:["quad","quadPts","diagAC","overlay"],text:"△CDA를 반 바퀴 돌려 △ABC 위에 포개어 봅시다. 두 삼각형이 정확히 겹치는지 관찰해 보세요.",overlay:true},
+{title:"무엇을 예상할 수 있을까?",show:["quad","quadPts","diagAC","oppSides1","oppSides2","oppAngles1","oppAngles2"],text:'두 삼각형이 포개지는 모습을 보면 <span class="click-math" data-a="sideEq1">AB와 CD</span>, <span class="click-math" data-a="sideEq2">AD와 BC</span>의 길이가 같을 것 같습니다. 또 <span class="click-math" data-a="angleEq1">∠A와 ∠C</span>, <span class="click-math" data-a="angleEq2">∠B와 ∠D</span>의 크기도 같을 것 같습니다.',clickable:true},
+{title:"대변과 대각",show:["quad","quadPts"],text:'평행사변형에서 <span class="click-math" data-a="oppSides">서로 마주 보는 두 변</span>을 대변, <span class="click-math" data-a="oppAngles">서로 마주 보는 두 각</span>을 대각이라고 합니다.',clickable:true},
+{title:"왜 항상 같을까?",show:["quad","quadPts","diagAC"],text:'관찰만으로는 항상 그렇다고 말할 수 없습니다. 먼저 <span class="click-math" data-a="triABC">△ABC</span>와 <span class="click-math" data-a="triCDA">△CDA</span>를 그림에서 확인한 뒤, 두 삼각형이 왜 합동인지 설명해 봅시다.',clickable:true},
+{title:"첫 번째 각의 관계",show:["quad","quadPts","diagAC","ang1","proofEq1"],text:'<span class="click-math" data-a="parallelABDC">AB ∥ DC</span>이므로 <span class="click-math" data-a="ang1">∠BAC = ∠DCA</span>입니다. 두 각은 엇각입니다.',clickable:true},
+{title:"나머지 조건 확인",show:["quad","quadPts","diagAC","ang1","ang2","commonAC","proofEq1","proofEq2","proofEq3"],text:'또 <span class="click-math" data-a="common">AC는 공통인 변</span>이고, <span class="click-math" data-a="parallelADBC">AD ∥ BC</span>이므로 <span class="click-math" data-a="ang2">∠BCA = ∠CAD</span>입니다.',clickable:true},
+{title:"두 쌍의 대변",show:["quad","quadPts","diagAC","oppSides1","oppSides2","proofEq4"],text:'따라서 △ABC ≡ △CDA입니다. 그러므로 대응하는 변의 길이가 같아서 <span class="click-math" data-a="sideEq1">AB = CD</span>, <span class="click-math" data-a="sideEq2">AD = BC</span>입니다.',clickable:true},
+{title:"두 쌍의 대각",show:["quad","quadPts","diagAC","oppAngles2","ang1","ang2"],text:'같은 각끼리 색으로 묶어 봅시다. <span class="click-math" data-a="colorBD">∠B와 ∠D</span>는 서로 같고, <span class="click-math" data-a="colorAC1">∠BAC와 ∠ACD</span>, <span class="click-math" data-a="colorAC2">∠CAD와 ∠BCA</span>도 각각 같습니다. 따라서 ∠A = ∠C이고 ∠B = ∠D입니다.',clickable:true},
+{title:"두 대각선을 그어 보기",show:["dquad","dpts"],text:'이번에는 <span class="click-math" data-a="drawDiags">두 대각선 AC와 BD를 그어 봅시다.</span> 두 대각선의 교점을 O라고 할 때 O는 두 대각선의 가운데에 있을까요?',clickable:true,diagActivity:true},
+{title:"왜 서로 이등분할까?",show:["dquad","dpts","ddiags","dcenter","dAng1","dAng2","dSideEq","dEq1","dEq2","dEq3","dEq4","dEq5"],text:'△OAB와 △OCD에서 <span class="click-math" data-a="dAng1">∠ABO = ∠CDO</span>, <span class="click-math" data-a="dAng2">∠BAO = ∠DCO</span>이고, 앞에서 증명한 성질에 의해 <span class="click-math" data-a="dSide">AB = CD</span>입니다. 따라서 두 삼각형은 합동이고 <span class="click-math" data-a="dHalf">OA = OC, OB = OD</span>입니다.',clickable:true},
+{title:"평행사변형의 성질 정리",show:["dquad","dpts","ddiags","dcenter"],text:'평행사변형에서는 <span class="click-math" data-a="sumSides">두 쌍의 대변의 길이가 각각 같고</span>, <span class="click-math" data-a="sumAngles">두 쌍의 대각의 크기가 각각 같으며</span>, <span class="click-math" data-a="sumDiag">두 대각선은 서로를 이등분합니다.</span>',clickable:true},
+{title:"스스로 확인하기",show:["exQuad","exLabs"],text:"평행사변형에서 두 쌍의 대변의 길이가 각각 같다는 성질을 이용하여 x, y의 값을 구해 보세요.",exercise:true}
+];
+function clearFocus(){document.querySelectorAll(".focusLine,.focusAngle,.focusText").forEach(e=>e.classList.remove("focusLine","focusAngle","focusText"))}
+function focus(ids){clearFocus();ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;if(e.tagName==="text")e.classList.add("focusText");else if(e.tagName==="path")e.classList.add("focusAngle");else e.classList.add("focusLine")});setTimeout(clearFocus,2200)}
+function targets(a){return({
+oppSides:["qPoly"],ang1:["aBAC","aDCA","peq1"],common:["qAC","tAC","peq2"],ang2:["aBCA","aCAD","peq3"],
+sideEq1:["tAB","tDC"],sideEq2:["tAD","tBC"],dAng1:["dABO","dCDO","deq1"],dAng2:["dBAO","dDCO","deq2"],dSide:["dABtick","dCDtick","deq3"],dHalf:["dAOtick","dOCtick","dBOtick","dODtick","deq5"]
+})[a]||[]}
+function draw(ids){ids.forEach(id=>{const e=document.getElementById(id);if(!e)return;e.classList.remove("off","drawLine");void e.getBoundingClientRect();e.classList.add("drawLine");setTimeout(()=>e.classList.remove("drawLine"),1100)})}
+function revealFocus(ids,ms=2200){
+  ids.forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove("off")});
+  focus(ids);
+  setTimeout(()=>{ids.forEach(id=>{const e=document.getElementById(id);if(e && !steps[idx].show.includes(e.dataset.key))e.classList.add("off")})},ms+80);
+}
+function colorPair(ids,cls){ids.forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove("off");e.classList.add(cls)}})}
+function handleClick(a){
+  if(a==="drawAC"){acShown=true;draw(["qAC"]);return}
+  if(a==="drawDiags"){diagsShown=true;draw(["dAC","dBD"]);["dO","dOL"].forEach(id=>document.getElementById(id).classList.remove("off"));return}
+  if(a==="oppSides"){
+    // 대변: AB-CD 한 쌍, AD-BC 한 쌍을 서로 다른 색으로 표시
+    ["tAB","tDC","tAD","tBC"].forEach(id=>document.getElementById(id).classList.remove("off"));
+    colorPair(["tAB","tDC"],"pairTeal");
+    colorPair(["tAD","tBC"],"pairViolet");
+    return
+  }
+  if(a==="oppAngles"){
+    // 대각: ∠A-∠C 한 쌍, ∠B-∠D 한 쌍을 서로 다른 색으로 표시
+    ["qAngA","qAngC","qAngB","qAngD"].forEach(id=>document.getElementById(id).classList.remove("off"));
+    colorPair(["qAngA","qAngC"],"pairTeal");
+    colorPair(["qAngB","qAngD"],"pairViolet");
+    return
+  }
+  if(a==="triABC"){revealFocus(["triABC"]);return}
+  if(a==="triCDA"){revealFocus(["triCDA"]);return}
+  if(a==="parallelABDC"){revealFocus(["pAB","pDC"]);return}
+  if(a==="parallelADBC"){revealFocus(["pAD","pBC"]);return}
+  if(a==="angleEq1"){colorPair(["qAngA","qAngC"],"pairTeal");return}
+  if(a==="angleEq2"){colorPair(["qAngB","qAngD"],"pairViolet");return}
+  if(a==="colorBD"){colorPair(["qAngB","qAngD"],"pairTeal");return}
+  if(a==="colorAC1"){colorPair(["aBAC","aDCA"],"pairViolet");return}
+  if(a==="colorAC2"){colorPair(["aCAD","aBCA"],"pairBlue");return}
+  if(a==="dHalf"){
+    ["dOA","dOC","dOB","dOD"].forEach(id=>document.getElementById(id).classList.remove("off"));
+    colorPair(["dOA","dOC"],"pairTeal");
+    colorPair(["dOB","dOD"],"pairViolet");
+    revealFocus(["deq5"]);
+    return
+  }
+  if(a==="sumSides"){revealFocus(["dABtick","dCDtick","dADtick","dBCtick"]);return}
+  if(a==="sumAngles"){revealFocus(["dAngA","dAngC","dAngB","dAngD"]);return}
+  if(a==="sumDiag"){
+    ["dOA","dOC","dOB","dOD"].forEach(id=>document.getElementById(id).classList.remove("off"));
+    colorPair(["dOA","dOC"],"pairTeal");
+    colorPair(["dOB","dOD"],"pairViolet");
+    return
+  }
+  focus(targets(a))
+}
+function bindClickable(){const set=checked.get(idx)||new Set();document.querySelectorAll(".click-math").forEach(el=>{const a=el.dataset.a;if(set.has(a)){el.classList.add("checked");if(!el.querySelector(".checkmark")){const c=document.createElement("span");c.className="checkmark";c.textContent="✓";el.appendChild(c)}}el.onclick=()=>{handleClick(a);set.add(a);checked.set(idx,set);el.classList.add("checked");if(!el.querySelector(".checkmark")){const c=document.createElement("span");c.className="checkmark";c.textContent="✓";el.appendChild(c)}}})}
+function renderControls(){controls.innerHTML="";const s=steps[idx];
+if(s.overlay){controls.innerHTML=`<div class="controls"><button id="overlayBtn" class="primary">${overlayDone?"다시 포개 보기":"△CDA 포개 보기"}</button><div class="note">△CDA를 대각선 AC의 중점을 중심으로 반 바퀴 돌려 봅니다.</div></div>`;document.getElementById("overlayBtn").onclick=()=>{const e=document.getElementById("overlayCDA");e.classList.remove("overlayMove");void e.getBoundingClientRect();e.classList.add("overlayMove");overlayDone=true}}
+if(s.diagActivity){controls.innerHTML=`<div class="controls"><label for="skewSlider">평행사변형의 모양 바꾸기</label><input id="skewSlider" type="range" min="-55" max="55" value="${skew}"><div class="note">모양이 달라져도 두 대각선의 교점 O가 어떤 위치에 놓이는지 살펴보세요.</div></div>`;document.getElementById("skewSlider").oninput=e=>{skew=Number(e.target.value);updateDiagScene()}}
+if(s.exercise){const st=exState;controls.innerHTML=`<div class="exercise"><div class="answer"><span>x =</span><input id="xAns" inputmode="numeric" value="${st.x}"><span>cm</span><span style="margin-left:15px">y =</span><input id="yAns" inputmode="numeric" value="${st.y}"><span>cm</span><button id="checkEx" class="primary">확인</button></div><div id="fb" class="feedback ${st.ok?"ok":""}">${st.ok?"정답입니다.":""}</div>${st.ok?`<div class="solution">마주 보는 변의 길이가 각각 같으므로 x = 4, y = 7입니다.</div>`:""}</div>`;document.getElementById("checkEx").onclick=()=>{st.x=document.getElementById("xAns").value;st.y=document.getElementById("yAns").value;if(Number(st.x)===4&&Number(st.y)===7){st.ok=true;render()}else{st.ok=false;const fb=document.getElementById("fb");fb.className="feedback bad";fb.textContent="평행사변형에서 서로 마주 보는 변끼리 비교해 보세요."}}}}
+function render(){
+clearFocus();
+document.querySelectorAll(".pairTeal,.pairViolet,.pairBlue").forEach(e=>e.classList.remove("pairTeal","pairViolet","pairBlue"));
+const s=steps[idx];
+proofLayout=s.title==="왜 서로 이등분할까?";
+updateDiagScene();
+all.forEach(e=>e.classList.toggle("off",!s.show.includes(e.dataset.key)));
+if(s.title==="대각선 AC 그어 보기"&&!acShown)document.getElementById("qAC").classList.add("off");if(s.title==="대각선 AC 그어 보기"&&acShown)document.getElementById("qAC").classList.remove("off");
+if(s.title==="두 대각선을 그어 보기"&&!diagsShown)["dAC","dBD","dO","dOL"].forEach(id=>document.getElementById(id).classList.add("off"));if(s.title==="두 대각선을 그어 보기"&&diagsShown)["dAC","dBD","dO","dOL"].forEach(id=>document.getElementById(id).classList.remove("off"));
+title.textContent=s.title;subtitle.innerHTML=s.text;hint.textContent=s.clickable?"밑줄 친 글자를 눌러 그림에서 확인하세요.":"";badge.textContent=`${idx+1} / ${steps.length}`;stepText.textContent=`${idx+1}단계`;bar.style.width=`${(idx+1)/steps.length*100}%`;prev.disabled=idx===0;next.disabled=idx===steps.length-1;renderControls();bindClickable()}
+prev.onclick=()=>{if(idx>0){idx--;render()}};next.onclick=()=>{if(idx<steps.length-1){idx++;render()}};document.addEventListener("keydown",e=>{if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;if(e.key==="ArrowRight"&&idx<steps.length-1){idx++;render()}if(e.key==="ArrowLeft"&&idx>0){idx--;render()}});render();
+})();
+</script>
+</body>
+</html>
