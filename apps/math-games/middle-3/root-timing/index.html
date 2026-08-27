@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제곱근 타이밍 게임 | BBB쌤의 수학 실험실</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --text:#182230;
+    --muted:#667085;
+    --line:#d8dee9;
+    --blue:#356ae6;
+    --orange:#f59e0b;
+    --green:#16803a;
+    --red:#d13b32;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Pretendard","Noto Sans KR",sans-serif;
+    color:var(--text);
+    background:linear-gradient(180deg,#eef4ff 0,#f8fafc 58%,#f4f6fa 100%);
+  }
+  .wrap{max-width:1180px;margin:auto;padding:20px}
+  .head{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+    margin-bottom:14px
+  }
+  h1{margin:0;font-size:30px;letter-spacing:-.04em}
+  .sub{margin-top:6px;font-size:14px;color:var(--muted)}
+  .formula{
+    border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:999px;
+    font-size:13px;white-space:nowrap
+  }
+  .layout{display:grid;grid-template-columns:minmax(0,1.95fr) minmax(290px,.7fr);gap:14px}
+  .card{
+    background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;
+    box-shadow:0 8px 28px rgba(30,55,90,.07)
+  }
+  .game{padding:14px;position:relative;overflow:hidden}
+  .topbar{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px
+  }
+  .stat{
+    border:1px solid var(--line);background:#f8fafc;border-radius:12px;
+    padding:9px 10px;text-align:center;font-size:12px;color:var(--muted)
+  }
+  .stat b{display:block;color:var(--text);font-size:18px;margin-top:2px}
+  canvas.main{
+    width:100%;height:auto;aspect-ratio:900/620;display:block;
+    border-radius:14px;border:1px solid #cad4e2;background:#fbfdff
+  }
+  canvas.target{
+    width:100%;max-width:230px;height:auto;aspect-ratio:1/1;display:block;margin:0 auto;
+    border-radius:12px;border:1px solid #cad4e2;background:#fbfdff
+  }
+  .targetFlash{
+    position:absolute;right:32px;top:98px;
+    min-width:135px;padding:12px 18px;text-align:center;border-radius:16px;
+    background:rgba(17,24,39,.92);color:#fff;font-weight:900;font-size:38px;
+    box-shadow:0 10px 30px rgba(17,24,39,.18);
+    opacity:0;pointer-events:none;transition:.16s ease;
+  }
+  .targetFlash.show{opacity:1}
+  .targetFlash small{display:block;font-size:12px;font-weight:700;color:#cbd5e1;margin-bottom:1px}
+  .targetFlash.fade{opacity:.25}
+  .side{padding:18px;display:flex;flex-direction:column;gap:13px}
+  .side h2{font-size:19px;margin:0}
+  .desc{font-size:14px;color:#475467;line-height:1.65}
+  .rule{
+    padding:12px;border-radius:12px;background:#f8fafc;border:1px solid var(--line);
+    font-size:14px;line-height:1.65
+  }
+  .rule b{color:var(--blue)}
+
+  .settingsGrid{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px
+  }
+  .infoToggle{
+    display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:11px;background:#fff;font-size:13px;font-weight:800;color:#344054;cursor:pointer
+  }
+  .infoToggle input{width:18px;height:18px;accent-color:var(--blue)}
+
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  button,select{
+    border-radius:11px;padding:11px 12px;font-size:14px;font-weight:800
+  }
+  button{border:0;cursor:pointer}
+  .primary{background:var(--blue);color:white}
+  .secondary{background:#eef2f7;color:#344054;border:1px solid var(--line)}
+  .enter{
+    background:#111827;color:white;padding:15px;font-size:18px;
+    box-shadow:0 5px 0 #030712;transition:.08s transform,.08s box-shadow
+  }
+  .enter:active{transform:translateY(4px);box-shadow:0 1px 0 #030712}
+  select{width:100%;background:#fff;border:1px solid var(--line);color:#344054}
+  .result{
+    min-height:124px;padding:13px;border-radius:12px;background:#f8fafc;
+    border:1px dashed #cbd5e1;line-height:1.65;font-size:14px
+  }
+  .result.perfect{background:#fff8dd;border-color:#f2c54d;color:#6b4f00}
+  .result.good{background:#effaf3;border-color:#9ad5aa;color:#14532d}
+  .result.bad{background:#fff3f1;border-color:#efb2aa;color:#7f1d1d}
+  .bigResult{font-size:24px;font-weight:950;letter-spacing:-.03em}
+  .kbd{
+    display:inline-block;padding:2px 7px;border-radius:6px;background:#fff;border:1px solid #d0d5dd;
+    box-shadow:0 2px 0 #d0d5dd;font-family:ui-monospace,monospace;font-size:12px;color:#344054
+  }
+
+  .playRow{
+    display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:12px;align-items:start
+  }
+  .squarePane{position:relative;min-width:0}
+  .targetPane{
+    border:1px solid var(--line);border-radius:14px;padding:10px;background:#f8fafc;
+    min-width:0;align-self:stretch
+  }
+  .targetScoreMini{
+    margin-top:8px;display:flex;justify-content:space-between;align-items:center;
+    padding:8px 10px;border-radius:10px;background:#fff;border:1px solid var(--line);
+    font-size:12px;color:var(--muted)
+  }
+  .targetScoreMini b{font-size:22px;color:var(--text)}
+  .targetWrap{
+    border:1px solid var(--line);border-radius:14px;padding:12px;background:#f8fafc
+  }
+  .targetTitle{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:8px
+  }
+  .targetTitle b{font-size:15px}
+  .smallMuted{font-size:12px;color:var(--muted)}
+  .scoreMap{
+    margin-top:10px;
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;
+    font-size:13px;line-height:1.6;color:#475467
+  }
+  .scoreMap h3{margin:0 0 6px;font-size:14px;color:#111827}
+  .scoreMap table{width:100%;border-collapse:collapse}
+  .scoreMap td{padding:2px 0;font-size:12px;vertical-align:top}
+  .scoreMap td:first-child{font-weight:800;color:#111827;width:44px}
+  .attempts{
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;
+    font-size:13px;line-height:1.55;color:#475467;max-height:170px;overflow:auto
+  }
+  .attempts h3{margin:0 0 6px;font-size:14px;color:#111827}
+  .attemptItem{padding:4px 0;border-bottom:1px dashed #e5e7eb}
+  .attemptItem:last-child{border-bottom:0}
+  .explain{margin-top:14px;padding:16px 18px}
+  .explain h3{margin:0 0 8px;font-size:17px}
+  .explain p{margin:5px 0;color:#475467;font-size:14px;line-height:1.7}
+  .examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .chip{
+    border:1px solid var(--line);background:#f8fafc;border-radius:999px;
+    padding:7px 10px;font-size:13px;font-weight:750
+  }
+  
+  @media(max-width:860px){
+    .side{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:13px;
+    }
+
+    /* Mobile/portrait priority: play first, read later */
+    .gameStartControls{order:1}
+    .gameEnterBtn{order:2}
+    .gameSettings{order:3}
+    .gameInfoToggle{order:4}
+    .gameResult{order:5}
+
+    .gameMethodTitle{order:6;margin-top:4px}
+    .gameMethodDesc{order:7}
+    .gameMethodRule{order:8}
+
+    .gameScoreMap{order:9}
+    .gameAttempts{order:10}
+
+    .gameStartControls::before{
+      content:"바로 시작";
+      grid-column:1 / -1;
+      font-size:13px;
+      font-weight:900;
+      color:var(--text);
+      margin-bottom:-2px;
+    }
+
+    .layout{grid-template-columns:1fr}
+    .playRow{grid-template-columns:minmax(0,1fr) 210px}
+    .head{align-items:flex-start;flex-direction:column}
+    h1{font-size:25px}
+    .targetFlash{font-size:38px}
+    .topbar{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:650px){
+    .playRow{grid-template-columns:1fr}
+    .targetPane{display:grid;grid-template-columns:1fr 150px;gap:8px;align-items:center}
+    .targetTitle{grid-column:1/-1}
+    canvas.target{max-width:150px}
+    .targetScoreMini{margin-top:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>⏱️ 제곱근 타이밍 게임</h1>
+      <div class="sub">넓이가 n인 정사각형의 한 변은 √n입니다. 목표 길이가 되는 단 한 번의 순간을 잡아보세요!</div>
+    </div>
+    <div class="formula">정사각형의 넓이 = (한 변의 길이)²</div>
+  </div>
+
+  <div class="layout">
+    <section class="card game">
+      <div class="topbar">
+        <div class="stat">라운드<b id="roundText">0 / 10</b></div>
+        <div class="stat">총점<b id="scoreText">0 / 100</b></div>
+        <div class="stat">최근 점수<b id="lastScoreText">-</b></div>
+        <div class="stat">평균<b id="avgText">0.0</b></div>
+      </div>
+      <div class="playRow">
+        <div class="squarePane">
+          <canvas id="canvas" class="main" width="900" height="620"></canvas>
+          <div id="targetFlash" class="targetFlash show persistent">
+            <small>목표 한 변</small>
+            <span id="targetText">√3</span>
+          </div>
+        </div>
+        <div class="targetPane">
+          <div class="targetTitle">
+            <b>과녁 기록판</b>
+            <span class="smallMuted">탄흔</span>
+          </div>
+          <canvas id="targetCanvas" class="target" width="320" height="320"></canvas>
+          <div class="targetScoreMini">
+            <span>이번 점수</span>
+            <b id="targetScoreText">-</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card side">
+      <h2 class="gameMethodTitle">게임 방법</h2>
+      <div class="desc gameMethodDesc">
+        목표 수가 주어지면 정사각형이 작은 상태에서 <b>한 번만 커집니다.</b>
+        목표 수가 <b>정사각형의 한 변의 길이</b>가 되는 순간
+        <span class="kbd">Enter</span>를 누르세요. 기회는 한 번뿐입니다.
+      </div>
+
+      <div class="rule gameMethodRule">
+        예: <b>√3</b>이 나타났다면<br>
+        한 변이 √3이 되는 순간 → 넓이는 <b>3</b><br>
+        즉, 격자 3칸의 넓이와 같아지는 순간을 노립니다.
+      </div>
+
+      <div class="settingsGrid gameSettings">
+        <label style="font-size:13px;font-weight:800;color:#475467">정사각형 속도
+          <select id="difficulty">
+            <option value="easy">천천히</option>
+            <option value="normal" selected>보통</option>
+            <option value="hard">빠르게</option>
+          </select>
+        </label>
+
+        <label style="font-size:13px;font-weight:800;color:#475467">라운드 수
+          <select id="roundCount">
+            <option value="5">5라운드</option>
+            <option value="10" selected>10라운드</option>
+            <option value="15">15라운드</option>
+            <option value="20">20라운드</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="infoToggle gameInfoToggle">
+        <input id="hideInfo" type="checkbox" checked>
+        <span>현재 한 변·넓이 수치 숨기기</span>
+      </label>
+
+      <div class="controls gameStartControls">
+        <button id="startBtn" class="primary">▶ 게임 시작</button>
+        <button id="practiceBtn" class="secondary">√3 연습</button>
+      </div>
+
+      <button id="hitBtn" class="enter gameEnterBtn">ENTER — 지금!</button>
+
+      <div id="result" class="result gameResult">
+        게임을 시작하면 목표 수가 제시되고 정사각형이 한 번 커집니다.<br>
+        <b>Enter 기회는 한 번뿐입니다.</b>
+      </div>
+
+      <div class="scoreMap gameScoreMap">
+        <h3>점수 기준 (한 변의 길이 오차 기준)</h3>
+        <table>
+          <tr><td>10점</td><td>\(|오차| \le 0.03\)</td></tr>
+          <tr><td>9점</td><td>\(|오차| \le 0.06\)</td></tr>
+          <tr><td>8점</td><td>\(|오차| \le 0.09\)</td></tr>
+          <tr><td>7점</td><td>\(|오차| \le 0.12\)</td></tr>
+          <tr><td>6점</td><td>\(|오차| \le 0.16\)</td></tr>
+          <tr><td>5점</td><td>\(|오차| \le 0.21\)</td></tr>
+          <tr><td>4점</td><td>\(|오차| \le 0.27\)</td></tr>
+          <tr><td>3점</td><td>\(|오차| \le 0.34\)</td></tr>
+          <tr><td>2점</td><td>\(|오차| \le 0.42\)</td></tr>
+          <tr><td>1점</td><td>\(|오차| \le 0.52\)</td></tr>
+          <tr><td>0점</td><td>그보다 크면</td></tr>
+        </table>
+      </div>
+
+      <div class="attempts gameAttempts">
+        <h3>최근 시도</h3>
+        <div id="attemptList">아직 기록이 없습니다.</div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card explain">
+    <h3>이 게임에서 눈으로 익히게 되는 것</h3>
+    <p>
+      √3은 단순한 기호가 아니라, <b>넓이가 3인 정사각형의 한 변의 길이</b>입니다.
+      √5, √8, √12도 같은 방식으로 실제 길이와 연결됩니다.
+    </p>
+    <div class="examples">
+      <div class="chip">√2 ↔ 넓이 2</div>
+      <div class="chip">√3 ↔ 넓이 3</div>
+      <div class="chip">√5 ↔ 넓이 5</div>
+      <div class="chip">√8 ↔ 넓이 8</div>
+      <div class="chip">√12 ↔ 넓이 12</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const targetCanvas = document.getElementById('targetCanvas');
+const tctx = targetCanvas.getContext('2d');
+
+const targetFlash = document.getElementById('targetFlash');
+const targetText = document.getElementById('targetText');
+const roundText = document.getElementById('roundText');
+const scoreText = document.getElementById('scoreText');
+const lastScoreText = document.getElementById('lastScoreText');
+const avgText = document.getElementById('avgText');
+const result = document.getElementById('result');
+const difficulty = document.getElementById('difficulty');
+const roundCountSelect = document.getElementById('roundCount');
+const hideInfo = document.getElementById('hideInfo');
+const attemptList = document.getElementById('attemptList');
+const targetScoreText = document.getElementById('targetScoreText');
+
+const MAX_SIDE = 5.45;
+const MIN_SIDE = 0.45;
+const GRID_UNITS = 6;
+let ROUND_TOTAL = 10;
+const TARGETS = [2,3,5,6,7,8,10,11,12,13,15,17,18,20,24];
+const SCORE_THRESHOLDS = [
+  {score:10, max:0.03},
+  {score:9, max:0.06},
+  {score:8, max:0.09},
+  {score:7, max:0.12},
+  {score:6, max:0.16},
+  {score:5, max:0.21},
+  {score:4, max:0.27},
+  {score:3, max:0.34},
+  {score:2, max:0.42},
+  {score:1, max:0.52}
+];
+
+let side = 0.8;
+let direction = 1; // 항상 증가 방향
+let speed = 1.05;
+let lastTime = performance.now();
+let raf = null;
+
+let running = false;
+let canHit = false;
+let currentN = 3;
+let round = 0;
+let totalScore = 0;
+let lastScore = null;
+let revealUntil = 0;
+let roundFinished = false;
+let targetGuideUntil = 0;
+let frozenUntil = 0;
+let flashPulse = 0;
+let audioCtx = null;
+let nextRoundTimer = null;
+let practiceMode = false;
+let attempts = [];
+let marks = [];
+let ringFlashScore = null;
+let ringFlashUntil = 0;
+
+function getAudio(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
+  }
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, duration=.12, type='sine', volume=.18, delay=0){
+  const ac=getAudio();
+  if(!ac) return;
+  const t=ac.currentTime+delay;
+  const o=ac.createOscillator();
+  const g=ac.createGain();
+  o.type=type;
+  o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(volume,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+  o.connect(g).connect(ac.destination);
+  o.start(t);o.stop(t+duration+.02);
+}
+function soundPerfect(){ tone(660,.11,'sine',.18); tone(880,.13,'sine',.2,.08); tone(1100,.17,'sine',.18,.16); }
+function soundGood(){ tone(520,.1,'sine',.16); tone(700,.13,'sine',.14,.08); }
+function soundMiss(){ tone(180,.15,'sawtooth',.08); tone(130,.18,'sawtooth',.06,.09); }
+
+function formatRoot(n){
+  const r=Math.sqrt(n);
+  if(Number.isInteger(r)) return String(r);
+  return '√'+n;
+}
+function flashDuration(){
+  if(difficulty.value==='easy') return 1300;
+  if(difficulty.value==='hard') return 450;
+  return 800;
+}
+function setResult(html, cls=''){
+  result.className='result'+(cls?' '+cls:'');
+  result.innerHTML=html;
+}
+function getRoundCount(){
+  return practiceMode ? attempts.length : round;
+}
+function updateScoreBoard(){
+  const maxTotal = practiceMode ? (attempts.length*10 || 10) : ROUND_TOTAL*10;
+  scoreText.textContent = `${totalScore} / ${maxTotal}`;
+  lastScoreText.textContent = lastScore===null ? '-' : `${lastScore}점`;
+  targetScoreText.textContent = lastScore===null ? '-' : `${lastScore}점`;
+  const avg = attempts.length ? (totalScore/attempts.length).toFixed(1) : '0.0';
+  avgText.textContent = avg;
+  roundText.textContent = practiceMode ? `연습 ${attempts.length}회` : `${round} / ${ROUND_TOTAL}`;
+}
+function updateAttemptList(){
+  if(!attempts.length){
+    attemptList.innerHTML = '아직 기록이 없습니다.';
+    return;
+  }
+  attemptList.innerHTML = attempts.slice().reverse().map(a =>
+    `<div class="attemptItem"><b>${a.label}</b> · ${a.score}점<br>` +
+    `목표 ${a.target}, 한 변 ${a.side.toFixed(3)}, 오차 ${a.sideError.toFixed(3)}</div>`
+  ).join('');
+}
+function scoreByError(d){
+  for(const rule of SCORE_THRESHOLDS){
+    if(d <= rule.max) return rule.score;
+  }
+  return 0;
+}
+function labelByScore(s){
+  if(s===10) return 'PERFECT!';
+  if(s>=8) return 'EXCELLENT!';
+  if(s>=6) return 'GOOD!';
+  if(s>=3) return 'CLOSE';
+  if(s>=1) return 'ALMOST';
+  return 'MISS';
+}
+function classByScore(s){
+  if(s>=8) return 'perfect';
+  if(s>=3) return 'good';
+  return 'bad';
+}
+
+
+function scoreRingColor(score){
+  const colorMap = {
+    10:'#fde68a',
+    9:'#f59e0b',
+    8:'#fb923c',
+    7:'#fca5a5',
+    6:'#93c5fd',
+    5:'#60a5fa',
+    4:'#c4b5fd',
+    3:'#a7f3d0',
+    2:'#86efac',
+    1:'#d1d5db',
+    0:'#f3f4f6'
+  };
+  return colorMap[score] || '#f3f4f6';
+}
+
+function triggerRingFlash(score){
+  ringFlashScore = score;
+  ringFlashUntil = performance.now() + 650;
+}
+
+function addMark(score){
+  const w = targetCanvas.width, h = targetCanvas.height;
+  const cx = w/2, cy = h/2;
+  const maxR = 128;
+  let inner, outer;
+
+  if(score === 10){
+    inner = 0;
+    outer = maxR/11;
+  }else if(score >= 1){
+    const zone = 10 - score;
+    inner = maxR/11 * zone;
+    outer = maxR/11 * (zone + 1);
+  }else{
+    inner = maxR;
+    outer = 147;
+  }
+
+  const angle = Math.random() * Math.PI * 2;
+  const radius = inner + Math.random() * Math.max(3, outer - inner - 6);
+  marks.push({
+    score,
+    x: cx + Math.cos(angle) * radius,
+    y: cy + Math.sin(angle) * radius,
+    angle: angle + (Math.random() - 0.5) * 0.25
+  });
+  triggerRingFlash(score);
+  drawTargetBoard();
+}
+
+function drawTargetBoard(){
+  const w=targetCanvas.width, h=targetCanvas.height;
+  const cx=w/2, cy=h/2;
+  const maxR=128;
+  tctx.clearRect(0,0,w,h);
+
+  const colors = [
+    '#fde68a', '#f59e0b', '#fb923c', '#fca5a5', '#93c5fd',
+    '#60a5fa', '#c4b5fd', '#a7f3d0', '#86efac', '#d1d5db'
+  ];
+
+  // rings 10 to 1
+  for(let score=1; score<=10; score++){
+    const idx = 10-score;
+    const outer = maxR/11 * (idx+1);
+    tctx.fillStyle = colors[idx];
+    tctx.beginPath();
+    tctx.arc(cx,cy,outer,0,Math.PI*2);
+    tctx.fill();
+  }
+  // 0 zone
+  tctx.fillStyle = '#f3f4f6';
+  tctx.beginPath();
+  tctx.arc(cx,cy,148,0,Math.PI*2);
+  tctx.arc(cx,cy,maxR,0,Math.PI*2,true);
+  tctx.fill('evenodd');
+
+  // flashing ring effect
+  const now = performance.now();
+  if(ringFlashScore !== null && now < ringFlashUntil){
+    const remain = (ringFlashUntil - now) / 650;
+    const pulse = 0.45 + 0.55 * Math.abs(Math.sin((1-remain) * Math.PI * 6));
+    const glowColor = scoreRingColor(ringFlashScore);
+    let innerR, outerR;
+
+    if(ringFlashScore === 10){
+      innerR = 0;
+      outerR = maxR/11;
+    }else if(ringFlashScore >= 1){
+      const zone = 10 - ringFlashScore;
+      innerR = maxR/11 * zone;
+      outerR = maxR/11 * (zone + 1);
+    }else{
+      innerR = maxR;
+      outerR = 148;
+    }
+
+    tctx.save();
+    tctx.globalAlpha = 0.28 + 0.42 * pulse;
+    tctx.fillStyle = glowColor;
+    tctx.shadowColor = glowColor;
+    tctx.shadowBlur = 25 + 22 * pulse;
+    tctx.beginPath();
+    tctx.arc(cx,cy,outerR + 4 + 3*pulse,0,Math.PI*2);
+    if(innerR > 0){
+      tctx.arc(cx,cy,Math.max(0, innerR - 3 - 2*pulse),0,Math.PI*2,true);
+      tctx.fill('evenodd');
+    }else{
+      tctx.fill();
+    }
+    tctx.restore();
+
+    tctx.save();
+    tctx.globalAlpha = 0.95;
+    tctx.strokeStyle = glowColor;
+    tctx.shadowColor = glowColor;
+    tctx.shadowBlur = 18 + 18 * pulse;
+    tctx.lineWidth = 5 + 2 * pulse;
+    tctx.beginPath();
+    tctx.arc(cx,cy,(innerR + outerR)/2,0,Math.PI*2);
+    tctx.stroke();
+    tctx.restore();
+  }
+
+  // ring outlines
+  for(let i=11;i>=1;i--){
+    const r = maxR/11 * i;
+    tctx.strokeStyle = 'rgba(17,24,39,.28)';
+    tctx.lineWidth = 1;
+    tctx.beginPath();
+    tctx.arc(cx,cy,r,0,Math.PI*2);
+    tctx.stroke();
+  }
+  tctx.strokeStyle = 'rgba(17,24,39,.3)';
+  tctx.beginPath(); tctx.arc(cx,cy,148,0,Math.PI*2); tctx.stroke();
+
+  // labels
+  tctx.fillStyle = '#111827';
+  tctx.font = '700 13px system-ui';
+  tctx.textAlign='center';
+  tctx.textBaseline='middle';
+  for(let score=10; score>=1; score--){
+    let r;
+    if(score===10) r = maxR/22;
+    else{
+      const idx = 10-score;
+      const inner = maxR/11*idx;
+      const outer = maxR/11*(idx+1);
+      r = (inner+outer)/2;
+    }
+    tctx.fillText(String(score), cx, cy-r);
+  }
+  tctx.fillStyle='#6b7280';
+  tctx.fillText('0', cx, cy-138);
+
+  // crosshair
+  tctx.strokeStyle='rgba(17,24,39,.18)';
+  tctx.beginPath(); tctx.moveTo(cx-150,cy); tctx.lineTo(cx+150,cy); tctx.stroke();
+  tctx.beginPath(); tctx.moveTo(cx,cy-150); tctx.lineTo(cx,cy+150); tctx.stroke();
+
+  // bullet marks
+  marks.forEach(a => drawBulletMark(a));
+
+  tctx.textAlign='left'; tctx.textBaseline='alphabetic';
+}
+function drawBulletMark(a){
+  const r = a.score >= 8 ? 6.5 : (a.score >= 4 ? 5.5 : 4.8);
+
+  // outer smudge
+  tctx.save();
+  tctx.globalAlpha = 0.18;
+  tctx.fillStyle = '#111827';
+  tctx.beginPath();
+  tctx.arc(a.x, a.y, r + 5, 0, Math.PI * 2);
+  tctx.fill();
+  tctx.restore();
+
+  // main hole
+  const grad = tctx.createRadialGradient(a.x-1.2, a.y-1.2, 1, a.x, a.y, r);
+  grad.addColorStop(0, '#000000');
+  grad.addColorStop(0.65, '#111827');
+  grad.addColorStop(1, '#4b5563');
+  tctx.fillStyle = grad;
+  tctx.beginPath();
+  tctx.arc(a.x, a.y, r, 0, Math.PI * 2);
+  tctx.fill();
+
+  // light rim
+  tctx.strokeStyle = 'rgba(255,255,255,.28)';
+  tctx.lineWidth = 1.1;
+  tctx.beginPath();
+  tctx.arc(a.x - 0.6, a.y - 0.6, r - 1.2, 0, Math.PI * 2);
+  tctx.stroke();
+
+  // tiny cracks
+  tctx.strokeStyle = 'rgba(31,41,55,.45)';
+  tctx.lineWidth = 1;
+  for(let i=0;i<4;i++){
+    const ang = a.angle + i * Math.PI / 2 + (Math.random()-0.5)*0.18;
+    const len = r + 4 + Math.random()*4;
+    tctx.beginPath();
+    tctx.moveTo(a.x + Math.cos(ang)*(r*0.4), a.y + Math.sin(ang)*(r*0.4));
+    tctx.lineTo(a.x + Math.cos(ang)*len, a.y + Math.sin(ang)*len);
+    tctx.stroke();
+  }
+
+  // center dark spot
+  tctx.fillStyle = '#000';
+  tctx.beginPath();
+  tctx.arc(a.x, a.y, r*0.45, 0, Math.PI * 2);
+  tctx.fill();
+}
+
+function startLoop(){
+  if(raf) return;
+  lastTime=performance.now();
+  const loop=(now)=>{
+    const dt=Math.min(.035,(now-lastTime)/1000);
+    lastTime=now;
+    if(running && canHit && !roundFinished && now > frozenUntil){
+      side += speed*dt;
+      if(side >= MAX_SIDE){
+        side = MAX_SIDE;
+        autoMiss();
+      }
+    }
+    drawMain(now);
+    drawTargetBoard();
+    raf=requestAnimationFrame(loop);
+  };
+  raf=requestAnimationFrame(loop);
+}
+
+function drawMain(now){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const margin=78;
+  const gridPx=Math.min((canvas.width-margin*2)/GRID_UNITS,(canvas.height-margin*2)/GRID_UNITS);
+  const originX=margin;
+  const originY=canvas.height-margin;
+
+  ctx.fillStyle='#fbfdff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // grid
+  ctx.lineWidth=1;
+  ctx.strokeStyle='#d8e0eb';
+  for(let i=0;i<=GRID_UNITS;i++){
+    const x=originX+i*gridPx;
+    ctx.beginPath();ctx.moveTo(x,originY);ctx.lineTo(x,originY-GRID_UNITS*gridPx);ctx.stroke();
+    const y=originY-i*gridPx;
+    ctx.beginPath();ctx.moveTo(originX,y);ctx.lineTo(originX+GRID_UNITS*gridPx,y);ctx.stroke();
+  }
+  ctx.fillStyle='#667085';
+  ctx.font='12px system-ui';
+  for(let i=1;i<=GRID_UNITS;i++){
+    ctx.fillText(i,originX+i*gridPx-3,originY+22);
+    ctx.fillText(i,originX-25,originY-i*gridPx+4);
+  }
+  ctx.strokeStyle='#98a2b3';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(originX,originY);ctx.lineTo(originX+GRID_UNITS*gridPx,originY);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(originX,originY);ctx.lineTo(originX,originY-GRID_UNITS*gridPx);ctx.stroke();
+
+  // target guide
+  if(now < targetGuideUntil){
+    const targetSide=Math.sqrt(currentN);
+    const tpx=targetSide*gridPx;
+    ctx.save();
+    ctx.setLineDash([9,7]);
+    ctx.lineWidth=4;
+    ctx.strokeStyle='rgba(22,128,58,.9)';
+    ctx.strokeRect(originX,originY-tpx,tpx,tpx);
+    ctx.restore();
+
+    ctx.fillStyle='#166534';
+    ctx.font='800 15px system-ui';
+    ctx.fillText('정답: 한 변 '+formatRoot(currentN),originX+12,originY-tpx-12);
+  }
+
+  // animated square
+  const px=side*gridPx;
+  const grad=ctx.createLinearGradient(originX,originY-px,originX+px,originY);
+  grad.addColorStop(0,'rgba(53,106,230,.22)');
+  grad.addColorStop(1,'rgba(53,106,230,.08)');
+  ctx.fillStyle=grad;
+  ctx.fillRect(originX,originY-px,px,px);
+
+  const pulse = flashPulse>0 ? Math.max(0,1-(now-flashPulse)/300) : 0;
+  ctx.strokeStyle = pulse>0 ? '#f59e0b' : '#356ae6';
+  ctx.lineWidth = pulse>0 ? 7 : 4;
+  ctx.strokeRect(originX,originY-px,px,px);
+
+  // side marker
+  ctx.strokeStyle='#356ae6';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(originX,originY+32);ctx.lineTo(originX+px,originY+32);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(originX,originY+26);ctx.lineTo(originX,originY+38);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(originX+px,originY+26);ctx.lineTo(originX+px,originY+38);ctx.stroke();
+
+  ctx.fillStyle='#344054';
+  ctx.font='800 16px system-ui';
+  ctx.textAlign='center';
+  ctx.fillText('한 변의 길이',originX+px/2,originY+55);
+  ctx.textAlign='start';
+
+  // current side & area
+  const area=side*side;
+  ctx.fillStyle='#101828';
+  ctx.font='900 20px system-ui';
+  ctx.fillText('현재 정보',canvas.width-220,64);
+
+  ctx.font='700 16px system-ui';
+  ctx.fillStyle='#344054';
+  if(hideInfo.checked){
+    ctx.fillText('한 변 ≈ ???',canvas.width-220,96);
+    ctx.fillText('넓이 ≈ ???',canvas.width-220,122);
+  }else{
+    ctx.fillText('한 변 ≈ '+side.toFixed(3),canvas.width-220,96);
+    ctx.fillText('넓이 ≈ '+area.toFixed(3),canvas.width-220,122);
+  }
+
+  ctx.font='13px system-ui';
+  ctx.fillStyle='#667085';
+  ctx.fillText('격자 한 칸의 넓이 = 1',canvas.width-220,148);
+
+  ctx.font='800 15px system-ui';
+  ctx.fillStyle='#16803a';
+  ctx.fillText('↗ 한 번만 커지는 중',canvas.width-220,180);
+}
+
+function showTarget(){
+  targetText.textContent=formatRoot(currentN);
+  targetFlash.classList.remove('fade');
+  targetFlash.classList.add('show');
+  canHit=true;
+  roundFinished=false;
+  setResult(`목표는 <b>${formatRoot(currentN)}</b>입니다.<br>정사각형이 그 길이가 되는 순간 <b>Enter</b>를 누르세요. 기회는 한 번입니다.`);
+}
+function chooseTarget(){
+  if(practiceMode) return 3;
+  let n;
+  do{ n=TARGETS[Math.floor(Math.random()*TARGETS.length)] }while(n===currentN);
+  return n;
+}
+function beginRound(){
+  if(!running) return;
+  if(!practiceMode && round>=ROUND_TOTAL){
+    finishGame();
+    return;
+  }
+  if(!practiceMode) round++;
+  currentN=chooseTarget();
+  side=MIN_SIDE;
+  direction=1;
+  roundFinished=false;
+  speed=difficulty.value==='hard'?1.32:(difficulty.value==='easy'?.72:1.0);
+  updateScoreBoard();
+  showTarget();
+}
+function resetAll(){
+  clearTimeout(nextRoundTimer);
+  attempts = [];
+  marks = [];
+  totalScore = 0;
+  lastScore = null;
+  round = 0;
+  currentN = 3;
+  roundFinished = false;
+  ringFlashScore = null;
+  ringFlashUntil = 0;
+  targetText.textContent='-';
+  drawTargetBoard();
+  updateAttemptList();
+  updateScoreBoard();
+}
+function startGame(){
+  getAudio();
+  ROUND_TOTAL = parseInt(roundCountSelect.value, 10) || 10;
+  practiceMode=false;
+  running=true;
+  canHit=false;
+  roundCountSelect.disabled = true;
+  resetAll();
+  setResult('시작합니다. 목표 수를 보고 단 한 번의 타이밍을 잡으세요!');
+  beginRound();
+}
+function startPractice(){
+  getAudio();
+  practiceMode=true;
+  running=true;
+  canHit=false;
+  roundCountSelect.disabled = false;
+  resetAll();
+  setResult('√3 연습입니다. 정사각형은 한 번만 커지고 Enter 기회도 한 번입니다.');
+  beginRound();
+}
+function autoMiss(){
+  if(!running || !canHit || roundFinished) return;
+  canHit=false;
+  roundFinished=true;
+  lastScore=0;
+  attempts.push({
+    target: formatRoot(currentN),
+    n: currentN,
+    side,
+    area: side*side,
+    sideError: Math.abs(side-Math.sqrt(currentN)),
+    areaError: Math.abs(side*side-currentN),
+    score: 0,
+    label: 'MISS'
+  });
+  addMark(0);
+  updateAttemptList();
+  updateScoreBoard();
+  soundMiss();
+  setResult(
+    `<div class="bigResult">MISS — 0점</div>`+
+    `정사각형이 끝까지 커질 때까지 Enter를 누르지 않았습니다.<br>`+
+    `이번 라운드의 기회는 끝났습니다.`,
+    'bad'
+  );
+  clearTimeout(nextRoundTimer);
+  nextRoundTimer=setTimeout(()=>{
+    if(practiceMode) beginRound();
+    else if(round >= ROUND_TOTAL) finishGame();
+    else beginRound();
+  },1500);
+}
+
+function finishGame(){
+  running=false;
+  canHit=false;
+  roundCountSelect.disabled = false;
+  updateScoreBoard();
+  const maxScore = ROUND_TOTAL * 10;
+  const ratio = maxScore ? totalScore / maxScore : 0;
+  let grade='좋습니다!';
+  if(ratio>=0.90) grade='루트 타이밍 마스터!';
+  else if(ratio>=0.75) grade='감각이 상당히 정확합니다!';
+  else if(ratio>=0.55) grade='조금만 더 하면 됩니다!';
+  setResult(
+    `<div class="bigResult">${grade}</div>`+
+    `최종 점수 <b>${totalScore} / ${maxScore}</b><br>`+
+    `평균 <b>${(attempts.length?totalScore/attempts.length:0).toFixed(1)}</b>점<br>`+
+    `과녁에 남은 총알자국을 보며 어느 정도 정확했는지 확인해 보세요.`,
+    ratio>=0.75?'perfect':'good'
+  );
+  tone(523,.12,'sine',.15);
+  tone(659,.12,'sine',.15,.1);
+  tone(784,.2,'sine',.17,.2);
+}
+
+function hit(){
+  if(!running) return;
+  if(!canHit){
+    setResult('아직 목표 수를 보고 있는 중입니다.<br>수치가 사라진 뒤 타이밍을 맞춰 보세요.','bad');
+    return;
+  }
+  canHit=false;
+  roundFinished=true;
+
+  const area=side*side;
+  const sideError=Math.abs(side-Math.sqrt(currentN));
+  const areaError=Math.abs(area-currentN);
+  const score=scoreByError(sideError);
+  lastScore=score;
+  totalScore+=score;
+  frozenUntil=performance.now()+500;
+  targetGuideUntil=performance.now()+1250;
+  flashPulse=performance.now();
+
+  const label=labelByScore(score);
+  const cls=classByScore(score);
+  if(score>=8) soundPerfect();
+  else if(score>=3) soundGood();
+  else soundMiss();
+
+  attempts.push({
+    target: formatRoot(currentN),
+    n: currentN,
+    side,
+    area,
+    sideError,
+    areaError,
+    score,
+    label
+  });
+  addMark(score);
+  updateAttemptList();
+  updateScoreBoard();
+
+  setResult(
+    `<div class="bigResult">${label} — ${score}점</div>`+
+    `현재 한 변 ≈ <b>${side.toFixed(3)}</b> (정답 ${Math.sqrt(currentN).toFixed(3)})<br>`+
+    `현재 넓이 ≈ <b>${area.toFixed(3)}</b> · 목표 넓이 <b>${currentN}</b><br>`+
+    `한 변 오차 ${sideError.toFixed(3)} · 넓이 오차 ${areaError.toFixed(3)}`,
+    cls
+  );
+
+  clearTimeout(nextRoundTimer);
+  nextRoundTimer=setTimeout(()=>{
+    if(practiceMode){
+      beginRound();
+    }else{
+      if(round >= ROUND_TOTAL) finishGame();
+      else beginRound();
+    }
+  },1500);
+}
+
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('practiceBtn').addEventListener('click',startPractice);
+document.getElementById('hitBtn').addEventListener('click',hit);
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    hit();
+  }
+});
+roundCountSelect.addEventListener('change',()=>{
+  if(!running || practiceMode){
+    ROUND_TOTAL = parseInt(roundCountSelect.value, 10) || 10;
+    if(!practiceMode){
+      roundText.textContent = `0 / ${ROUND_TOTAL}`;
+      scoreText.textContent = `0 / ${ROUND_TOTAL*10}`;
+    }
+  }
+});
+
+difficulty.addEventListener('change',()=>{
+  if(running){
+    speed=difficulty.value==='hard'?1.32:(difficulty.value==='easy'?.72:1.0);
+  }
+});
+
+ROUND_TOTAL = parseInt(roundCountSelect.value, 10) || 10;
+updateScoreBoard();
+drawTargetBoard();
+startLoop();
+</script>
+</body>
+</html>
+
