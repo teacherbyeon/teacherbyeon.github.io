@@ -47,5 +47,30 @@
     "areaOrder": 2,
     "unitOrder": 1,
     "gameOrder": 1
+  },
+  {
+    "id": "artifact-restoration",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "원의 성질",
+    "title": "유물 복원 탐험",
+    "description": "현의 수직이등분선을 두 번 그어 원의 중심을 찾고 깨진 원형 유물을 복원하는 수학 탐험 게임입니다.",
+    "href": "./middle-3/artifact-restoration/",
+    "tags": [
+      "원",
+      "원의 중심",
+      "현",
+      "수직이등분선",
+      "원의 성질",
+      "작도",
+      "탐험"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 2,
+    "unitOrder": 1,
+    "gameOrder": 1
   }
 ]
