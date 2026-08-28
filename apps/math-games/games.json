@@ -21,5 +21,31 @@
     "areaOrder": 1,
     "unitOrder": 1,
     "gameOrder": 1
+  },
+  {
+    "id": "projectile-fortress",
+    "school": "중·고등학교",
+    "grade": "중3·고1",
+    "area": "함수",
+    "unit": "이차함수와 포물선",
+    "title": "포물선 포트리스",
+    "description": "감각으로 쏜 포물선을 이차함수로 표현하고 식과 속도를 이용해 목표를 맞히는 혼자 연습·2인 대전 게임입니다.",
+    "href": "./common/projectile-fortress/",
+    "tags": [
+      "포물선",
+      "이차함수",
+      "꼭짓점형",
+      "속도",
+      "물리",
+      "2인 대전",
+      "중3",
+      "고1"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 2,
+    "unitOrder": 1,
+    "gameOrder": 1
   }
 ]
