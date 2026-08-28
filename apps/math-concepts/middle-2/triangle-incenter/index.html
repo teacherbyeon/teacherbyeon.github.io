@@ -103,7 +103,7 @@ svg{width:100%;height:auto;max-height:70vh;overflow:visible}
 
 text.focus-text{font-weight:900}
 
-/* 12단계 문장별 단독 강조 */
+/* 직각삼각형 합동 단계 문장별 단독 강조 */
 .rhs-flash-line{
   stroke:var(--focus) !important;
   stroke-width:9px !important;
@@ -128,7 +128,7 @@ text.focus-text{font-weight:900}
   50%{opacity:.08}
 }
 
-/* 16, 17단계 요약 장면용 애니메이션 */
+/* 마지막 요약 장면용 애니메이션 */
 .summary-flash-line{
   stroke:var(--focus) !important;
   stroke-width:8px !important;
@@ -401,32 +401,32 @@ add("circle",{cx:I.x,cy:I.y,r:r,class:"shape incircle","data-key":"incircle",id:
       cue:"디, 이, 에프의 이름표를 확실히 보여 줍니다."
     },
     {
-      title:"각의 이등분선 위 점의 성질",
-      show:["triangle","vertexDots","vertexLabels","bisA","bisB","I","perps","feet","rightmarks","angleMarksA","angleMarksB"],
-      focus:["bisAline","bisBline","pointI"],
+      title:"∠A에서 RHA 합동",
+      show:["triangle","vertexDots","vertexLabels","bisA","I","perps","feet","rightmarks","angleMarksA"],
+      focus:[],
       dimOthers:false,
-      script:"각의 이등분선 위에 있는 점은 그 각을 이루는 두 변까지의 거리가 같습니다.",
-      cue:"지금은 이등분선과 점 I 자체에 주목합니다."
+      checks:[
+        {label:"△AID와 △AIF는 모두 직각삼각형",ids:["rightD","rightF"]},
+        {label:"AI는 공통인 빗변",ids:["bisAline"]},
+        {label:"∠DAI = ∠IAF",ids:["angleA1","angleA2"]},
+        {label:"RHA 합동이므로 ID = IF",ids:["perpD","perpF"]}
+      ],
+      script:"△AID와 △AIF는 모두 직각삼각형입니다.\n\nAI는 공통인 빗변이고, ∠DAI = ∠IAF입니다.\n\n따라서 두 삼각형은 RHA 합동이므로 ID = IF입니다.",
+      cue:"직각 → 공통인 빗변 → 같은 예각을 차례로 확인하여 RHA 합동으로 두 거리가 같음을 얻습니다."
     },
     {
-      title:"∠A의 이등분선에서",
-      show:["triangle","vertexDots","vertexLabels","bisA","bisB","I","perps","feet","rightmarks","angleMarksA","angleMarksB"],
-      animate:["perpD","perpF"],
-      animation:"glow-now",
-      focus:["perpD","perpF","pointD","pointF","labelD","labelF"],
+      title:"∠B에서 RHA 합동",
+      show:["triangle","vertexDots","vertexLabels","bisB","I","perps","feet","rightmarks","angleMarksB"],
+      focus:[],
       dimOthers:false,
-      script:"점 I는 ∠A의 이등분선 위에 있으므로, 선분 ID와 선분 IF의 길이는 같습니다.",
-      cue:"아이 디와 아이 에프만 밝게 살아나도록 만들었습니다."
-    },
-    {
-      title:"∠B의 이등분선에서",
-      show:["triangle","vertexDots","vertexLabels","bisA","bisB","I","perps","feet","rightmarks","angleMarksA","angleMarksB"],
-      animate:["perpD","perpE"],
-      animation:"glow-now",
-      focus:["perpD","perpE","pointD","pointE","labelD","labelE"],
-      dimOthers:false,
-      script:"또 점 I는 ∠B의 이등분선 위에 있으므로, 선분 ID와 선분 IE의 길이도 같습니다.",
-      cue:"이번에는 아이 디와 아이 이만 확실하게 드러납니다."
+      checks:[
+        {label:"△BID와 △BIE는 모두 직각삼각형",ids:["rightD","rightE"]},
+        {label:"BI는 공통인 빗변",ids:["bisBline"]},
+        {label:"∠DBI = ∠IBE",ids:["angleB1a","angleB1b","angleB2a","angleB2b"]},
+        {label:"RHA 합동이므로 ID = IE",ids:["perpD","perpE"]}
+      ],
+      script:"△BID와 △BIE는 모두 직각삼각형입니다.\n\nBI는 공통인 빗변이고, ∠DBI = ∠IBE입니다.\n\n따라서 두 삼각형은 RHA 합동이므로 ID = IE입니다.",
+      cue:"직각 → 공통인 빗변 → 같은 예각을 차례로 확인하여 RHA 합동으로 두 거리가 같음을 얻습니다."
     },
     {
       title:"세 변까지의 거리는 같다",
