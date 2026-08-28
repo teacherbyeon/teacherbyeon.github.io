@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>평행사변형이 되는 조건</title>
+  <style>
+    :root{--ink:#17324d;--muted:#6b7f93;--paper:#f7f4ed;--card:#fffdf8;--line:#274b69;--orange:#f28c28;--green:#2e9b65;--blue:#2a6fbb;--cyan:#16a6a1;--violet:#8b5cc7;--gold:#e0aa27;--shadow:0 18px 48px rgba(23,50,77,.12)}
+    *{box-sizing:border-box} body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;background:radial-gradient(circle at 12% 8%,#fff9e9 0,transparent 31%),linear-gradient(135deg,#eef6f5,#f8f3ea);color:var(--ink);min-height:100vh}
+    button{font:inherit}.app{max-width:1440px;margin:auto;padding:24px}.top{display:flex;align-items:center;gap:18px;margin-bottom:18px}.brand{font-weight:900;font-size:clamp(20px,2vw,31px);letter-spacing:-.04em}.step-count{margin-left:auto;color:var(--muted);font-weight:800}.progress{height:8px;background:#dce5e6;border-radius:99px;overflow:hidden;width:min(330px,28vw)}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:.35s}
+    .stage{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);gap:22px;min-height:670px}.board,.lesson{background:rgba(255,253,248,.94);border:1px solid rgba(39,75,105,.14);border-radius:28px;box-shadow:var(--shadow)}.board{position:relative;display:flex;align-items:center;justify-content:center;min-height:610px;overflow:hidden}.board:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(39,75,105,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(39,75,105,.035) 1px,transparent 1px);background-size:28px 28px}.board svg{width:94%;height:570px;position:relative;z-index:1}.lesson{padding:clamp(24px,3vw,42px);display:flex;flex-direction:column}.eyebrow{color:var(--cyan);font-size:14px;font-weight:900;letter-spacing:.08em}.lesson h1{font-size:clamp(27px,3vw,43px);line-height:1.16;letter-spacing:-.045em;margin:10px 0 20px}.lead{font-size:20px;line-height:1.7;margin:0 0 14px}.actions{display:flex;flex-direction:column;gap:10px;margin:8px 0 18px}.math-action{appearance:none;border:0;border-bottom:2px dashed var(--blue);background:transparent;color:var(--blue);font-weight:850;font-size:18px;line-height:1.55;text-align:left;padding:9px 4px;cursor:pointer;transition:.2s}.math-action:hover,.math-action:focus-visible{background:#eaf3ff;outline:0;border-radius:8px}.math-action.active{color:var(--orange);border-color:var(--orange);background:#fff1e4}.math-action.done{color:var(--green);border-color:transparent;background:#ebf8f1}.math-action.done:after{content:"  ✓"}.controls{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:24px}.nav{border:0;border-radius:14px;padding:13px 20px;font-weight:850;cursor:pointer}.prev{background:#e4ebed;color:var(--ink)}.next{background:var(--ink);color:#fff}.nav:disabled{opacity:.35;cursor:not-allowed}.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.dot{width:9px;height:9px;border:0;border-radius:50%;padding:0;background:#c7d3d6;cursor:pointer}.dot.on{width:25px;border-radius:8px;background:var(--cyan)}
+    .shape{fill:#fffdf8;stroke:var(--line);stroke-width:5;stroke-linejoin:round}.diag,.helper{stroke:var(--orange);stroke-width:4;stroke-dasharray:10 8}.helper{stroke:var(--blue)}.pt{fill:var(--ink)}.label{font-size:23px;font-weight:900;fill:var(--ink)}.olabel{font-size:18px;font-weight:900;fill:var(--orange)}.seglabel{font-size:17px;font-weight:900;paint-order:stroke;stroke:#fffdf8;stroke-width:7;stroke-linejoin:round}.dim{fill:rgba(255,253,248,.88);stroke:none}.hi-cyan{stroke:var(--cyan)!important;fill:none;stroke-width:10!important;stroke-linecap:round}.hi-violet{stroke:var(--violet)!important;fill:none;stroke-width:10!important;stroke-linecap:round}.hi-orange{stroke:var(--orange)!important;fill:none;stroke-width:10!important;stroke-linecap:round}.soft-cyan{fill:rgba(22,166,161,.18);stroke:var(--cyan);stroke-width:3}.soft-violet{fill:rgba(139,92,199,.17);stroke:var(--violet);stroke-width:3}.soft-orange{fill:rgba(242,140,40,.17);stroke:var(--orange);stroke-width:3}.mark{stroke-width:4;fill:none}.parallel{stroke:var(--orange);stroke-width:4}.hidden{display:none!important}.formula{font-family:Cambria,"Times New Roman",serif;font-style:italic}.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{border:2px solid #d7e1e2;background:#fff;border-radius:14px;padding:12px;font-weight:800;cursor:pointer;color:var(--ink)}.choice.correct{border-color:var(--green);background:#eaf8f0;color:var(--green)}.choice.wrong{border-color:#d9534f;background:#fff0ef;color:#a63c38}.mini{font-size:14px;color:var(--muted);margin-top:4px}.condition-list{display:grid;gap:8px}.condition-list .math-action{font-size:16px}.activity-nav{display:flex;gap:8px;margin:8px 0}.activity-nav button{border:1px solid #cbd8da;background:#fff;border-radius:10px;padding:8px 11px;cursor:pointer;font-weight:800}.activity-nav button.on{background:var(--ink);color:#fff}.result{min-height:28px;font-weight:900;color:var(--green);margin-top:10px}
+    @media(max-width:920px){.app{padding:12px}.stage{grid-template-columns:1fr}.board{min-height:390px}.board svg{height:390px}.lesson{min-height:540px}.progress{display:none}.top{padding:6px}.choice-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header class="top"><div class="brand">평행사변형이 되는 조건</div><div class="progress"><i id="bar"></i></div><div class="step-count" id="count"></div></header>
+  <section class="stage">
+    <div class="board" aria-label="수학 도형 판서"><svg id="svg" viewBox="0 0 720 560" role="img"></svg></div>
+    <article class="lesson">
+      <div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><div class="lead" id="lead"></div><div class="actions" id="actions"></div><div id="extra"></div>
+      <div class="controls"><button class="nav prev" id="prev">← 이전</button><div class="dots" id="dots"></div><button class="nav next" id="next">다음 →</button></div>
+    </article>
+  </section>
+</main>
+<script>
+const NS='http://www.w3.org/2000/svg', C={ink:'#274b69',orange:'#f28c28',green:'#2e9b65',cyan:'#16a6a1',violet:'#8b5cc7',gold:'#e0aa27'};
+let step=0, activity=0;
+const steps=[
+ {t:'생각 열기',h:'성질을 거꾸로 생각하면?',lead:'길이가 같은 긴 막대 2개와 짧은 막대 2개로 사각형을 만들었습니다.',acts:[['두 쌍의 대변의 길이가 각각 같습니다.','sides'],['이 사각형은 반드시 평행사변형일까요?','question']],scene:'quad'},
+ {t:'지난 시간과 연결',h:'“이면”의 방향을 뒤집어 봅시다',lead:'지난 시간에는 평행사변형의 성질을 배웠습니다. 이제 그 반대가 참인지 확인합니다.',acts:[['평행사변형이면 AB = CD, BC = DA','sides'],['AB = CD, BC = DA이면 평행사변형일까?','question']],scene:'quad'},
+ {t:'첫 번째 조건 · 준비',h:'대각선을 그어 두 삼각형으로',lead:'사각형 안에서 이미 아는 합동을 찾아봅시다.',acts:[['대각선 AC를 그어 봅시다.','diag'],['△ABC를 확인합니다.','tri1'],['△CDA를 확인합니다.','tri2']],scene:'quad'},
+ {t:'첫 번째 조건 · 증명',h:'두 삼각형은 왜 합동일까요?',lead:'같은 길이끼리 색을 짝지어 SSS 합동을 확인합니다.',acts:[['AB = CD','pair1'],['BC = DA','pair2'],['AC = CA (공통인 변)','common'],['따라서 △ABC ≡ △CDA (SSS)','congruent']],scene:'quadDiag'},
+ {t:'첫 번째 조건 · 결론',h:'합동에서 평행을 끌어냅시다',lead:'합동인 삼각형의 대응각과 엇각의 관계를 이용합니다.',acts:[['∠BAC = ∠DCA','angle1'],['엇각이 같으므로 AB ∥ DC','parallel1'],['∠BCA = ∠DAC','angle2'],['엇각이 같으므로 BC ∥ AD','parallel2'],['두 쌍의 대변의 길이가 각각 같은 사각형은 평행사변형입니다.','finish']],scene:'quadDiag'},
+ {t:'두 번째 조건 · 질문',h:'대각의 크기가 같다면?',lead:'이번에는 두 쌍의 마주 보는 각이 각각 같습니다.',acts:[['∠A = ∠C','oppAngles1'],['∠B = ∠D','oppAngles2'],['이 조건만으로 평행사변형이라 할 수 있을까요?','question']],scene:'angleQuad'},
+ {t:'두 번째 조건 · 내각의 합',h:'이웃한 두 각의 합을 구해 봅시다',lead:'사각형의 내각의 합은 360°입니다.',acts:[['∠A+∠B+∠C+∠D = 360°','allAngles'],['2∠A+2∠B = 360°','oppAngles'],['따라서 ∠A+∠B = 180°','adjSum']],scene:'angleQuad'},
+ {t:'두 번째 조건 · 결론',h:'평행선을 찾아냅시다',lead:'변 AB를 A 쪽으로 연장해 점 E를 잡습니다.',acts:[['AB를 연장하여 E를 잡습니다.','extend'],['∠B = ∠EAD','correspond'],['동위각이 같으므로 AD ∥ BC','parallel2'],['같은 방법으로 AB ∥ DC','parallel1'],['두 쌍의 대각의 크기가 각각 같은 사각형은 평행사변형입니다.','finish']],scene:'angleQuad'},
+ {t:'세 번째 조건 · 관찰',h:'두 대각선이 서로의 가운데에서 만나면?',lead:'대각선 AC와 BD는 점 O에서 만납니다.',acts:[['두 대각선 AC, BD를 그어 봅시다.','bothDiag'],['OA = OC','half1'],['OB = OD','half2'],['어떤 사각형이 될지 예상해 봅시다.','question']],scene:'crossIntro'},
+ {t:'세 번째 조건 · 합동',h:'교점 O 주변의 삼각형을 봅시다',lead:'△OAB와 △OCD에서 SAS 합동 조건을 찾습니다.',acts:[['△OAB와 △OCD를 확인합니다.','triOC'],['OA = OC','half1'],['OB = OD','half2'],['∠AOB = ∠COD (맞꼭지각)','vertical'],['따라서 △OAB ≡ △OCD (SAS)','congruentO']],scene:'cross'},
+ {t:'세 번째 조건 · 결론',h:'합동으로 평행을 얻습니다',lead:'합동인 두 삼각형의 대응각을 이용합니다.',acts:[['∠BAO = ∠DCO','angle1'],['엇각이 같으므로 AB ∥ DC','parallel1'],['같은 방법으로 AD ∥ BC','parallel2'],['두 대각선이 서로를 이등분하는 사각형은 평행사변형입니다.','finish']],scene:'cross'},
+ {t:'네 번째 조건 · 정의',h:'정의는 가장 빠른 판별 조건입니다',lead:'다음 조건은 평행사변형의 정의 그 자체입니다.',acts:[['AB ∥ CD','parallel1'],['AD ∥ BC','parallel2'],['두 쌍의 대변이 각각 평행한 사각형은 평행사변형입니다.','finish']],scene:'quad'},
+ {t:'다섯 번째 조건',h:'한 쌍이 평행하고 길이도 같다면?',lead:'한 쌍의 대변 AD와 BC에 두 조건이 동시에 주어졌습니다.',acts:[['AD ∥ BC이고 AD = BC','onePair'],['대각선 AC를 그어 봅시다.','diag'],['∠DAC = ∠BCA (엇각)','angle2'],['AC = CA (공통인 변)','common'],['△DAC ≡ △BCA (SAS)','congruent'],['따라서 AB ∥ DC, 즉 평행사변형입니다.','parallel1']],scene:'quad'},
+ {t:'최종 정리',h:'다섯 조건을 그림으로 확인하세요',lead:'문장을 클릭할 때마다 해당 조건만 그림에 나타납니다.',acts:[['① 두 쌍의 대변이 각각 평행하다.','sum1'],['② 두 쌍의 대변의 길이가 각각 같다.','sum2'],['③ 두 쌍의 대각의 크기가 각각 같다.','sum3'],['④ 두 대각선이 서로를 이등분한다.','sum4'],['⑤ 한 쌍의 대변이 평행하고 그 길이가 같다.','sum5']],scene:'summary',exclusive:true},
+ {t:'판별 활동',h:'어느 조건을 이용할까요?',lead:'그림의 표시를 읽고 알맞은 조건을 선택하세요.',acts:[],scene:'quiz'}
+];
+const q=[
+ {kind:'lengths',label:'두 쌍의 대변에 같은 길이 표시가 있습니다.',answer:1},
+ {kind:'angles',label:'두 쌍의 대각에 같은 각 표시가 있습니다.',answer:2},
+ {kind:'bisect',label:'두 대각선이 서로를 이등분합니다.',answer:3},
+ {kind:'onepair',label:'한 쌍의 대변이 평행하고 길이가 같습니다.',answer:4}
+];
+function E(name,attrs={},text=''){const e=document.createElementNS(NS,name);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text)e.textContent=text;return e}
+function line(svg,x1,y1,x2,y2,cls=''){svg.append(E('line',{x1,y1,x2,y2,class:cls}))} function poly(svg,pts,cls='shape'){svg.append(E('polygon',{points:pts.map(p=>p.join(',')).join(' '),class:cls}))}
+function txt(svg,x,y,s,cls='label'){svg.append(E('text',{x,y,class:cls,'text-anchor':'middle'},s))} function circle(svg,x,y,r=5,fill=C.ink){svg.append(E('circle',{cx:x,cy:y,r,fill}))}
+const P={A:[155,390],B:[260,145],C:[570,145],D:[465,390]};
+function base(svg,angle=false){poly(svg,[P.A,P.B,P.C,P.D]);Object.entries(P).forEach(([k,p])=>{circle(svg,...p);txt(svg,p[0]+(k==='A'||k==='B'?-23:23),p[1]+(k==='A'||k==='D'?28:-16),k)});if(angle) drawAngles(svg)}
+function drawAngles(svg){angle(svg,P.A,P.B,P.D,'cyan');angle(svg,P.C,P.D,P.B,'cyan');angle(svg,P.B,P.C,P.A,'violet');angle(svg,P.D,P.A,P.C,'violet')}
+function angle(svg,v,p1,p2,color,r=42){
+ const a=Math.atan2(p1[1]-v[1],p1[0]-v[0]),b=Math.atan2(p2[1]-v[1],p2[0]-v[0]);
+ let d=(b-a+Math.PI*2)%(Math.PI*2),start=a;
+ if(d>Math.PI){start=b;d=Math.PI*2-d}
+ const x1=v[0]+r*Math.cos(start),y1=v[1]+r*Math.sin(start),x2=v[0]+r*Math.cos(start+d),y2=v[1]+r*Math.sin(start+d);
+ svg.append(E('path',{d:`M ${v[0]} ${v[1]} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`,class:`soft-${color}`}));
+}
+function hiSide(svg,a,b,color){line(svg,...P[a],...P[b],`hi-${color}`)}
+function diag(svg,both=false){line(svg,...P.A,...P.C,'diag');if(both)line(svg,...P.B,...P.D,'diag')}
+function parallelMark(svg,a,b,color=C.orange){const x=(P[a][0]+P[b][0])/2,y=(P[a][1]+P[b][1])/2;txt(svg,x,y+7,'≫','olabel');}
+function tick(svg,a,b,n=1,color=C.cyan){const x=(P[a][0]+P[b][0])/2,y=(P[a][1]+P[b][1])/2;txt(svg,x,y+6,n===1?'|':'||','olabel');}
+function splitSegment(svg,p,o,color,label){const dx=o[0]-p[0],dy=o[1]-p[1],len=Math.hypot(dx,dy),gap=13,q=[o[0]-dx/len*gap,o[1]-dy/len*gap];line(svg,...p,...q,`hi-${color}`);const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2,nx=-dy/len,ny=dx/len;const t=E('text',{x:mx+nx*22,y:my+ny*22,class:'seglabel','text-anchor':'middle',fill:C[color]},label);svg.append(t)}
+function focusOTris(svg){const o=[362,268];poly(svg,[P.B,P.C,o],'dim');poly(svg,[P.D,P.A,o],'dim');poly(svg,[P.A,P.B,o],'soft-cyan');poly(svg,[P.C,P.D,o],'soft-violet')}
+function apply(svg,key){
+ if(key==='sides'||key==='pair1'||key==='sum2'){hiSide(svg,'A','B','cyan');hiSide(svg,'C','D','cyan');if(key!=='pair1'){hiSide(svg,'B','C','violet');hiSide(svg,'D','A','violet')}}
+ if(key==='pair2'){hiSide(svg,'B','C','violet');hiSide(svg,'D','A','violet')}
+ if(key==='diag')diag(svg); if(key==='bothDiag'||key==='sum4'){diag(svg,true);txt(svg,362,278,'O','olabel')}
+ if(key==='tri1')poly(svg,[P.A,P.B,P.C],'soft-cyan'); if(key==='tri2')poly(svg,[P.C,P.D,P.A],'soft-violet');
+ if(key==='common'){line(svg,...P.A,...P.C,'hi-orange')}
+ if(key==='congruent'){poly(svg,[P.A,P.B,P.C],'soft-cyan');poly(svg,[P.C,P.D,P.A],'soft-violet')}
+ if(key==='angle1'){angle(svg,P.A,P.B,P.C,'cyan',48);angle(svg,P.C,P.D,P.A,'cyan',48)}
+ if(key==='angle2'){angle(svg,P.C,P.B,P.A,'violet',48);angle(svg,P.A,P.D,P.C,'violet',48)}
+ if(key==='parallel1'||key==='sum1'){hiSide(svg,'A','B','orange');hiSide(svg,'C','D','orange');parallelMark(svg,'A','B');parallelMark(svg,'C','D');if(key==='sum1'){hiSide(svg,'A','D','violet');hiSide(svg,'B','C','violet');parallelMark(svg,'A','D');parallelMark(svg,'B','C')}}
+ if(key==='parallel2'){hiSide(svg,'A','D','violet');hiSide(svg,'B','C','violet');parallelMark(svg,'A','D');parallelMark(svg,'B','C')}
+ if(key==='oppAngles1'||key==='sum3'){angle(svg,P.A,P.B,P.D,'cyan');angle(svg,P.C,P.D,P.B,'cyan');if(key==='sum3'){angle(svg,P.B,P.C,P.A,'violet');angle(svg,P.D,P.A,P.C,'violet')}}
+ if(key==='oppAngles2'){angle(svg,P.B,P.C,P.A,'violet');angle(svg,P.D,P.A,P.C,'violet')}
+ if(key==='allAngles'||key==='oppAngles'||key==='adjSum')drawAngles(svg)
+ if(key==='extend'){const e=[97.25,524.75];line(svg,...e,...P.B,'helper');circle(svg,...e);txt(svg,e[0]-18,e[1]+24,'E')}
+ if(key==='correspond'){const e=[97.25,524.75];angle(svg,P.B,P.A,P.C,'cyan',44);angle(svg,P.A,e,P.D,'cyan',44)}
+ if(key==='half1'){const o=[362,268];splitSegment(svg,P.A,o,'cyan','OA');splitSegment(svg,P.C,o,'cyan','OC')}
+ if(key==='half2'){const o=[362,268];splitSegment(svg,P.B,o,'violet','OB');splitSegment(svg,P.D,o,'violet','OD')}
+ if(key==='triOC'||key==='congruentO')focusOTris(svg)
+ if(key==='vertical'){const o=[362,268];angle(svg,o,P.A,P.B,'orange',38);angle(svg,o,P.C,P.D,'orange',38)}
+ if(key==='onePair'||key==='sum5'){hiSide(svg,'A','D','cyan');hiSide(svg,'B','C','cyan');parallelMark(svg,'A','D');parallelMark(svg,'B','C');tick(svg,'A','D');tick(svg,'B','C')}
+}
+function draw(){const svg=document.querySelector('#svg');svg.innerHTML='';const s=steps[step];base(svg,false);if(s.scene==='quadDiag')diag(svg);if(s.scene==='cross'){diag(svg,true);circle(svg,362,268,6,C.orange);txt(svg,382,290,'O','olabel')}
+ document.querySelectorAll('.math-action.done,.math-action.active').forEach(b=>apply(svg,b.dataset.key));
+ if(s.scene==='quiz')drawQuiz(svg,q[activity].kind);else if(s.scene==='cross'||[...document.querySelectorAll('.math-action.done,.math-action.active')].some(b=>['bothDiag','half1','half2'].includes(b.dataset.key))){circle(svg,362,268,8,C.ink);txt(svg,382,290,'O','olabel')}}
+function drawQuiz(svg,kind){svg.innerHTML='';base(svg,kind==='angles');if(kind==='lengths'){tick(svg,'A','B');tick(svg,'C','D');tick(svg,'B','C',2);tick(svg,'D','A',2)}if(kind==='bisect'){diag(svg,true);circle(svg,362,268,6,C.orange);tickSegment(svg,P.A,[362,268],1);tickSegment(svg,[362,268],P.C,1);tickSegment(svg,P.B,[362,268],2);tickSegment(svg,[362,268],P.D,2)}if(kind==='onepair'){tick(svg,'A','D');tick(svg,'B','C');parallelMark(svg,'A','D');parallelMark(svg,'B','C')}}
+function tickSegment(svg,p1,p2,n){const x=(p1[0]+p2[0])/2,y=(p1[1]+p2[1])/2;txt(svg,x,y,n===1?'|':'||','olabel')}
+function render(){const s=steps[step];document.querySelector('#count').textContent=`${step+1} / 15`;document.querySelector('#bar').style.width=`${(step+1)/15*100}%`;document.querySelector('#eyebrow').textContent=s.t;document.querySelector('#title').textContent=s.h;document.querySelector('#lead').textContent=s.lead;const a=document.querySelector('#actions');a.innerHTML='';s.acts.forEach(([label,key])=>{const b=document.createElement('button');b.className='math-action';b.textContent=label;b.dataset.key=key;b.onclick=()=>activate(b,s);a.append(b)});document.querySelector('#extra').innerHTML='';if(s.scene==='quiz')renderQuiz();document.querySelector('#prev').disabled=step===0;document.querySelector('#next').textContent=step===14?'처음으로 ↺':'다음 →';document.querySelector('#dots').innerHTML=steps.map((_,i)=>`<button class="dot ${i===step?'on':''}" aria-label="${i+1}단계" data-i="${i}"></button>`).join('');document.querySelectorAll('.dot').forEach(d=>d.onclick=()=>{step=+d.dataset.i;activity=0;render()});draw()}
+function activate(b,s){if(s.exclusive){document.querySelectorAll('.math-action').forEach(x=>x.classList.remove('done','active'))}b.classList.remove('done');b.classList.add('active');draw();setTimeout(()=>{b.classList.remove('active');b.classList.add('done');draw()},380)}
+function renderQuiz(){const item=q[activity],extra=document.querySelector('#extra');extra.innerHTML=`<div class="activity-nav">${q.map((_,i)=>`<button data-q="${i}" class="${i===activity?'on':''}">${i+1}번</button>`).join('')}</div><p class="mini">${item.label}</p><div class="choice-grid">${['두 쌍의 대변이 각각 평행','두 쌍의 대변 길이가 각각 같음','두 쌍의 대각 크기가 각각 같음','두 대각선이 서로를 이등분','한 쌍의 대변이 평행하고 길이가 같음'].map((x,i)=>`<button class="choice" data-a="${i}">${i+1}. ${x}</button>`).join('')}</div><div class="result" aria-live="polite"></div>`;extra.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{activity=+b.dataset.q;render()});extra.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{const ok=+b.dataset.a===item.answer;extra.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));b.classList.add(ok?'correct':'wrong');extra.querySelector('.result').textContent=ok?'✓ 맞았습니다. 그림의 표시가 근거입니다.':'다시 그림의 표시를 살펴보세요.'})}
+document.querySelector('#prev').onclick=()=>{if(step>0){step--;activity=0;render()}};document.querySelector('#next').onclick=()=>{step=step===14?0:step+1;activity=0;render()};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')document.querySelector('#next').click();if(e.key==='ArrowLeft')document.querySelector('#prev').click()});render();
+</script>
+</body>
+</html>
+
+
