@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포물선 포트리스 | BBB쌤의 수학 실험실</title>
+<style>
+:root{
+  --bg:#f3f7fb; --card:#fff; --text:#172033; --muted:#667085; --line:#d7dee9;
+  --blue:#356ae6; --orange:#f59e0b; --green:#16803a; --red:#c9362b; --dark:#111827;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:system-ui,-apple-system,"Pretendard","Noto Sans KR",sans-serif;
+  background:linear-gradient(180deg,#edf4ff 0,#f8fafc 60%,#f4f7fb 100%); color:var(--text);
+}
+.wrap{max-width:1220px;margin:auto;padding:18px}
+.head{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin-bottom:12px}
+h1{margin:0;font-size:30px;letter-spacing:-.04em}
+.sub{margin-top:5px;color:var(--muted);font-size:14px}
+.badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:13px;white-space:nowrap}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:#fff;color:#344054;padding:10px 14px;border-radius:11px;font-weight:850;cursor:pointer}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(320px,.8fr);gap:14px}
+.card{background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 28px rgba(30,55,90,.07)}
+.stage{padding:13px}
+.missionbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pill{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:7px 10px;font-size:13px}
+.pill strong{font-size:16px;color:#111827}
+canvas{display:block;width:100%;height:auto;aspect-ratio:1000/520;border-radius:14px;border:1px solid #cad4e2;background:#eaf5ff;touch-action:none}
+.side{padding:17px;display:flex;flex-direction:column;gap:12px}
+.side h2{font-size:19px;margin:0}
+.desc{font-size:14px;color:#475467;line-height:1.65}
+.modePanel{display:flex;flex-direction:column;gap:11px}
+.dragGuide{padding:11px 12px;background:#f8fafc;border:1px solid var(--line);border-radius:11px;font-size:14px;line-height:1.6}
+.dragGuide b{color:var(--blue)}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+label{font-size:13px;color:#475467;font-weight:800}
+input{width:100%;margin-top:5px;border:1px solid #cfd7e3;border-radius:9px;padding:10px 11px;font-size:16px;font-weight:750;background:#fff}
+.unit{font-size:11px;color:var(--muted);margin-top:3px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{border:0;border-radius:10px;padding:11px 12px;font-weight:850;font-size:14px;cursor:pointer}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#eef2f7;color:#344054;border:1px solid var(--line)}
+.orange{background:#fff4dc;color:#8a5300;border:1px solid #ffd68a}
+.green{background:#ecf9ef;color:#17642c;border:1px solid #a9ddb6}
+.result{min-height:104px;padding:12px;border-radius:11px;background:#f8fafc;border:1px dashed #cbd5e1;font-size:14px;line-height:1.6}
+.result.good{background:#effaf3;border-color:#9ad5aa;color:#14532d}
+.result.bad{background:#fff3f1;border-color:#efb2aa;color:#7f1d1d}
+.analysisBox{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fcfcfd}
+.analysisBox h3{margin:0 0 8px;font-size:15px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.metric{background:#f8fafc;border:1px solid #e3e8ef;border-radius:9px;padding:8px}
+.metric small{display:block;color:var(--muted);font-size:11px}
+.metric b{font-size:15px}
+.functionBox{margin-top:8px;background:#111827;color:#fff;border-radius:9px;padding:10px;font-weight:800;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+.functionHelp{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.55}
+.compareBox{border:1px solid var(--line);border-radius:12px;padding:12px;background:#f8fafc}
+.compareRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.compareCard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+.compareCard b{display:block;font-size:16px;margin-bottom:4px}
+.compareCard span{font-size:12px;color:var(--muted)}
+.hidden{display:none!important}
+.footer{margin-top:14px;padding:15px 17px}
+.footer h3{margin:0 0 7px;font-size:17px}
+.footer p{margin:5px 0;color:#475467;font-size:14px;line-height:1.65}
+.stepFlow{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.step{padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#f8fafc;font-size:12px;font-weight:800}
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}
+  .head{align-items:flex-start;flex-direction:column}
+  h1{font-size:25px}
+  .side{display:grid;grid-template-columns:1fr}
+  .side .buttons{order:1}
+}
+@media(max-width:520px){
+  .wrap{padding:10px}
+  .stage{padding:8px}
+  canvas{aspect-ratio:1000/560}
+  .missionbar{gap:5px}
+  .pill{padding:6px 8px;font-size:12px}
+}
+
+.gameModeTabs{
+  display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;
+  padding:5px;background:#e9eef6;border-radius:13px;width:max-content;max-width:100%
+}
+.gameModeBtn{
+  border:0;background:transparent;color:#475467;padding:10px 16px;border-radius:9px;
+  font-weight:900;cursor:pointer
+}
+.gameModeBtn.active{background:#111827;color:#fff}
+.battleWrap{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px}
+.battleStage{padding:12px}
+.battleTop{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:9px
+}
+.playerHud{
+  border:1px solid var(--line);border-radius:11px;padding:9px 10px;background:#f8fafc;min-width:0
+}
+.playerHud.right{text-align:right}
+.playerName{font-weight:900;font-size:14px}
+.hpBar{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:5px}
+.hpFill{height:100%;background:#22a447;transition:width .35s ease}
+.turnBadge{
+  padding:8px 11px;border-radius:999px;background:#111827;color:#fff;font-weight:900;font-size:13px;
+  white-space:nowrap
+}
+#battleCanvas{
+  display:block;width:100%;height:auto;aspect-ratio:1000/560;border-radius:14px;
+  border:1px solid #cad4e2;background:#dff1ff;touch-action:none
+}
+.battleSide{padding:16px;display:flex;flex-direction:column;gap:11px}
+.battleSide h2{margin:0;font-size:19px}
+.battleMove{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.battleMove button{min-height:48px}
+.moveInfo{
+  padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;
+  font-size:13px;color:#475467
+}
+.battleHow{
+  font-size:13px;line-height:1.62;color:#475467;border-top:1px solid var(--line);padding-top:10px
+}
+.battleMessage{
+  min-height:72px;border:1px dashed #cbd5e1;border-radius:10px;padding:10px;background:#f8fafc;
+  line-height:1.55;font-size:14px
+}
+.battleMessage.good{background:#effaf3;border-color:#9ad5aa;color:#14532d}
+.battleMessage.bad{background:#fff3f1;border-color:#efb2aa;color:#7f1d1d}
+.battleLegend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#667085}
+.legendChip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px}
+@media(max-width:850px){
+  .gameModeTabs{width:100%}
+  .gameModeBtn{flex:1}
+  .battleWrap{grid-template-columns:1fr}
+  .battleSide .battleMove{order:1}
+  .battleSide .moveInfo{order:2}
+  .battleSide .battleMessage{order:3}
+  .battleSide h2{order:4}
+  .battleSide .battleHow{order:5}
+  .battleSide .buttons{order:6}
+  #battleCanvas{aspect-ratio:1000/600}
+}
+
+
+.mathLevelPanel{
+  border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff
+}
+.mathLevelChoices{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.mathLevelBtn{
+  border:1px solid var(--line);background:#f8fafc;color:#344054;min-height:44px
+}
+.mathLevelBtn.active{background:#356ae6;color:#fff;border-color:#356ae6}
+.levelNote{font-size:11px;color:#667085;line-height:1.45;margin-top:6px}
+.weaponPanel{
+  border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc
+}
+.weaponChoices{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.weaponBtn{
+  border:1px solid var(--line);background:#fff;color:#344054;min-height:46px
+}
+.weaponBtn.active{background:#111827;color:#fff;border-color:#111827}
+.mathShotPanel{
+  border:1px solid #b9c9e8;border-radius:12px;padding:11px;background:#f5f8ff;
+  display:flex;flex-direction:column;gap:9px
+}
+.coordCards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.coordCard{
+  border:1px solid #d6dfef;background:#fff;border-radius:9px;padding:7px;text-align:center
+}
+.coordCard small{display:block;color:#667085;font-size:10px}
+.coordCard b{font-size:13px}
+.mathInputs{display:grid;grid-template-columns:1fr;gap:7px}
+.mathInputs input{min-width:0}
+.calcSteps{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px
+}
+.calcStep{
+  border:1px solid #d9e1ee;background:#fff;border-radius:9px;padding:8px;
+  font-size:11px;line-height:1.45;color:#475467
+}
+.calcStep b{display:block;color:#172033;font-size:12px;margin-top:2px}
+.formulaMain{
+  background:#111827;color:#fff;border-radius:10px;padding:10px;
+  font-weight:850;font-size:13px;line-height:1.65
+}
+.expandedFormula{
+  margin-top:5px;color:#cdd7ea;font-size:12px;font-weight:700
+}
+@media(max-width:460px){
+  .calcSteps{grid-template-columns:1fr}
+}
+.powerNote{
+  border-radius:9px;padding:8px 9px;background:#fff7dc;border:1px solid #f7d47b;
+  color:#7a4a00;font-size:12px;line-height:1.5
+}
+.moveDots{letter-spacing:3px;font-weight:900;color:#356ae6}
+.soundToggle{width:100%}
+.damageFloat{
+  pointer-events:none
+}
+@media(max-width:850px){
+  .battleSide{display:grid;grid-template-columns:1fr}
+  .mathLevelPanel{order:1}
+  .weaponPanel{order:2}
+  .mathShotPanel{order:3}
+  .battleMove{order:4}
+  .moveInfo{order:5}
+  .battleMessage{order:6}
+  .battleSide h2{order:7}
+  .battleHow{order:8}
+  .battleLegend{order:9}
+  .battleSide>.buttons{order:10}
+  .soundToggle{order:11}
+}
+@media(max-width:460px){
+  .coordCards{grid-template-columns:1fr 1fr 1fr}
+  .coordCard{padding:6px 3px}
+  .coordCard b{font-size:11px}
+  .mathInputs{grid-template-columns:1fr 1fr}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>💥 포물선 포트리스</h1>
+      <div class="sub">감으로 쏜 포물선을 이차함수로 바꾸어 보고, 식을 찾아 한 발에 맞혀 보세요.</div>
+    </div>
+    <div class="badge">공기 저항 없음 · 중력가속도 10 m/s²</div>
+  </div>
+
+  <div class="gameModeTabs">
+    <button class="gameModeBtn active" id="singleModeBtn">🎯 혼자 연습</button>
+    <button class="gameModeBtn" id="battleModeBtn">⚔️ 2인 대전</button>
+  </div>
+
+  <div id="singleArea">
+  <div class="tabs">
+    <button class="tab active" id="tabFeel">① 감각 발사</button>
+    <button class="tab" id="tabEquation">② 이차함수 발사</button>
+    <button class="tab" id="tabCalc">③ 속도 발사 · 확장</button>
+    <button class="tab" id="tabCompare">④ 비교 보기</button>
+  </div>
+
+  <div class="layout">
+    <section class="card stage">
+      <div class="missionbar">
+        <div class="pill">목표 거리 <strong id="rangeText">80 m</strong></div>
+        <div class="pill">가운데 고리 높이 <strong id="heightText">20 m</strong></div>
+        <div class="pill" id="attemptPill">감각 발사 <strong id="attemptText">3회 남음</strong></div>
+      </div>
+      <canvas id="canvas" width="1000" height="520"></canvas>
+    </section>
+
+    <aside class="card side">
+      <div id="feelPanel" class="modePanel">
+        <h2>감각 발사</h2>
+        <div class="desc">포탄을 <b>뒤로 당겼다가 놓아</b> 발사합니다. 숫자를 계산하지 말고 눈과 손의 감각으로 목표를 노려 보세요.</div>
+        <div class="dragGuide">
+          🔴 포탄을 잡아 <b>왼쪽·아래쪽으로 당길수록</b> 오른쪽·위쪽으로 훨씬 강하게 날아갑니다. 최대한 당기면 목표보다 멀리도 날아갑니다.<br>
+          기회는 <b>3번</b>. 발사 뒤에는 방금 내가 어떻게 쐈는지 수학적으로 분석해 줍니다.
+        </div>
+        <div class="buttons">
+          <button class="secondary" id="resetFeel">감각 발사 다시 시작</button>
+          <button class="orange" id="newMission1">🎲 새 미션</button>
+        </div>
+      </div>
+
+
+      <div id="equationPanel" class="modePanel hidden">
+        <h2>이차함수 발사 — 중학생 핵심</h2>
+        <div class="desc">
+          포탄이 지나갈 길을 <b>높이 \(y=ax²+bx\)</b>로 정합니다.
+          출발점의 높이가 0이므로 상수항은 없습니다.
+          목표 거리와 가운데 고리의 높이를 이용해 <b>a, b</b>를 찾아 보세요.
+        </div>
+
+        <div class="dragGuide">
+          <b>x</b> : 출발점에서 오른쪽으로 간 거리<br>
+          <b>y</b> : 그 지점에서 포탄의 높이<br><br>
+          포탄은 <b>출발점 → 가운데 고리 → 목표점</b>을 지나야 합니다.
+        </div>
+
+        <div class="inputs">
+          <label>계수 a
+            <input id="aInput" type="number" step="0.001" placeholder="음수">
+            <div class="unit">y = ax² + bx</div>
+          </label>
+          <label>계수 b
+            <input id="bInput" type="number" step="0.01" placeholder="양수">
+            <div class="unit">y = ax² + bx</div>
+          </label>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="fireEquation">📈 이차함수로 발사</button>
+          <button class="secondary" id="showEquationHint">식 찾기 힌트</button>
+        </div>
+
+        <div id="equationHintBox" class="dragGuide hidden">
+          목표 거리를 <b>R</b>, 가운데 고리 높이를 <b>H</b>라고 하겠습니다.<br><br>
+          출발점에서는 <b>x=0, y=0</b><br>
+          목표점에서는 <b>x=R, y=0</b><br>
+          가운데 고리에서는 <b>x=R÷2, y=H</b><br><br>
+          따라서 <b>y=ax²+bx</b>에 두 조건을 넣어 a와 b를 찾을 수 있습니다.<br><br>
+          더 빠른 방법:<br>
+          <b>a = -4H ÷ R²</b><br>
+          <b>b = 4H ÷ R</b>
+        </div>
+
+        <div class="buttons">
+          <button class="orange" id="newMissionEq">🎲 새 미션</button>
+          <button class="secondary" id="fillEquationAnswer">교사용 정답 입력</button>
+        </div>
+      </div>
+
+      <div id="calcPanel" class="modePanel hidden">
+        <h2>속도 발사 — 확장 활동</h2>
+        <div class="desc">
+          같은 포물선을 이번에는 <b>가로 속도</b>와 <b>위쪽 속도</b>로 표현해 봅니다.
+          이 부분은 이차함수 발사 뒤에 해 보는 확장 활동입니다.
+        </div>
+        <div class="inputs">
+          <label>가로 속도
+            <input id="hSpeedInput" type="number" step="0.1" placeholder="예: 20.0">
+            <div class="unit">m/s</div>
+          </label>
+          <label>위쪽 속도
+            <input id="vSpeedInput" type="number" step="0.1" placeholder="예: 20.0">
+            <div class="unit">m/s</div>
+          </label>
+        </div>
+        <div class="buttons">
+          <button class="primary" id="fireCalc">🚀 속도로 발사</button>
+          <button class="secondary" id="showHint">속도 계산 힌트</button>
+        </div>
+        <div id="hintBox" class="dragGuide hidden">
+          가운데 고리 높이를 <b>H</b>, 목표 거리를 <b>R</b>이라고 합시다.<br><br>
+          ① 위쪽 속도는 <b>√(20H)</b><br>
+          ② 전체 비행시간은 <b>위쪽 속도 ÷ 5</b><br>
+          ③ 가로 속도는 <b>R ÷ 비행시간</b><br><br>
+          계산이 끝나면 단 한 번 발사합니다.
+        </div>
+        <div class="buttons">
+          <button class="orange" id="newMission2">🎲 새 미션</button>
+          <button class="secondary" id="fillAnswer">교사용 정답 입력</button>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="modePanel hidden">
+        <h2>감각과 계산 비교</h2>
+        <div class="desc">감각 발사는 시행착오가 필요할 수 있습니다. 이차함수 식이나 속도를 계산하면 목표 조건에 맞는 포물선을 한 번에 설계할 수 있습니다.</div>
+        <div class="compareBox">
+          <div class="compareRow" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="compareCard">
+              <b id="feelSummary">아직 기록 없음</b>
+              <span>감각 발사</span>
+            </div>
+            <div class="compareCard">
+              <b id="equationSummary">아직 기록 없음</b>
+              <span>이차함수 발사</span>
+            </div>
+            <div class="compareCard">
+              <b id="calcSummary">아직 기록 없음</b>
+              <span>속도 발사</span>
+            </div>
+          </div>
+        </div>
+        <button class="green" id="goNewCompare">같은 미션으로 다시 비교하기</button>
+      </div>
+
+      <div id="result" class="result">
+        포탄을 직접 당겨서 발사해 보세요.
+      </div>
+
+      <div class="analysisBox">
+        <h3>방금 포물선 분석</h3>
+        <div class="metrics">
+          <div class="metric"><small>가로 속도</small><b id="metricH">-</b></div>
+          <div class="metric"><small>위쪽 속도</small><b id="metricV">-</b></div>
+          <div class="metric"><small>최고 높이</small><b id="metricPeak">-</b></div>
+          <div class="metric"><small>도달 거리</small><b id="metricRange">-</b></div>
+        </div>
+        <div class="functionBox" id="functionText">발사하면 이차함수 식이 나타납니다.</div>
+        <div class="functionHelp">
+          식에서 <b>x</b>는 출발점에서 오른쪽으로 간 거리, <b>y</b>는 그때의 높이를 뜻합니다.
+          화면에는 좌표축을 그리지 않고 거리와 높이만 표시했습니다.
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card footer">
+    <h3>같은 움직임을 두 가지 방법으로 생각해 봅시다.</h3>
+    <p>
+      손으로 당겨 쏘면 먼저 <b>감각과 시행착오</b>를 사용합니다.
+      발사 뒤에는 그 움직임이 하나의 <b>이차함수</b>로 표현된다는 것을 확인합니다.
+      그다음에는 목표 거리와 높이를 이용해 <b>포물선의 식 y=ax²+bx</b>를 직접 찾아 한 번에 맞혀 봅니다.
+      마지막 속도 발사는 같은 포물선을 다른 방법으로 표현하는 확장 활동입니다.
+    </p>
+    <div class="stepFlow">
+      <span class="step">당겨서 발사</span><span class="step">결과 관찰</span>
+      <span class="step">이차함수 식 확인</span><span class="step">식 직접 찾기</span>
+      <span class="step">한 발 도전</span><span class="step">속도로도 표현</span>
+    </div>
+  </section>
+
+  </div><!-- /singleArea -->
+
+  <div id="battleArea" class="hidden">
+    <div class="battleWrap">
+      <section class="card battleStage">
+        <div class="battleTop">
+          <div class="playerHud">
+            <div class="playerName">🔵 플레이어 1 <span id="p1HpText">100</span></div>
+            <div class="hpBar"><div class="hpFill" id="p1HpBar" style="width:100%"></div></div>
+          </div>
+          <div class="turnBadge" id="battleTurnBadge">플레이어 1 차례</div>
+          <div class="playerHud right">
+            <div class="playerName">플레이어 2 <span id="p2HpText">100</span> 🔴</div>
+            <div class="hpBar"><div class="hpFill" id="p2HpBar" style="width:100%"></div></div>
+          </div>
+        </div>
+        <canvas id="battleCanvas" width="1000" height="560"></canvas>
+      </section>
+
+      <aside class="card battleSide">
+        <h2>포트리스 2인 대전</h2>
+
+        <div class="mathLevelPanel">
+          <div style="font-size:13px;font-weight:900">수학탄 수준</div>
+          <div class="mathLevelChoices">
+            <button class="mathLevelBtn active" id="middleMathBtn">중학교</button>
+            <button class="mathLevelBtn" id="highMathBtn">고등학교</button>
+          </div>
+          <div class="levelNote" id="mathLevelNote">
+            꼭짓점 C와 출발점 A를 이용해 <b>y=a(x-p)²+q</b>의 a 하나를 찾습니다.
+          </div>
+        </div>
+
+        <div class="weaponPanel">
+          <div style="font-size:13px;font-weight:900;margin-bottom:7px">이번 탄 선택</div>
+          <div class="weaponChoices">
+            <button class="weaponBtn active" id="normalWeaponBtn">💣 일반탄</button>
+            <button class="weaponBtn" id="mathWeaponBtn">📐 수학탄 <span id="mathAmmoText">2</span>발</button>
+          </div>
+        </div>
+
+        <div id="mathShotPanel" class="mathShotPanel hidden">
+          <div style="font-size:13px;font-weight:900" id="mathShotTitle">꼭짓점으로 포물선을 찾아라</div>
+
+          <div class="coordCards">
+            <div class="coordCard"><small>출발 A</small><b id="coordA">(0, 0)</b></div>
+            <div class="coordCard"><small>상대 B</small><b id="coordB">-</b></div>
+            <div class="coordCard"><small>파워 C</small><b id="coordC">-</b></div>
+          </div>
+
+          <div style="font-size:12px;color:#667085;line-height:1.55" id="mathShotDesc">
+            C는 포물선의 <b>꼭짓점</b>입니다. 꼭짓점형 <b>y=a(x-p)²+q</b>에
+            출발점 A=(0,0)을 넣어 a 하나를 찾습니다.
+          </div>
+
+          <div class="formulaMain" id="battleFormulaMain">
+            y = (h/R)x + kx(R-x)
+            <div class="expandedFormula" id="battleExpandedFormula">
+              k를 입력하면 y=ax²+bx 꼴도 함께 표시됩니다.
+            </div>
+          </div>
+
+          <div class="calcSteps">
+            <div class="calcStep">
+              <span id="step1Label">① 꼭짓점 C 확인</span>
+              <b id="lineStep">-</b>
+            </div>
+            <div class="calcStep">
+              <span id="step2Label">② A=(0,0) 대입</span>
+              <b id="lineAtCStep">-</b>
+            </div>
+            <div class="calcStep">
+              <span id="step3Label">③ a 계산</span>
+              <b id="extraHeightStep">-</b>
+            </div>
+            <div class="calcStep">
+              <span id="step4Label">④ 상대 B 확인</span>
+              <b id="curveFactorStep">-</b>
+            </div>
+          </div>
+
+          <div class="mathInputs">
+            <label><span id="mathInputLabel">마지막으로 a를 구하세요</span>
+              <input id="battleKInput" type="text" inputmode="decimal" placeholder="예: -0.0125 또는 -1/80">
+              <div class="unit" id="mathInputUnit">소수 또는 분수로 입력할 수 있습니다.</div>
+            </label>
+          </div>
+
+          <div class="powerNote">
+            ⚡ C점을 정확히 통과하면 포탄이 충전되어 <b>폭발 반경과 공격력이 커집니다.</b>
+          </div>
+
+          <div class="buttons">
+            <button class="primary" id="fireMathBattleBtn">📐 수학탄 발사</button>
+            <button class="secondary" id="battleAnswerBtn">정답 입력</button>
+          </div>
+        </div>
+
+        <div class="battleMove">
+          <button class="secondary" id="moveLeftBtn">◀ 왼쪽 이동</button>
+          <button class="secondary" id="moveRightBtn">오른쪽 이동 ▶</button>
+        </div>
+
+        <div class="moveInfo">
+          이번 턴 이동: <span class="moveDots" id="moveDots">● ● ● ●</span><br>
+          이동을 마친 뒤 일반탄은 포탄을 <b>뒤로 당겨</b> 발사합니다.
+        </div>
+
+        <div id="battleMessage" class="battleMessage">
+          플레이어 1부터 시작합니다. 이동하거나 포탄을 당겨 발사하세요.
+        </div>
+
+        <div class="battleHow">
+          <b>게임 규칙</b><br>
+          • 각 턴 최대 4번 이동 + 포탄 1발<br>
+          • 일반탄은 감각으로 당겨 발사<br>
+          • 수학탄은 각 플레이어 2발, 중학교/고등학교 계산법 중 선택<br>
+          • C점을 통과하면 파워업<br>
+          • 폭발한 지형은 실제로 파이고 탱크가 아래로 떨어질 수 있음<br>
+          • 먼저 상대 체력을 0으로 만들면 승리
+        </div>
+
+        <div class="battleLegend">
+          <span class="legendChip">일반 직격 최대 45</span>
+          <span class="legendChip">⚡ 파워업 최대 65</span>
+          <span class="legendChip">바람 없음</span>
+        </div>
+
+        <div class="buttons">
+          <button class="orange" id="newBattleBtn">🗺️ 새 전장</button>
+          <button class="secondary" id="resetBattleBtn">같은 지형 재시작</button>
+        </div>
+
+        <button class="secondary soundToggle" id="soundToggleBtn">🔊 효과음 켜짐</button>
+      </aside>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const rangeText = document.getElementById('rangeText');
+const heightText = document.getElementById('heightText');
+const attemptText = document.getElementById('attemptText');
+const attemptPill = document.getElementById('attemptPill');
+const result = document.getElementById('result');
+
+const feelPanel = document.getElementById('feelPanel');
+const equationPanel = document.getElementById('equationPanel');
+const calcPanel = document.getElementById('calcPanel');
+const comparePanel = document.getElementById('comparePanel');
+const tabFeel = document.getElementById('tabFeel');
+const tabEquation = document.getElementById('tabEquation');
+const tabCalc = document.getElementById('tabCalc');
+const tabCompare = document.getElementById('tabCompare');
+
+const hSpeedInput = document.getElementById('hSpeedInput');
+const vSpeedInput = document.getElementById('vSpeedInput');
+const aInput = document.getElementById('aInput');
+const bInput = document.getElementById('bInput');
+
+const metricH = document.getElementById('metricH');
+const metricV = document.getElementById('metricV');
+const metricPeak = document.getElementById('metricPeak');
+const metricRange = document.getElementById('metricRange');
+const functionText = document.getElementById('functionText');
+const feelSummary = document.getElementById('feelSummary');
+const equationSummary = document.getElementById('equationSummary');
+const calcSummary = document.getElementById('calcSummary');
+
+const G = 10;
+const MAX_DRAG = 145;
+const DRAG_TO_SPEED = 0.265;
+
+function cannonWorldOffset(){
+  const w = canvas.getBoundingClientRect().width || canvas.width;
+  if(w <= 480) return 18;
+  if(w <= 700) return 13;
+  return 8;
+}
+
+let mode = 'feel';
+let mission = {R:80,H:20};
+let feelAttemptsLeft = 3;
+let feelShots = [];
+let equationUsed = false;
+let equationRecord = null;
+let calcUsed = false;
+let calcRecord = null;
+
+let dragging = false;
+let dragPoint = null;
+let animId = null;
+let shotPath = [];
+let previousPaths = [];
+let projectile = null;
+let explosion = null;
+let shakeUntil = 0;
+let audioCtx = null;
+
+function getAudio(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
+  }
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq,dur=.1,type='sine',vol=.1,delay=0){
+  const ac=getAudio(); if(!ac) return;
+  const t=ac.currentTime+delay;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+.02);
+}
+function launchSound(){ tone(150,.08,'sawtooth',.07); tone(260,.1,'triangle',.07,.04); }
+function boom(hit){
+  const ac=getAudio(); if(!ac) return;
+  const now=ac.currentTime;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(hit?110:85,now);
+  o.frequency.exponentialRampToValueAtTime(35,now+.38);
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(hit?.55:.34,now+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,now+.42);
+  o.connect(g).connect(ac.destination); o.start(now); o.stop(now+.44);
+  const len=Math.floor(ac.sampleRate*.28);
+  const buf=ac.createBuffer(1,len,ac.sampleRate), data=buf.getChannelData(0);
+  for(let i=0;i<len;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+  const src=ac.createBufferSource(), ng=ac.createGain();
+  src.buffer=buf; ng.gain.setValueAtTime(hit?.55:.32,now); ng.gain.exponentialRampToValueAtTime(.0001,now+.28);
+  src.connect(ng).connect(ac.destination); src.start(now);
+}
+
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function createMission(){
+  mission={R:rnd([60,70,80,90,100,110]),H:rnd([12,15,18,20,24,28])};
+  rangeText.textContent=mission.R+' m';
+  heightText.textContent=mission.H+' m';
+  feelAttemptsLeft=3; feelShots=[]; equationUsed=false; equationRecord=null; calcUsed=false; calcRecord=null;
+  previousPaths=[]; shotPath=[]; projectile=null; explosion=null;
+  hSpeedInput.value=''; vSpeedInput.value=''; aInput.value=''; bInput.value='';
+  resetAnalysis();
+  updateSummaries();
+  updateAttempt();
+  setMessage('새 미션입니다. 먼저 감각으로 당겨서 쏴 보세요.','');
+  switchMode('feel');
+  draw();
+}
+function idealValues(){
+  const vv=Math.sqrt(2*G*mission.H);
+  const T=2*vv/G;
+  const vh=mission.R/T;
+  return {vh,vv,T};
+}
+function idealEquation(){
+  const a=-4*mission.H/(mission.R*mission.R);
+  const b=4*mission.H/mission.R;
+  return {a,b};
+}
+function equationInfo(a,b){
+  if(!(a<0) || !(b>0)) return null;
+  const range=-b/a;
+  const peak=-b*b/(4*a);
+  if(!isFinite(range)||!isFinite(peak)||range<=0||peak<=0) return null;
+  return {a,b,range,peak};
+}
+function shotInfo(vh,vv){
+  const T=2*vv/G;
+  const range=vh*T;
+  const peak=vv*vv/(2*G);
+  const a=-G/(2*vh*vh);
+  const b=vv/vh;
+  return {vh,vv,T,range,peak,a,b};
+}
+function isHit(info){
+  return Math.abs(info.range-mission.R)<=2 && Math.abs(info.peak-mission.H)<=1.7;
+}
+function resetAnalysis(){
+  metricH.textContent='-'; metricV.textContent='-'; metricPeak.textContent='-'; metricRange.textContent='-';
+  functionText.textContent='발사하면 이차함수 식이 나타납니다.';
+}
+function showAnalysis(info){
+  metricH.textContent=info.vh.toFixed(1)+' m/s';
+  metricV.textContent=info.vv.toFixed(1)+' m/s';
+  metricPeak.textContent=info.peak.toFixed(1)+' m';
+  metricRange.textContent=info.range.toFixed(1)+' m';
+  const a=Math.abs(info.a)<0.00005?0:info.a;
+  const b=Math.abs(info.b)<0.00005?0:info.b;
+  functionText.textContent=`높이 y = ${a.toFixed(4)}x² + ${b.toFixed(3)}x`;
+}
+function setMessage(msg,type=''){
+  result.className='result'+(type?' '+type:'');
+  result.innerHTML=msg;
+}
+function updateAttempt(){
+  if(mode==='feel'){
+    attemptPill.innerHTML='감각 발사 <strong id="attemptText">'+feelAttemptsLeft+'회 남음</strong>';
+  }else if(mode==='equation'){
+    attemptPill.innerHTML='이차함수 발사 <strong>'+(equationUsed?'기회 사용':'1회 남음')+'</strong>';
+  }else if(mode==='calc'){
+    attemptPill.innerHTML='속도 발사 <strong>'+(calcUsed?'기회 사용':'1회 남음')+'</strong>';
+  }else{
+    attemptPill.innerHTML='비교 <strong>감각 · 식 · 속도</strong>';
+  }
+}
+function updateSummaries(){
+  if(feelShots.length){
+    const hitIndex=feelShots.findIndex(s=>s.hit);
+    feelSummary.textContent=hitIndex>=0 ? `${hitIndex+1}번째에 명중` : `${feelShots.length}발 사용`;
+  }else feelSummary.textContent='아직 기록 없음';
+  if(equationRecord) equationSummary.textContent=equationRecord.hit?'1발 명중':'1발 실패';
+  else equationSummary.textContent='아직 기록 없음';
+  if(calcRecord) calcSummary.textContent=calcRecord.hit?'1발 명중':'1발 실패';
+  else calcSummary.textContent='아직 기록 없음';
+}
+function switchMode(next){
+  if(animId) return;
+  mode=next;
+  [tabFeel,tabEquation,tabCalc,tabCompare].forEach(x=>x.classList.remove('active'));
+  tabFeel.classList.toggle('active',next==='feel');
+  tabEquation.classList.toggle('active',next==='equation');
+  tabCalc.classList.toggle('active',next==='calc');
+  tabCompare.classList.toggle('active',next==='compare');
+  feelPanel.classList.toggle('hidden',next!=='feel');
+  equationPanel.classList.toggle('hidden',next!=='equation');
+  calcPanel.classList.toggle('hidden',next!=='calc');
+  comparePanel.classList.toggle('hidden',next!=='compare');
+  updateAttempt();
+  if(next==='feel') setMessage(feelAttemptsLeft? '포탄을 잡아 뒤로 당겼다가 놓으세요.':'감각 발사 기회를 모두 사용했습니다.','');
+  if(next==='equation') setMessage(equationUsed?'이차함수 발사 기회는 이미 사용했습니다.':'a와 b를 찾아 y=ax²+bx를 완성하고 단 한 번 발사하세요.','');
+  if(next==='calc') setMessage(calcUsed?'속도 발사 기회는 이미 사용했습니다.':'계산한 두 속도를 입력하고 단 한 번 발사하세요.','');
+  if(next==='compare'){ updateSummaries(); setMessage('세 방식의 기록을 비교해 보세요.',''); }
+  draw();
+}
+
+function cfg(extraR=0,extraH=0){
+  const offset = cannonWorldOffset();
+  return {
+    left:24,
+    right:28,
+    top:26,
+    ground:438,
+    maxR:Math.max(125, offset + mission.R*1.2, offset + extraR*1.08),
+    maxH:Math.max(42,mission.H*1.65,extraH*1.12)
+  };
+}
+function wp(x,y,c){
+  const sx=(canvas.width-c.left-c.right)/c.maxR, sy=(c.ground-c.top)/c.maxH;
+  return {x:c.left+x*sx,y:c.ground-y*sy};
+}
+function cannonAnchor(c){
+  const p=wp(cannonWorldOffset(),0,c);
+  return {x:p.x+15,y:p.y-24};
+}
+function targetPoint(c){return wp(cannonWorldOffset()+mission.R,0,c)}
+function shotWp(x,y,c){
+  return wp(cannonWorldOffset()+x,y,c);
+}
+
+function draw(){
+  let extraR=0,extraH=0;
+  if(projectile){extraR=projectile.x;extraH=projectile.y}
+  if(explosion){extraR=Math.max(extraR,explosion.x)}
+  const c=cfg(extraR,extraH);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  if(performance.now()<shakeUntil) ctx.translate((Math.random()-.5)*10,(Math.random()-.5)*8);
+
+  const sky=ctx.createLinearGradient(0,0,0,c.ground);
+  sky.addColorStop(0,'#dff1ff'); sky.addColorStop(1,'#f9fcff');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,c.ground);
+
+  // faint distance/height guide — no coordinate axes
+  ctx.strokeStyle='rgba(80,110,150,.10)';ctx.lineWidth=1;
+  ctx.fillStyle='#7b8798';ctx.font='11px system-ui';
+  for(let d=20;d<=c.maxR;d+=20){
+    const p=wp(d,0,c);ctx.beginPath();ctx.moveTo(p.x,c.top);ctx.lineTo(p.x,c.ground);ctx.stroke();
+    ctx.fillText(d+'m',p.x-12,c.ground+20);
+  }
+  for(let h=10;h<=c.maxH;h+=10){
+    const p=wp(0,h,c);ctx.beginPath();ctx.moveTo(c.left,p.y);ctx.lineTo(canvas.width-c.right,p.y);ctx.stroke();
+    ctx.fillText(h+'m',10,p.y+4);
+  }
+
+  // ground
+  ctx.fillStyle='#91cf73';ctx.fillRect(0,c.ground,canvas.width,canvas.height-c.ground);
+  ctx.strokeStyle='#4f8b43';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,c.ground);ctx.lineTo(canvas.width,c.ground);ctx.stroke();
+
+  // ideal ring
+  const ring=wp(cannonWorldOffset()+mission.R/2,mission.H,c);
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=6;ctx.beginPath();ctx.arc(ring.x,ring.y,19,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#8a5300';ctx.font='800 13px system-ui';ctx.fillText(mission.H+'m',ring.x-15,ring.y-28);
+
+  // target
+  const tp=targetPoint(c);
+  ctx.fillStyle='#475467';ctx.fillRect(tp.x-18,c.ground-26,36,26);
+  ctx.fillStyle='#ef4444';ctx.beginPath();ctx.arc(tp.x,c.ground-31,14,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#7f1d1d';ctx.lineWidth=3;ctx.beginPath();ctx.arc(tp.x,c.ground-31,14,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#7f1d1d';ctx.font='800 13px system-ui';ctx.fillText('목표 '+mission.R+'m',tp.x-32,c.ground-58);
+
+  // previous paths
+  previousPaths.forEach((path,idx)=>{
+    ctx.save();ctx.globalAlpha=.33;ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    ctx.beginPath();path.forEach((q,i)=>{const p=shotWp(q.x,Math.max(0,q.y),c);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)});ctx.stroke();ctx.restore();
+  });
+  if(shotPath.length){
+    ctx.strokeStyle='#356ae6';ctx.lineWidth=3;ctx.beginPath();
+    shotPath.forEach((q,i)=>{const p=shotWp(q.x,Math.max(0,q.y),c);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)});ctx.stroke();
+  }
+
+  // cannon
+  const ca=cannonAnchor(c);
+  ctx.save();ctx.translate(ca.x-15,ca.y+24);
+  ctx.fillStyle='#334155';ctx.fillRect(-20,-4,42,15);ctx.beginPath();ctx.arc(-10,13,10,0,Math.PI*2);ctx.arc(14,13,10,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#111827';ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(3,-4);ctx.lineTo(31,-25);ctx.stroke();ctx.restore();
+
+  // draggable shell and band
+  if(mode==='feel' && !animId && feelAttemptsLeft>0){
+    const shell=dragPoint || ca;
+
+    if(!dragging){
+      ctx.save();
+      ctx.globalAlpha=.55;
+      ctx.strokeStyle='#64748b';
+      ctx.setLineDash([5,5]);
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(ca.x-14,ca.y+10);
+      ctx.lineTo(Math.max(18,ca.x-MAX_DRAG*.85),Math.min(canvas.height-20,ca.y+MAX_DRAG*.55));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if(dragging && dragPoint){
+      ctx.strokeStyle='#8b5e3c';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(ca.x-10,ca.y+5);ctx.lineTo(shell.x,shell.y);ctx.lineTo(ca.x+9,ca.y+5);ctx.stroke();
+      const dx=ca.x-shell.x, dy=shell.y-ca.y;
+      const power=Math.min(100,Math.round(Math.hypot(dx,dy)/MAX_DRAG*100));
+      ctx.fillStyle='rgba(17,24,39,.85)';ctx.fillRect(ca.x+38,ca.y-44,110,30);
+      ctx.fillStyle='#fff';ctx.font='800 13px system-ui';ctx.fillText('당긴 힘 '+power+'%',ca.x+49,ca.y-24);
+    }
+    ctx.fillStyle='#111827';ctx.beginPath();ctx.arc(shell.x,shell.y,11,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f97316';ctx.beginPath();ctx.arc(shell.x-6,shell.y+2,4,0,Math.PI*2);ctx.fill();
+  }
+
+  if(projectile){
+    const p=shotWp(projectile.x,Math.max(0,projectile.y),c);
+    ctx.fillStyle='#111827';ctx.beginPath();ctx.arc(p.x,p.y,9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f97316';ctx.beginPath();ctx.arc(p.x-8,p.y+2,4,0,Math.PI*2);ctx.fill();
+  }
+
+  // explosion
+  if(explosion){
+    const age=(performance.now()-explosion.start)/explosion.duration;
+    const p=shotWp(explosion.x,0,c);
+    const pulse=Math.sin(Math.min(1,age)*Math.PI);
+    ctx.save();ctx.globalAlpha=Math.max(0,.8-age);
+    ctx.strokeStyle='#fff3a3';ctx.lineWidth=7*(1-age)+2;ctx.beginPath();ctx.arc(p.x,p.y,18+age*(explosion.hit?76:50),0,Math.PI*2);ctx.stroke();ctx.restore();
+    const rg=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,55);
+    rg.addColorStop(0,'rgba(255,255,235,1)');rg.addColorStop(.2,'rgba(255,224,70,.98)');rg.addColorStop(.55,'rgba(255,100,0,.9)');rg.addColorStop(1,'rgba(120,28,0,0)');
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(p.x,p.y,(explosion.hit?58:42)*Math.max(.25,pulse),0,Math.PI*2);ctx.fill();
+    if(explosion.hit && age<.55){
+      ctx.font='900 32px system-ui';ctx.textAlign='center';ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.fillStyle='#b91c1c';
+      ctx.strokeText('명중!',p.x,p.y-75-age*20);ctx.fillText('명중!',p.x,p.y-75-age*20);ctx.textAlign='start';
+    }
+  }
+
+  ctx.restore();
+}
+
+function startExplosion(x,hit){
+  explosion={x,hit,start:performance.now(),duration:hit?900:700};
+  shakeUntil=performance.now()+(hit?320:200); boom(hit);
+  const loop=()=>{
+    draw();
+    if(explosion && performance.now()-explosion.start<explosion.duration) requestAnimationFrame(loop);
+    else{explosion=null;draw()}
+  };
+  requestAnimationFrame(loop);
+}
+function animateShot(vh,vv,source){
+  if(animId) return;
+  getAudio(); launchSound();
+  const info=shotInfo(vh,vv);
+  shotPath=[]; projectile={x:0,y:0};
+  const duration=Math.max(1750,Math.min(3300,info.T*500));
+  const start=performance.now();
+  const pathCopy=[];
+  function frame(now){
+    const u=Math.min(1,(now-start)/duration), t=info.T*u;
+    projectile={x:vh*t,y:vv*t-.5*G*t*t};
+    shotPath.push({...projectile});pathCopy.push({...projectile});
+    draw();
+    if(u<1){animId=requestAnimationFrame(frame)}
+    else{
+      animId=null; projectile=null;
+      const hit=isHit(info);
+      previousPaths.push(pathCopy);
+      shotPath=[];
+      showAnalysis(info);
+      startExplosion(info.range,hit);
+      if(source==='feel'){
+        feelShots.push({info,hit}); feelAttemptsLeft--;
+        updateAttempt(); updateSummaries();
+        if(hit) setMessage(`<b>명중!</b> ${3-feelAttemptsLeft}번째 감각 발사에서 맞혔습니다.<br>방금 발사가 어떤 이차함수였는지 아래에서 확인해 보세요.`,'good');
+        else if(feelAttemptsLeft>0) setMessage(`도달거리 ${info.range.toFixed(1)}m, 최고높이 ${info.peak.toFixed(1)}m였습니다.<br><b>${feelAttemptsLeft}번 남았습니다.</b> 이전 궤적을 참고해 다시 당겨 보세요.`,'bad');
+        else setMessage(`감각 발사 3회를 모두 사용했습니다.<br>이제 <b>② 이차함수 발사</b>에서 포물선의 식을 찾아 한 발을 만들어 보세요.`,'bad');
+      }else{
+        calcUsed=true; calcRecord={info,hit}; updateAttempt(); updateSummaries();
+        if(hit) setMessage(`<b>계산 발사 명중!</b> 단 한 발로 목표를 맞혔습니다.<br>감각 발사 기록과 비교해 보세요.`,'good');
+        else setMessage(`계산한 한 발이 빗나갔습니다.<br>도달거리 ${info.range.toFixed(1)}m, 최고높이 ${info.peak.toFixed(1)}m. 계산을 다시 확인해 보세요.`,'bad');
+      }
+      draw();
+    }
+  }
+  animId=requestAnimationFrame(frame);
+}
+
+
+function animateEquationShot(a,b){
+  if(animId || equationUsed) return;
+  const info=equationInfo(a,b);
+  if(!info){setMessage('a는 음수, b는 양수로 입력하세요. 포물선이 오른쪽으로 올라갔다 내려와야 합니다.','bad');return}
+
+  getAudio(); launchSound();
+  shotPath=[]; projectile={x:0,y:0};
+  const duration=2350;
+  const start=performance.now();
+  const pathCopy=[];
+
+  function frame(now){
+    const u=Math.min(1,(now-start)/duration);
+    const x=info.range*u;
+    const y=a*x*x+b*x;
+    projectile={x,y};
+    shotPath.push({...projectile}); pathCopy.push({...projectile});
+    draw();
+
+    if(u<1){
+      animId=requestAnimationFrame(frame);
+    }else{
+      animId=null; projectile=null;
+      equationUsed=true;
+      const hit=isHit(info);
+      equationRecord={info,hit};
+      previousPaths.push(pathCopy);
+      shotPath=[];
+
+      metricH.textContent='이차함수 모드';
+      metricV.textContent='-';
+      metricPeak.textContent=info.peak.toFixed(1)+' m';
+      metricRange.textContent=info.range.toFixed(1)+' m';
+      functionText.textContent=`높이 y = ${a.toFixed(4)}x² + ${b.toFixed(3)}x`;
+
+      startExplosion(info.range,hit);
+      updateAttempt(); updateSummaries();
+
+      if(hit){
+        setMessage(`<b>이차함수 발사 명중!</b><br>찾은 식이 출발점, 가운데 고리, 목표점을 정확히 지나갑니다.`,'good');
+      }else{
+        setMessage(`이차함수 발사가 빗나갔습니다.<br>도달거리 ${info.range.toFixed(1)}m, 최고높이 ${info.peak.toFixed(1)}m. a, b를 다시 확인해 보세요.`,'bad');
+      }
+      draw();
+    }
+  }
+  animId=requestAnimationFrame(frame);
+}
+
+// pointer drag
+function canvasPoint(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};
+}
+function shellCenter(){
+  return cannonAnchor(cfg());
+}
+canvas.addEventListener('pointerdown',e=>{
+  if(mode!=='feel'||animId||feelAttemptsLeft<=0) return;
+  const p=canvasPoint(e), c=shellCenter();
+  if(Math.hypot(p.x-c.x,p.y-c.y)<=30){
+    dragging=true;dragPoint={...p};canvas.setPointerCapture(e.pointerId);draw();
+  }
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!dragging) return;
+  const p=canvasPoint(e), c=shellCenter();
+  let dx=p.x-c.x,dy=p.y-c.y;
+  const len=Math.hypot(dx,dy);
+  if(len>MAX_DRAG){dx*=MAX_DRAG/len;dy*=MAX_DRAG/len}
+  // only useful pull region: left and/or down
+  dragPoint={x:c.x+Math.min(20,dx),y:c.y+Math.max(-20,dy)};
+  draw();
+});
+canvas.addEventListener('pointerup',e=>{
+  if(!dragging) return;
+  dragging=false;
+  const c=shellCenter(), p=dragPoint||c;
+  const dx=c.x-p.x, dy=p.y-c.y;
+  dragPoint=null;draw();
+  const vh=dx*DRAG_TO_SPEED, vv=dy*DRAG_TO_SPEED;
+  if(vh<3||vv<3){setMessage('조금 더 왼쪽·아래쪽으로 당겨서 놓아 보세요.','bad');return}
+  animateShot(vh,vv,'feel');
+});
+canvas.addEventListener('pointercancel',()=>{dragging=false;dragPoint=null;draw()});
+
+
+document.getElementById('fireEquation').addEventListener('click',()=>{
+  if(mode!=='equation'||equationUsed||animId) return;
+  const a=parseFloat(aInput.value), b=parseFloat(bInput.value);
+  if(!isFinite(a)||!isFinite(b)){setMessage('a와 b 값을 입력하세요.','bad');return}
+  animateEquationShot(a,b);
+});
+document.getElementById('showEquationHint').addEventListener('click',()=>{
+  document.getElementById('equationHintBox').classList.toggle('hidden');
+});
+document.getElementById('fillEquationAnswer').addEventListener('click',()=>{
+  const q=idealEquation();
+  aInput.value=q.a.toFixed(4);
+  bInput.value=q.b.toFixed(3);
+});
+document.getElementById('newMissionEq').addEventListener('click',()=>{if(!animId)createMission()});
+
+document.getElementById('fireCalc').addEventListener('click',()=>{
+  if(mode!=='calc'||calcUsed||animId) return;
+  const vh=parseFloat(hSpeedInput.value),vv=parseFloat(vSpeedInput.value);
+  if(!(vh>0)||!(vv>0)){setMessage('가로 속도와 위쪽 속도에 0보다 큰 값을 입력하세요.','bad');return}
+  animateShot(vh,vv,'calc');
+});
+document.getElementById('showHint').addEventListener('click',()=>{
+  document.getElementById('hintBox').classList.toggle('hidden');
+});
+document.getElementById('fillAnswer').addEventListener('click',()=>{
+  const v=idealValues();hSpeedInput.value=v.vh.toFixed(2);vSpeedInput.value=v.vv.toFixed(2);
+});
+document.getElementById('resetFeel').addEventListener('click',()=>{
+  if(animId)return;feelAttemptsLeft=3;feelShots=[];previousPaths=[];dragPoint=null;resetAnalysis();updateAttempt();updateSummaries();setMessage('감각 발사를 다시 시작합니다. 포탄을 뒤로 당겨 보세요.','');draw();
+});
+document.getElementById('newMission1').addEventListener('click',()=>{if(!animId)createMission()});
+document.getElementById('newMission2').addEventListener('click',()=>{if(!animId)createMission()});
+document.getElementById('goNewCompare').addEventListener('click',()=>{
+  if(animId)return;
+  feelAttemptsLeft=3;feelShots=[];equationUsed=false;equationRecord=null;calcUsed=false;calcRecord=null;previousPaths=[];resetAnalysis();updateSummaries();switchMode('feel');
+});
+tabFeel.addEventListener('click',()=>switchMode('feel'));
+tabEquation.addEventListener('click',()=>switchMode('equation'));
+tabCalc.addEventListener('click',()=>switchMode('calc'));
+tabCompare.addEventListener('click',()=>switchMode('compare'));
+
+
+// ===================== 2인 포트리스 대전 =====================
+const singleModeBtn = document.getElementById('singleModeBtn');
+const battleModeBtn = document.getElementById('battleModeBtn');
+const singleArea = document.getElementById('singleArea');
+const battleArea = document.getElementById('battleArea');
+
+const battleCanvas = document.getElementById('battleCanvas');
+const bctx = battleCanvas.getContext('2d');
+const battleTurnBadge = document.getElementById('battleTurnBadge');
+const p1HpText = document.getElementById('p1HpText');
+const p2HpText = document.getElementById('p2HpText');
+const p1HpBar = document.getElementById('p1HpBar');
+const p2HpBar = document.getElementById('p2HpBar');
+const moveDots = document.getElementById('moveDots');
+const battleMessage = document.getElementById('battleMessage');
+const moveLeftBtn = document.getElementById('moveLeftBtn');
+const moveRightBtn = document.getElementById('moveRightBtn');
+
+const normalWeaponBtn = document.getElementById('normalWeaponBtn');
+const mathWeaponBtn = document.getElementById('mathWeaponBtn');
+const middleMathBtn = document.getElementById('middleMathBtn');
+const highMathBtn = document.getElementById('highMathBtn');
+const mathLevelNote = document.getElementById('mathLevelNote');
+const mathAmmoText = document.getElementById('mathAmmoText');
+const mathShotPanel = document.getElementById('mathShotPanel');
+const battleKInput = document.getElementById('battleKInput');
+const mathShotTitle = document.getElementById('mathShotTitle');
+const mathShotDesc = document.getElementById('mathShotDesc');
+const mathInputLabel = document.getElementById('mathInputLabel');
+const mathInputUnit = document.getElementById('mathInputUnit');
+const step1Label = document.getElementById('step1Label');
+const step2Label = document.getElementById('step2Label');
+const step3Label = document.getElementById('step3Label');
+const step4Label = document.getElementById('step4Label');
+const battleFormulaMain = document.getElementById('battleFormulaMain');
+const battleExpandedFormula = document.getElementById('battleExpandedFormula');
+const lineStep = document.getElementById('lineStep');
+const lineAtCStep = document.getElementById('lineAtCStep');
+const extraHeightStep = document.getElementById('extraHeightStep');
+const curveFactorStep = document.getElementById('curveFactorStep');
+const coordA = document.getElementById('coordA');
+const coordB = document.getElementById('coordB');
+const coordC = document.getElementById('coordC');
+const soundToggleBtn = document.getElementById('soundToggleBtn');
+
+const BW = battleCanvas.width;
+const BH = battleCanvas.height;
+const WORLD_W = 120;
+const WORLD_H = 65;
+const BASE_Y = 530;
+const XS = BW / WORLD_W;
+const YS = 7.65;
+const BG = 10;
+const TERRAIN_STEP = 0.1;
+const BMAX_DRAG = 145;
+const BDRAG_SPEED = 0.245;
+const MOVE_STEP = 2;
+const NORMAL_BLAST = 7;
+const POWER_BLAST = 9;
+
+let terrain = [];
+let savedTerrain = [];
+let tanks = [];
+let battleTurn = 0;
+let movesLeft = 4;
+let weaponMode = 'normal';
+let mathLevel = 'middle';
+let battleDragging = false;
+let battleDragPoint = null;
+let battleProjectile = null;
+let battleAnim = null;
+let battleExplosion = null;
+let battleShakeUntil = 0;
+let battleOver = false;
+let battleLastPath = [];
+let powerPoint = null;
+let battleSoundOn = true;
+let battleEpoch = 0;
+let turnBanner = {text:'',until:0};
+let floatingTexts = [];
+
+function wx(x){ return x * XS; }
+function wy(y){ return BASE_Y - y * YS; }
+function sxToWorld(px){ return px / XS; }
+function syToWorld(py){ return (BASE_Y - py) / YS; }
+
+function battleSetMessage(msg, type=''){
+  battleMessage.className='battleMessage'+(type?' '+type:'');
+  battleMessage.innerHTML=msg;
+}
+function terrainIndex(x){
+  return Math.max(0,Math.min(terrain.length-1,Math.round(x/TERRAIN_STEP)));
+}
+function terrainYWorld(x){
+  if(!terrain.length) return 6;
+  const f=Math.max(0,Math.min((terrain.length-1),x/TERRAIN_STEP));
+  const i=Math.floor(f),j=Math.min(terrain.length-1,i+1),u=f-i;
+  return terrain[i]*(1-u)+terrain[j]*u;
+}
+function setTerrainY(x,y){
+  terrain[terrainIndex(x)] = Math.max(0,Math.min(WORLD_H-2,y));
+}
+function makeTerrain(){
+  const n=Math.round(WORLD_W/TERRAIN_STEP)+1;
+  terrain=new Array(n);
+  const ph1=Math.random()*Math.PI*2, ph2=Math.random()*Math.PI*2;
+  const hills=[
+    {cx:38+Math.random()*9,amp:8+Math.random()*5,w:13+Math.random()*4},
+    {cx:74+Math.random()*10,amp:7+Math.random()*6,w:12+Math.random()*4}
+  ];
+  for(let i=0;i<n;i++){
+    const x=i*TERRAIN_STEP;
+    let h=6.5+1.7*Math.sin(x/13+ph1)+1.0*Math.sin(x/5.2+ph2);
+    for(const hill of hills){
+      const d=(x-hill.cx)/hill.w;
+      h+=hill.amp*Math.exp(-d*d*1.7);
+    }
+    terrain[i]=Math.max(3.3,Math.min(24,h));
+  }
+  flattenWorld(12,21);
+  flattenWorld(99,108);
+  savedTerrain=[...terrain];
+}
+function flattenWorld(a,b){
+  let sum=0,n=0;
+  for(let x=a;x<=b;x+=TERRAIN_STEP){sum+=terrainYWorld(x);n++}
+  const avg=sum/Math.max(1,n);
+  for(let x=a;x<=b;x+=TERRAIN_STEP){
+    const edge=Math.min(1,(x-a)/2,(b-x)/2);
+    const w=Math.max(0,edge);
+    setTerrainY(x,terrainYWorld(x)*(1-w)+avg*w);
+  }
+}
+function tankGround(t, now=performance.now()){
+  if(!t) return 0;
+  if(t.fallUntil && now<t.fallUntil){
+    const span=Math.max(1,t.fallUntil-t.fallStart);
+    const u=Math.max(0,Math.min(1,(now-t.fallStart)/span));
+    const eased=1-Math.pow(1-u,2);
+    return t.fallFrom+(t.fallTo-t.fallFrom)*eased;
+  }
+  if(t.fallUntil && now>=t.fallUntil){
+    t.visualGround=t.fallTo;t.fallUntil=0;
+  }
+  return t.visualGround ?? terrainYWorld(t.x);
+}
+function tankCenterY(t,now=performance.now()){ return tankGround(t,now)+1.7; }
+function tankLaunchY(t,now=performance.now()){ return tankGround(t,now)+3.0; }
+function currentTank(){return tanks[battleTurn]}
+function otherTank(){return tanks[1-battleTurn]}
+
+function round1(v){ return Math.round(v*10)/10; }
+
+function highSchoolMathData(){
+  const s=currentTank(),o=otherTank();
+  if(!s||!o)return null;
+
+  const sign=o.x>=s.x?1:-1;
+  const D=Math.abs(o.x-s.x);
+  const sy=tankLaunchY(s), oy=tankCenterY(o);
+
+  // 학생에게 보여 주는 높이 차는 0.1 단위로 정리한다.
+  const dy=round1(oy-sy);
+  const P=Math.round((D/2)*2)/2;
+
+  // 두 탱크를 잇는 직선보다 충분히 위에 파워점을 만든다.
+  let maxRel=0;
+  for(let lx=1;lx<D;lx+=1){
+    const worldX=s.x+sign*lx;
+    maxRel=Math.max(maxRel,terrainYWorld(worldX)+3.2-sy);
+  }
+
+  let H=Math.max(12,Math.ceil(maxRel+5));
+  H=Math.min(45,H);
+
+  function valuesFor(powerH){
+    const lineSlope=dy/D;
+    const lineAtC=lineSlope*P;
+    const extra=powerH-lineAtC;
+    const factor=P*(D-P);
+    const k=extra/factor;
+
+    // y=(dy/D)x+kx(D-x)
+    //   = -kx² + (dy/D+kD)x
+    const a=-k;
+    const b=lineSlope+k*D;
+    return {lineSlope,lineAtC,extra,factor,k,a,b};
+  }
+
+  let vals=valuesFor(H);
+
+  // 지형을 안전하게 넘을 때까지 파워점을 조금씩 높인다.
+  for(let tries=0;tries<16;tries++){
+    let clear=true;
+    for(let lx=.5;lx<D;lx+=.5){
+      const localY=vals.lineSlope*lx + vals.k*lx*(D-lx);
+      const worldY=sy+localY;
+      const worldX=s.x+sign*lx;
+      if(worldY<terrainYWorld(worldX)+2.0){clear=false;break}
+    }
+    if(clear)break;
+    H+=2;
+    vals=valuesFor(H);
+  }
+
+  return {
+    sign,D,dy,P,H,
+    shooterX:s.x,shooterY:sy,
+    targetX:o.x,targetY:oy,
+    powerWorldX:s.x+sign*P,
+    powerWorldY:sy+H,
+    ...vals
+  };
+}
+
+
+function middleSchoolMathData(){
+  const s=currentTank(),o=otherTank();
+  if(!s||!o)return null;
+
+  const sign=o.x>=s.x?1:-1;
+  const D=Math.abs(o.x-s.x);
+  const sy=tankLaunchY(s), oy=tankCenterY(o);
+  const dy=round1(oy-sy);
+
+  let maxRel=0;
+  for(let lx=1;lx<D;lx+=1){
+    const worldX=s.x+sign*lx;
+    maxRel=Math.max(maxRel,terrainYWorld(worldX)+3.0-sy);
+  }
+
+  let p,q,a;
+
+  if(Math.abs(dy)<0.12){
+    // 같은 높이라면 꼭짓점은 정확히 가운데.
+    p=D/2;
+    q=Math.max(12,Math.ceil(maxRel+5));
+    a=-q/(p*p);
+  }else{
+    // 실제 상대 탱크 B=(D,dy)를 지나면서 아래로 열린 포물선이 되도록
+    // 꼭짓점의 x좌표 p를 자동으로 고른다.
+    const wantHigher = dy>0;
+    const minP = wantHigher ? D*.505 : D*.10;
+    const maxP = wantHigher ? D*.90 : D*.495;
+
+    let best=null;
+    const candidates=[];
+    for(let i=0;i<=150;i++){
+      const pp=minP+(maxP-minP)*i/150;
+      const denom=D*(D-2*pp);
+      if(Math.abs(denom)<1e-7)continue;
+      const aa=dy/denom;
+      const qq=-aa*pp*pp;
+      if(!(aa<0&&qq>0))continue;
+      candidates.push({p:pp,a:aa,q:qq});
+    }
+
+    for(const c of candidates){
+      if(c.q<Math.max(10,maxRel+3)||c.q>48)continue;
+      let clear=true;
+      for(let lx=.5;lx<D;lx+=.5){
+        const localY=c.a*(lx-c.p)*(lx-c.p)+c.q;
+        const worldY=sy+localY;
+        const worldX=s.x+sign*lx;
+        if(worldY<terrainYWorld(worldX)+1.7){clear=false;break}
+      }
+      if(clear){best=c;break}
+    }
+
+    if(!best){
+      // 가능한 후보 중 가장 높은 꼭짓점을 선택해 지형 통과 가능성을 높인다.
+      best=candidates
+        .filter(c=>c.q>0&&c.q<55)
+        .sort((u,v)=>v.q-u.q)[0];
+    }
+
+    if(!best)return null;
+    p=best.p;q=best.q;a=best.a;
+  }
+
+  // 학생 화면 숫자는 적절히 반올림하되 실제 발사는 같은 값으로 계산.
+  p=round1(p);
+  // p를 반올림했으므로 B를 정확히 지나도록 a,q를 다시 계산.
+  if(Math.abs(dy)<0.12){
+    q=Math.max(12,Math.ceil(maxRel+5));
+    a=-q/(p*p);
+  }else{
+    const denom=D*(D-2*p);
+    a=dy/denom;
+    q=-a*p*p;
+  }
+
+  const b=-2*a*p; // 전개 시 y=ax²+bx (A=(0,0)이므로 상수항 0)
+
+  return {
+    mode:'middle',
+    sign,D,dy,p,q,a,b,
+    shooterX:s.x,shooterY:sy,
+    targetX:o.x,targetY:oy,
+    powerWorldX:s.x+sign*p,
+    powerWorldY:sy+q
+  };
+}
+
+function currentMathData(){
+  return mathLevel==='middle' ? middleSchoolMathData() : highSchoolMathData();
+}
+
+function parseSimpleNumber(text){
+  const s=String(text??'').trim().replace(/\s+/g,'');
+  if(!s)return NaN;
+
+  if(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)){
+    return Number(s);
+  }
+
+  const m=s.match(/^([-+]?(?:\d+(?:\.\d*)?|\.\d+))\/([-+]?(?:\d+(?:\.\d*)?|\.\d+))$/);
+  if(m){
+    const n=Number(m[1]), d=Number(m[2]);
+    if(d===0)return NaN;
+    return n/d;
+  }
+  return NaN;
+}
+
+function formatCompact(v,digits=3){
+  if(Math.abs(v)<1e-10)return '0';
+  return Number(v.toFixed(digits)).toString();
+}
+
+function updateMathWork(d){
+  if(!d)return;
+
+  if(mathLevel==='middle'){
+    mathShotTitle.textContent='꼭짓점으로 포물선을 찾아라';
+    mathShotDesc.innerHTML=
+      'C는 포물선의 <b>꼭짓점</b>입니다. 꼭짓점형 <b>y=a(x-p)²+q</b>에 '+
+      '출발점 A=(0,0)을 넣어 <b>a 하나</b>를 찾습니다.';
+
+    step1Label.textContent='① 꼭짓점 C 확인';
+    step2Label.textContent='② A=(0,0) 대입';
+    step3Label.textContent='③ a 계산';
+    step4Label.textContent='④ 상대 B 확인';
+
+    lineStep.textContent=`C = (${formatCompact(d.p,1)}, ${formatCompact(d.q,1)})`;
+    lineAtCStep.textContent=
+      `0 = a(0-${formatCompact(d.p,1)})² + ${formatCompact(d.q,1)}`;
+    extraHeightStep.textContent=
+      `a = -${formatCompact(d.q,2)} ÷ ${formatCompact(d.p*d.p,2)}`;
+    curveFactorStep.textContent=
+      `B = (${formatCompact(d.D,1)}, ${formatCompact(d.dy,1)})`;
+
+    battleFormulaMain.firstChild.textContent =
+      `y = a(x-${formatCompact(d.p,1)})² + ${formatCompact(d.q,1)}`;
+
+    mathInputLabel.textContent='마지막으로 a를 구하세요';
+    battleKInput.placeholder='예: -0.0125 또는 -1/80';
+    mathInputUnit.textContent='a는 음수입니다. 소수 또는 분수로 입력할 수 있습니다.';
+
+    const aa=parseSimpleNumber(battleKInput.value);
+    if(Number.isFinite(aa)){
+      const bb=-2*aa*d.p;
+      const cc=aa*d.p*d.p+d.q;
+      battleExpandedFormula.textContent=
+        `전개하면 y = ${formatCompact(aa,5)}x² + ${formatCompact(bb,5)}x ${Math.abs(cc)<.0001?'':(cc>=0?'+ ':'- ')+formatCompact(Math.abs(cc),5)}`;
+    }else{
+      battleExpandedFormula.textContent=
+        `A를 대입하면 a = -q ÷ p²  →  a 하나만 구하면 됩니다.`;
+    }
+    return;
+  }
+
+  // 고등학교
+  mathShotTitle.textContent='양 끝점을 먼저 맞추고 세 번째 점을 맞춰라';
+  mathShotDesc.innerHTML=
+    '먼저 A와 B를 잇는 <b>직선</b>을 만들고, 양 끝점에서 0이 되는 '+
+    '<b>kx(R-x)</b>를 더해 C를 지나도록 휘어 줍니다.';
+
+  step1Label.textContent='① A와 B를 잇는 직선';
+  step2Label.textContent='② C의 x에서 직선 높이';
+  step3Label.textContent='③ C까지 더 필요한 높이';
+  step4Label.textContent='④ x(R-x)의 값';
+
+  const slopeTxt=formatCompact(d.lineSlope,4);
+  const lineCTxt=formatCompact(d.lineAtC,2);
+  const extraTxt=formatCompact(d.extra,2);
+  const factorTxt=formatCompact(d.factor,2);
+
+  lineStep.textContent=`y = ${slopeTxt}x`;
+  lineAtCStep.textContent=`${slopeTxt} × ${formatCompact(d.P,1)} = ${lineCTxt}`;
+  extraHeightStep.textContent=`${formatCompact(d.H,1)} - (${lineCTxt}) = ${extraTxt}`;
+  curveFactorStep.textContent=
+    `${formatCompact(d.P,1)} × (${formatCompact(d.D,1)}-${formatCompact(d.P,1)}) = ${factorTxt}`;
+
+  battleFormulaMain.firstChild.textContent =
+    `y = (${slopeTxt})x + kx(${formatCompact(d.D,1)}-x)`;
+
+  mathInputLabel.textContent='마지막으로 k를 구하세요';
+  battleKInput.placeholder='예: 0.0144 또는 23/1600';
+  mathInputUnit.textContent='k는 양수입니다. 소수 또는 분수로 입력할 수 있습니다.';
+
+  const k=parseSimpleNumber(battleKInput.value);
+  if(Number.isFinite(k)){
+    const aa=-k;
+    const bb=d.lineSlope+k*d.D;
+    battleExpandedFormula.textContent=
+      `전개하면 y = ${formatCompact(aa,5)}x² + ${formatCompact(bb,5)}x`;
+  }else{
+    battleExpandedFormula.textContent=
+      `k = 필요한 높이 ÷ ${factorTxt}  →  k를 입력하면 전개식이 나타납니다.`;
+  }
+}
+
+function refreshPowerPoint(clearInputs=true){
+  const d=currentMathData();
+  if(!d)return;
+
+  powerPoint={
+    x:d.powerWorldX,y:d.powerWorldY,
+    localX:mathLevel==='middle'?d.p:d.P,
+    localY:mathLevel==='middle'?d.q:d.H,
+    charged:false
+  };
+
+  coordA.textContent='(0, 0)';
+  coordB.textContent=`(${d.D.toFixed(1)}, ${d.dy.toFixed(1)})`;
+  if(mathLevel==='middle'){
+    coordC.textContent=`(${d.p.toFixed(1)}, ${d.q.toFixed(1)})`;
+  }else{
+    coordC.textContent=`(${d.P.toFixed(1)}, ${d.H.toFixed(1)})`;
+  }
+
+  if(clearInputs)battleKInput.value='';
+  updateMathWork(d);
+}
+function initBattle(newMap=true){
+  battleEpoch++;
+  if(battleAnim){cancelAnimationFrame(battleAnim);battleAnim=null}
+  if(newMap||!savedTerrain.length)makeTerrain();
+  else terrain=[...savedTerrain];
+
+  const g1=terrainYWorld(16),g2=terrainYWorld(104);
+  tanks=[
+    {x:16,hp:100,dir:1,color:'#2563eb',name:'플레이어 1',mathAmmo:2,visualGround:g1,fallUntil:0},
+    {x:104,hp:100,dir:-1,color:'#dc2626',name:'플레이어 2',mathAmmo:2,visualGround:g2,fallUntil:0}
+  ];
+  battleTurn=0;movesLeft=4;weaponMode='normal';
+  battleDragging=false;battleDragPoint=null;battleProjectile=null;battleExplosion=null;
+  battleOver=false;battleLastPath=[];floatingTexts=[];
+  turnBanner={text:'🔵 PLAYER 1 TURN',until:performance.now()+900};
+  refreshPowerPoint();
+  setMathLevel(mathLevel);
+  updateWeaponUI();updateBattleHud();
+  battleSetMessage('플레이어 1부터 시작합니다. 이동한 뒤 일반탄 또는 수학탄을 선택하세요.');
+  drawBattle();
+}
+function updateWeaponUI(){
+  normalWeaponBtn.classList.toggle('active',weaponMode==='normal');
+  mathWeaponBtn.classList.toggle('active',weaponMode==='math');
+  mathShotPanel.classList.toggle('hidden',weaponMode!=='math');
+  const ammo=currentTank()?.mathAmmo ?? 0;
+  mathAmmoText.textContent=ammo;
+  mathWeaponBtn.disabled=ammo<=0||battleOver;
+  if(weaponMode==='math'&&ammo<=0){
+    weaponMode='normal';
+    normalWeaponBtn.classList.add('active');
+    mathShotPanel.classList.add('hidden');
+  }
+}
+function updateBattleHud(){
+  if(!tanks.length)return;
+  p1HpText.textContent=Math.max(0,Math.round(tanks[0].hp));
+  p2HpText.textContent=Math.max(0,Math.round(tanks[1].hp));
+  p1HpBar.style.width=Math.max(0,tanks[0].hp)+'%';
+  p2HpBar.style.width=Math.max(0,tanks[1].hp)+'%';
+  battleTurnBadge.textContent=battleOver?'게임 종료':`${battleTurn===0?'플레이어 1':'플레이어 2'} 차례`;
+  const dots=Array.from({length:4},(_,i)=>i<movesLeft?'●':'○').join(' ');
+  moveDots.textContent=dots;
+  updateWeaponUI();
+}
+function drawTerrain(){
+  const grad=bctx.createLinearGradient(0,250,0,BH);
+  grad.addColorStop(0,'#78bc5c');grad.addColorStop(.13,'#6ca34e');grad.addColorStop(1,'#725037');
+  bctx.fillStyle=grad;bctx.beginPath();bctx.moveTo(0,BH);
+  bctx.lineTo(0,wy(terrainYWorld(0)));
+  for(let x=.2;x<=WORLD_W;x+=.2)bctx.lineTo(wx(x),wy(terrainYWorld(x)));
+  bctx.lineTo(BW,BH);bctx.closePath();bctx.fill();
+
+  bctx.strokeStyle='#467438';bctx.lineWidth=3;bctx.beginPath();
+  bctx.moveTo(0,wy(terrainYWorld(0)));
+  for(let x=.2;x<=WORLD_W;x+=.2)bctx.lineTo(wx(x),wy(terrainYWorld(x)));
+  bctx.stroke();
+}
+function drawTank(t,index,active,now){
+  const py=wy(tankGround(t,now)+1.7),px=wx(t.x);
+  bctx.save();bctx.translate(px,py);
+  bctx.fillStyle=t.color;bctx.fillRect(-18,-8,36,15);
+  bctx.beginPath();bctx.arc(-11,9,8,0,Math.PI*2);bctx.arc(11,9,8,0,Math.PI*2);bctx.fill();
+  bctx.strokeStyle='#172033';bctx.lineWidth=7;bctx.lineCap='round';
+  bctx.beginPath();bctx.moveTo(0,-7);bctx.lineTo(t.dir*25,-20);bctx.stroke();
+  if(active&&!battleOver){
+    bctx.strokeStyle='#f59e0b';bctx.lineWidth=3;bctx.setLineDash([5,4]);
+    bctx.beginPath();bctx.arc(0,0,31,0,Math.PI*2);bctx.stroke();
+  }
+  bctx.fillStyle='#111827';bctx.font='900 12px system-ui';bctx.textAlign='center';
+  bctx.fillText(index===0?'P1':'P2',0,-32);
+  bctx.restore();
+}
+function drawPowerPoint(){
+  if(!powerPoint)return;
+  const px=wx(powerPoint.x),py=wy(powerPoint.y);
+  const pulse=.65+.35*Math.sin(performance.now()/130);
+  bctx.save();
+  bctx.shadowColor='#f59e0b';bctx.shadowBlur=18*pulse;
+  bctx.fillStyle=powerPoint.charged?'#fff7a8':'#ffd43b';
+  bctx.beginPath();bctx.arc(px,py,10+2*pulse,0,Math.PI*2);bctx.fill();
+  bctx.strokeStyle='#9a5b00';bctx.lineWidth=2;bctx.stroke();
+  bctx.fillStyle='#6b4300';bctx.font='900 11px system-ui';bctx.textAlign='center';
+  bctx.fillText('⚡ C',px,py-18);
+  bctx.restore();
+}
+function drawMathCoordinates(now){
+  if(weaponMode!=='math'||!powerPoint)return;
+  const d=currentMathData(); if(!d)return;
+  const s=currentTank(),o=otherTank();
+
+  const cLocalX=mathLevel==='middle'?d.p:d.P;
+  const cLocalY=mathLevel==='middle'?d.q:d.H;
+
+  const pts=[
+    {x:s.x,y:tankLaunchY(s,now),label:'A(0, 0)'},
+    {x:o.x,y:tankCenterY(o,now),label:`B(${d.D.toFixed(1)}, ${d.dy.toFixed(1)})`},
+    {x:powerPoint.x,y:powerPoint.y,label:`C(${cLocalX.toFixed(1)}, ${cLocalY.toFixed(1)})`}
+  ];
+  bctx.save();bctx.setLineDash([5,5]);bctx.strokeStyle='rgba(53,106,230,.45)';bctx.lineWidth=1.5;
+  for(const p of pts){
+    const px=wx(p.x),py=wy(p.y);
+    bctx.beginPath();bctx.moveTo(px,py);bctx.lineTo(px,BASE_Y);bctx.stroke();
+    bctx.fillStyle='rgba(17,24,39,.88)';bctx.font='800 12px system-ui';bctx.textAlign='center';
+    bctx.fillText(p.label,px,py-22);
+  }
+
+  if(mathLevel==='middle'){
+    // 꼭짓점 C의 대칭축도 살짝 표시.
+    const px=wx(powerPoint.x);
+    bctx.strokeStyle='rgba(245,158,11,.45)';
+    bctx.setLineDash([4,5]);
+    bctx.beginPath();bctx.moveTo(px,wy(powerPoint.y)+14);bctx.lineTo(px,BASE_Y);bctx.stroke();
+  }
+  bctx.restore();
+}
+function drawBattle(now=performance.now()){
+  bctx.clearRect(0,0,BW,BH);
+  bctx.save();
+  if(now<battleShakeUntil)bctx.translate((Math.random()-.5)*10,(Math.random()-.5)*8);
+  const sky=bctx.createLinearGradient(0,0,0,BH);
+  sky.addColorStop(0,'#d9f0ff');sky.addColorStop(1,'#f8fcff');
+  bctx.fillStyle=sky;bctx.fillRect(0,0,BW,BH);
+
+  bctx.globalAlpha=.36;bctx.fillStyle='#fff';
+  for(const [x,y,s] of [[130,85,1],[510,72,.85],[810,115,.75]]){
+    bctx.beginPath();bctx.arc(x,y,28*s,0,Math.PI*2);bctx.arc(x+28*s,y-8*s,34*s,0,Math.PI*2);bctx.arc(x+57*s,y,24*s,0,Math.PI*2);bctx.fill();
+  }
+  bctx.globalAlpha=1;
+
+  drawTerrain();
+  drawPowerPoint();
+  drawMathCoordinates(now);
+
+  if(battleLastPath.length){
+    bctx.strokeStyle='rgba(31,41,55,.24)';bctx.lineWidth=2;bctx.setLineDash([5,5]);
+    bctx.beginPath();battleLastPath.forEach((p,i)=>i?bctx.lineTo(wx(p.x),wy(p.y)):bctx.moveTo(wx(p.x),wy(p.y)));
+    bctx.stroke();bctx.setLineDash([]);
+  }
+
+  tanks.forEach((t,i)=>drawTank(t,i,i===battleTurn,now));
+
+  const t=currentTank();
+  if(!battleAnim&&!battleOver&&weaponMode==='normal'){
+    const launch={x:wx(t.x),y:wy(tankLaunchY(t,now))};
+    const shell=battleDragPoint||launch;
+    if(battleDragging&&battleDragPoint){
+      bctx.strokeStyle='#8b5e3c';bctx.lineWidth=5;
+      bctx.beginPath();bctx.moveTo(launch.x-7,launch.y+7);bctx.lineTo(shell.x,shell.y);bctx.lineTo(launch.x+7,launch.y+7);bctx.stroke();
+      const pct=Math.min(100,Math.round(Math.hypot(launch.x-shell.x,launch.y-shell.y)/BMAX_DRAG*100));
+      bctx.fillStyle='rgba(17,24,39,.84)';bctx.fillRect(launch.x-50,launch.y-65,105,29);
+      bctx.fillStyle='#fff';bctx.font='800 13px system-ui';bctx.fillText('힘 '+pct+'%',launch.x-31,launch.y-45);
+    }
+    bctx.fillStyle='#111827';bctx.beginPath();bctx.arc(shell.x,shell.y,10,0,Math.PI*2);bctx.fill();
+  }
+
+  if(battleProjectile){
+    const px=wx(battleProjectile.x),py=wy(battleProjectile.y);
+    bctx.save();
+    if(battleProjectile.boost){bctx.shadowColor='#ffd43b';bctx.shadowBlur=22}
+    bctx.fillStyle=battleProjectile.boost?'#ffb000':'#111827';
+    bctx.beginPath();bctx.arc(px,py,battleProjectile.boost?10:8,0,Math.PI*2);bctx.fill();
+    bctx.fillStyle='#f97316';bctx.beginPath();bctx.arc(px-6,py+2,3.5,0,Math.PI*2);bctx.fill();
+    bctx.restore();
+  }
+
+  if(battleExplosion){
+    const age=(now-battleExplosion.start)/760;
+    const pulse=Math.sin(Math.min(1,age)*Math.PI);
+    const r=battleExplosion.radius*YS;
+    const px=wx(battleExplosion.x),py=wy(battleExplosion.y);
+    const g=bctx.createRadialGradient(px,py,2,px,py,r);
+    g.addColorStop(0,'rgba(255,255,225,1)');
+    g.addColorStop(.18,battleExplosion.boost?'rgba(255,245,80,.98)':'rgba(255,220,55,.98)');
+    g.addColorStop(.55,battleExplosion.boost?'rgba(255,135,0,.94)':'rgba(245,91,0,.88)');
+    g.addColorStop(1,'rgba(120,20,0,0)');
+    bctx.globalAlpha=Math.max(0,1-age);
+    bctx.fillStyle=g;bctx.beginPath();bctx.arc(px,py,r*Math.max(.2,pulse),0,Math.PI*2);bctx.fill();
+    bctx.globalAlpha=1;
+  }
+
+  floatingTexts=floatingTexts.filter(f=>now-f.start<1100);
+  for(const f of floatingTexts){
+    const age=(now-f.start)/1100;
+    bctx.save();bctx.globalAlpha=1-age;
+    bctx.font='900 24px system-ui';bctx.textAlign='center';
+    bctx.strokeStyle='#fff';bctx.lineWidth=5;bctx.fillStyle=f.color||'#b91c1c';
+    const px=wx(f.x),py=wy(f.y)-age*35;
+    bctx.strokeText(f.text,px,py);bctx.fillText(f.text,px,py);bctx.restore();
+  }
+
+  if(now<turnBanner.until){
+    bctx.save();bctx.globalAlpha=.88;
+    bctx.fillStyle='#111827';bctx.fillRect(BW/2-170,42,340,54);
+    bctx.fillStyle='#fff';bctx.font='900 25px system-ui';bctx.textAlign='center';
+    bctx.fillText(turnBanner.text,BW/2,77);bctx.restore();
+  }
+  bctx.restore();
+
+  if(tanks.some(t=>t.fallUntil&&now<t.fallUntil)||floatingTexts.length||now<turnBanner.until){
+    requestAnimationFrame(drawBattle);
+  }
+}
+function craterWorld(x,y,r){
+  for(let wxp=x-r;wxp<=x+r;wxp+=TERRAIN_STEP){
+    if(wxp<0||wxp>WORLD_W)continue;
+    const dx=wxp-x;
+    const depth=Math.sqrt(Math.max(0,r*r-dx*dx))*.78;
+    const newH=Math.max(0,y-depth);
+    if(terrainYWorld(wxp)>newH)setTerrainY(wxp,newH);
+  }
+}
+function damageBeforeTerrain(x,y,boost){
+  const radius=boost?POWER_BLAST:NORMAL_BLAST;
+  const maxDirect=boost?65:45;
+  const hits=[];
+  tanks.forEach((t,idx)=>{
+    const tx=t.x,ty=tankCenterY(t);
+    const d=Math.hypot(tx-x,ty-y);
+    let dmg=0;
+    if(d<2.2)dmg=maxDirect;
+    else if(d<radius)dmg=Math.max(5,Math.round((maxDirect-7)*(1-d/radius)+7));
+    if(dmg>0){
+      t.hp=Math.max(0,t.hp-dmg);
+      hits.push({idx,dmg,x:tx,y:ty});
+      floatingTexts.push({x:tx,y:ty+3.6,text:`-${dmg}`,start:performance.now(),color:boost?'#c77700':'#b91c1c'});
+    }
+  });
+  return hits;
+}
+function startTankFalls(){
+  const now=performance.now();
+  tanks.forEach(t=>{
+    const old=tankGround(t,now),next=terrainYWorld(t.x);
+    t.visualGround=old;
+    if(next<old-.05){
+      t.fallFrom=old;t.fallTo=next;t.fallStart=now;t.fallUntil=now+520;
+    }else{
+      t.visualGround=next;t.fallUntil=0;
+    }
+  });
+}
+function endBattleTurn(epoch){
+  if(epoch!==battleEpoch)return;
+  const dead0=tanks[0].hp<=0,dead1=tanks[1].hp<=0;
+  if(dead0||dead1){
+    battleOver=true;updateBattleHud();
+    if(dead0&&dead1){
+      turnBanner={text:'DRAW!',until:performance.now()+1500};
+      battleSetMessage('<b>무승부!</b> 같은 폭발로 두 탱크가 동시에 파괴되었습니다.','good');
+    }else{
+      const winner=dead0?'플레이어 2':'플레이어 1';
+      turnBanner={text:`${winner} WIN!`,until:performance.now()+1500};
+      battleSetMessage(`<b>${winner} 승리!</b><br>새 전장을 눌러 다시 대결할 수 있습니다.`,'good');
+    }
+    drawBattle();return;
+  }
+  battleTurn=1-battleTurn;movesLeft=4;weaponMode='normal';
+  refreshPowerPoint();
+  turnBanner={text:`${battleTurn===0?'🔵 PLAYER 1':'🔴 PLAYER 2'} TURN`,until:performance.now()+900};
+  updateBattleHud();
+  battleSetMessage(`${battleTurn===0?'플레이어 1':'플레이어 2'} 차례입니다. 지형 변화를 보고 이동한 뒤 탄을 선택하세요.`);
+  drawBattle();
+}
+function explodeBattle(x,y,boost,epoch){
+  if(epoch!==battleEpoch)return;
+  const radius=boost?POWER_BLAST:NORMAL_BLAST;
+  battleExplosion={x,y,start:performance.now(),radius,boost};
+  battleShakeUntil=performance.now()+(boost?390:270);
+  if(battleSoundOn)boom(true);
+
+  // Correct order: damage at the instant of explosion -> terrain destruction -> falling.
+  const hits=damageBeforeTerrain(x,y,boost);
+  craterWorld(x,y,radius);
+  startTankFalls();
+  updateBattleHud();
+
+  if(boost) floatingTexts.push({x,y:y+5,text:'⚡ POWER!',start:performance.now(),color:'#a05b00'});
+  if(!hits.length) floatingTexts.push({x,y:y+4,text:'MISS',start:performance.now(),color:'#475467'});
+
+  const loop=()=>{
+    if(epoch!==battleEpoch)return;
+    drawBattle();
+    if(battleExplosion&&performance.now()-battleExplosion.start<760){
+      requestAnimationFrame(loop);
+    }else{
+      battleExplosion=null;
+      setTimeout(()=>endBattleTurn(epoch),360);
+    }
+  };
+  requestAnimationFrame(loop);
+}
+function normalEquation(vx,vy){
+  const speedX=Math.abs(vx);
+  if(speedX<.01)return null;
+  return {a:-BG/(2*speedX*speedX),b:vy/speedX};
+}
+function fireBattle(vx,vy,opts={}){
+  if(battleAnim||battleOver)return;
+  const epoch=battleEpoch;
+  if(battleSoundOn)launchSound();
+
+  const shooter=currentTank();
+  const shooterIndex=battleTurn;
+  const startX=shooter.x,startY=tankLaunchY(shooter);
+  const fireSign=vx>=0?1:-1;
+  const eq=normalEquation(vx,vy);
+
+  if(opts.isMath){
+    if(shooter.mathAmmo<=0){battleSetMessage('수학탄이 남아 있지 않습니다.','bad');return}
+    shooter.mathAmmo--;
+    updateBattleHud();
+  }
+
+  let x=startX,y=startY,vyNow=vy;
+  let last=performance.now(),elapsed=0;
+  battleLastPath=[];
+  battleProjectile={x,y,boost:false,isMath:!!opts.isMath};
+  if(powerPoint)powerPoint.charged=false;
+
+  function frame(now){
+    if(epoch!==battleEpoch)return;
+    const realDt=Math.min(.032,(now-last)/1000);last=now;
+    const dt=realDt*1.7;
+    elapsed+=dt;
+    x+=vx*dt;
+    y+=vyNow*dt;
+    vyNow-=BG*dt;
+    battleProjectile.x=x;battleProjectile.y=y;
+    battleLastPath.push({x,y});
+
+    if(powerPoint&&!battleProjectile.boost&&Math.hypot(x-powerPoint.x,y-powerPoint.y)<1.45){
+      battleProjectile.boost=true;powerPoint.charged=true;
+      if(battleSoundOn){tone(720,.09,'triangle',.08);tone(980,.11,'triangle',.07,.05)}
+      floatingTexts.push({x,y:y+2,text:'⚡ CHARGE!',start:performance.now(),color:'#a05b00'});
+    }
+
+    drawBattle();
+
+    if(x<0||x>WORLD_W||y<-3||y>WORLD_H+10){
+      battleAnim=null;battleProjectile=null;
+      if(eq){
+        const label=`방금 탄도: y = ${eq.a.toFixed(4)}x² + ${eq.b.toFixed(3)}x`;
+        battleSetMessage(`포탄이 전장을 벗어났습니다.<br>${label}`,'bad');
+      }
+      setTimeout(()=>endBattleTurn(epoch),350);
+      return;
+    }
+
+    let impact=false;
+    for(let i=0;i<tanks.length;i++){
+      if(i===shooterIndex&&elapsed<.25)continue;
+      if(Math.hypot(x-tanks[i].x,y-tankCenterY(tanks[i]))<2.05){impact=true;break}
+    }
+    if(y<=terrainYWorld(x)+.25)impact=true;
+
+    if(impact){
+      const boost=battleProjectile.boost;
+      battleAnim=null;battleProjectile=null;
+      if(eq){
+        const label=`y = ${eq.a.toFixed(4)}x² + ${eq.b.toFixed(3)}x`;
+        battleSetMessage(`${opts.isMath?'수학탄':'일반탄'} 발사식: <b>${label}</b>${boost?'<br>⚡ 파워점 통과! 공격력이 강화되었습니다.':''}`);
+      }
+      explodeBattle(x,Math.max(terrainYWorld(x),y),boost,epoch);
+      return;
+    }
+    battleAnim=requestAnimationFrame(frame);
+  }
+  battleAnim=requestAnimationFrame(frame);
+}
+function fireMathBattle(){
+  if(battleAnim||battleOver||weaponMode!=='math')return;
+
+  const val=parseSimpleNumber(battleKInput.value);
+  if(!Number.isFinite(val)){
+    battleSetMessage(
+      mathLevel==='middle'
+        ? 'a 값을 입력하세요. -0.0125처럼 소수나 -1/80처럼 분수로 입력할 수 있습니다.'
+        : 'k 값을 입력하세요. 0.0144처럼 소수나 23/1600처럼 분수로 입력할 수 있습니다.',
+      'bad'
+    );
+    return;
+  }
+
+  const d=currentMathData();
+  if(!d)return;
+
+  let a,b,expected,inputName,formulaText;
+
+  if(mathLevel==='middle'){
+    if(val>=0){
+      battleSetMessage('아래로 열린 포물선이 되도록 a는 음수여야 합니다.','bad');return;
+    }
+    a=val;
+    b=-2*a*d.p;
+    expected=d.a;
+    inputName='a';
+    formulaText=
+      `y = ${formatCompact(a,6)}(x-${formatCompact(d.p,1)})² + ${formatCompact(d.q,1)}`;
+  }else{
+    if(val<=0){
+      battleSetMessage('포물선이 위로 솟아오르도록 k는 0보다 커야 합니다.','bad');return;
+    }
+    a=-val;
+    b=d.lineSlope+val*d.D;
+    expected=d.k;
+    inputName='k';
+    formulaText=
+      `y = ${formatCompact(d.lineSlope,4)}x + ${formatCompact(val,6)}x(${formatCompact(d.D,1)}-x)`;
+  }
+
+  // y = ax²+bx 와 물리식 연결
+  const vxLocal=Math.sqrt(-BG/(2*a));
+  const vy=b*vxLocal;
+
+  if(!Number.isFinite(vxLocal)||!Number.isFinite(vy)||vxLocal>65||Math.abs(vy)>65){
+    battleSetMessage(`입력한 ${inputName} 값으로는 안정적으로 발사하기 어렵습니다. 계산을 다시 확인하세요.`,'bad');
+    return;
+  }
+
+  const relErr=Math.abs(val-expected)/Math.max(Math.abs(expected),1e-9);
+  currentTank().dir=d.sign;
+
+  battleSetMessage(
+    `입력한 식: <b>${formulaText}</b><br>`+
+    `전개: <b>y = ${formatCompact(a,6)}x² + ${formatCompact(b,6)}x</b>`+
+    (relErr<0.003
+      ? '<br>세 점을 정확히 지나는 식입니다. ⚡ 파워점을 노립니다.'
+      : '<br>정답과 조금 다릅니다. 실제 궤적으로 확인해 보세요.')
+  );
+
+  fireBattle(d.sign*vxLocal,vy,{isMath:true});
+}
+
+function battleCanvasPoint(e){
+  const r=battleCanvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*BW/r.width,y:(e.clientY-r.top)*BH/r.height};
+}
+battleCanvas.addEventListener('pointerdown',e=>{
+  if(battleAnim||battleOver||weaponMode!=='normal')return;
+  const t=currentTank();
+  const launch={x:wx(t.x),y:wy(tankLaunchY(t))},p=battleCanvasPoint(e);
+  if(Math.hypot(p.x-launch.x,p.y-launch.y)<=35){
+    battleDragging=true;battleDragPoint=p;battleCanvas.setPointerCapture(e.pointerId);drawBattle();
+  }
+});
+battleCanvas.addEventListener('pointermove',e=>{
+  if(!battleDragging)return;
+  const t=currentTank(),launch={x:wx(t.x),y:wy(tankLaunchY(t))},p=battleCanvasPoint(e);
+  let dx=p.x-launch.x,dy=p.y-launch.y,len=Math.hypot(dx,dy);
+  if(len>BMAX_DRAG){dx*=BMAX_DRAG/len;dy*=BMAX_DRAG/len}
+  battleDragPoint={x:launch.x+dx,y:launch.y+dy};drawBattle();
+});
+battleCanvas.addEventListener('pointerup',()=>{
+  if(!battleDragging)return;
+  battleDragging=false;
+  const t=currentTank(),launch={x:wx(t.x),y:wy(tankLaunchY(t))},p=battleDragPoint||launch;
+  battleDragPoint=null;drawBattle();
+  const vx=(launch.x-p.x)*BDRAG_SPEED;
+  const vy=(p.y-launch.y)*BDRAG_SPEED;
+  if(Math.hypot(vx,vy)<7){
+    battleSetMessage('조금 더 길게 당겨서 발사해 보세요.','bad');return;
+  }
+  t.dir=vx>=0?1:-1;
+  fireBattle(vx,vy,{isMath:false});
+});
+battleCanvas.addEventListener('pointercancel',()=>{battleDragging=false;battleDragPoint=null;drawBattle()});
+
+function moveBattleTank(dir){
+  if(battleAnim||battleExplosion||battleOver||movesLeft<=0)return;
+  const t=currentTank();
+  const nx=Math.max(4,Math.min(WORLD_W-4,t.x+dir*MOVE_STEP));
+  if(Math.abs(nx-otherTank().x)<5.5){
+    battleSetMessage('상대 탱크와 너무 가까이 이동할 수 없습니다.','bad');return;
+  }
+  const oldH=terrainYWorld(t.x),newH=terrainYWorld(nx);
+  if(Math.abs(newH-oldH)>3.3){
+    battleSetMessage('경사가 너무 가팔라 그쪽으로 이동할 수 없습니다.','bad');return;
+  }
+  t.x=nx;t.dir=dir;t.visualGround=newH;t.fallUntil=0;
+  movesLeft--;
+  refreshPowerPoint();
+  updateBattleHud();drawBattle();
+}
+moveLeftBtn.addEventListener('click',()=>moveBattleTank(-1));
+moveRightBtn.addEventListener('click',()=>moveBattleTank(1));
+
+
+function setMathLevel(level){
+  if(battleAnim||battleExplosion)return;
+  mathLevel=level;
+  middleMathBtn.classList.toggle('active',level==='middle');
+  highMathBtn.classList.toggle('active',level==='high');
+  mathLevelNote.innerHTML=
+    level==='middle'
+      ? '꼭짓점 C와 출발점 A를 이용해 <b>y=a(x-p)²+q</b>의 a 하나를 찾습니다.'
+      : 'A·B를 먼저 맞춘 뒤 <b>직선 + kx(R-x)</b>로 C까지 휘어 k 하나를 찾습니다.';
+  refreshPowerPoint();
+  if(weaponMode==='math'){
+    battleSetMessage(
+      level==='middle'
+        ? '중학교 수학탄: 꼭짓점형에서 a 하나를 구하세요.'
+        : '고등학교 수학탄: 양 끝점을 유지하며 세 번째 점 C를 맞추는 k를 구하세요.'
+    );
+  }
+  drawBattle();
+}
+middleMathBtn.addEventListener('click',()=>setMathLevel('middle'));
+highMathBtn.addEventListener('click',()=>setMathLevel('high'));
+
+normalWeaponBtn.addEventListener('click',()=>{
+  if(battleAnim||battleOver)return;
+  weaponMode='normal';updateWeaponUI();drawBattle();
+});
+mathWeaponBtn.addEventListener('click',()=>{
+  if(battleAnim||battleOver||currentTank().mathAmmo<=0)return;
+  weaponMode='math';refreshPowerPoint();updateWeaponUI();
+  battleSetMessage(
+    mathLevel==='middle'
+      ? 'C를 꼭짓점으로 하는 y=a(x-p)²+q에 A=(0,0)을 넣어 a 하나를 구하세요.'
+      : 'A와 B를 잇는 직선에 kx(R-x)를 더해 C를 지나게 하세요. k 하나만 구하면 됩니다.'
+  );
+  drawBattle();
+});
+battleKInput.addEventListener('input',()=>updateMathWork(currentMathData()));
+document.getElementById('fireMathBattleBtn').addEventListener('click',fireMathBattle);
+document.getElementById('battleAnswerBtn').addEventListener('click',()=>{
+  const d=currentMathData();
+  if(!d)return;
+
+  if(mathLevel==='middle'){
+    battleKInput.value=d.a.toFixed(6);
+    updateMathWork(d);
+    battleSetMessage(
+      `정답 a를 입력했습니다.<br>`+
+      `<b>a = -${formatCompact(d.q,3)} ÷ ${formatCompact(d.p*d.p,3)} = ${formatCompact(d.a,6)}</b><br>`+
+      `발사해서 A, 꼭짓점 C, 상대 B를 실제로 지나는지 확인해 보세요.`
+    );
+  }else{
+    battleKInput.value=d.k.toFixed(6);
+    updateMathWork(d);
+    battleSetMessage(
+      `정답 k를 입력했습니다.<br>`+
+      `<b>k = ${formatCompact(d.extra,3)} ÷ ${formatCompact(d.factor,3)} = ${formatCompact(d.k,6)}</b><br>`+
+      `발사해서 A, C, B를 실제로 지나는지 확인해 보세요.`
+    );
+  }
+});
+document.getElementById('newBattleBtn').addEventListener('click',()=>initBattle(true));
+document.getElementById('resetBattleBtn').addEventListener('click',()=>initBattle(false));
+soundToggleBtn.addEventListener('click',()=>{
+  battleSoundOn=!battleSoundOn;
+  soundToggleBtn.textContent=battleSoundOn?'🔊 효과음 켜짐':'🔇 효과음 꺼짐';
+  if(battleSoundOn)getAudio();
+});
+
+function showSingleMode(){
+  singleModeBtn.classList.add('active');battleModeBtn.classList.remove('active');
+  singleArea.classList.remove('hidden');battleArea.classList.add('hidden');
+}
+function showBattleMode(){
+  battleModeBtn.classList.add('active');singleModeBtn.classList.remove('active');
+  singleArea.classList.add('hidden');battleArea.classList.remove('hidden');
+  drawBattle();
+}
+singleModeBtn.addEventListener('click',showSingleMode);
+battleModeBtn.addEventListener('click',showBattleMode);
+
+initBattle(true);
+
+createMission();
+})();
+</script>
+</body>
+</html>
