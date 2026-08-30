@@ -72,5 +72,30 @@
     "areaOrder": 2,
     "unitOrder": 1,
     "gameOrder": 1
+  },
+  {
+    "id": "trig-runner",
+    "school": "중학교",
+    "grade": "3학년",
+    "area": "도형과 측정",
+    "unit": "삼각비",
+    "title": "삼각비 러너",
+    "description": "직각삼각형의 변을 보고 sin·cos·tan을 선택하고, 보스전에서 특수각의 삼각비 값을 맞히는 러너 게임입니다.",
+    "href": "./middle-3/trig-runner/",
+    "tags": [
+      "삼각비",
+      "사인",
+      "코사인",
+      "탄젠트",
+      "특수각",
+      "러너",
+      "중3"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 3,
+    "areaOrder": 2,
+    "unitOrder": 2,
+    "gameOrder": 1
   }
 ]
