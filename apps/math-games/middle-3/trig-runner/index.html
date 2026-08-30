@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>삼각비 러너</title>
+<style>
+:root{
+  --bg:#eef4fb; --panel:#ffffff; --line:#d7deea; --text:#172033; --muted:#667085;
+  --accent:#245eea; --good:#14804a; --bad:#c4320a; --warn:#f79009;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(#edf4ff,#f8fbff);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:var(--text)}
+button{font:inherit}
+.app{max-width:1100px;margin:0 auto;padding:10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.title{font-size:22px;font-weight:950}
+.stage{background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px}
+.canvasWrap{position:relative}
+canvas{width:100%;height:auto;display:block;border-radius:14px;background:#dff2ff}
+.controls{margin-top:8px}
+.modeBar{display:grid;grid-template-columns:1fr;gap:8px}
+.trigRow,.bossRow{display:grid;gap:8px}
+.trigRow{grid-template-columns:repeat(3,1fr)}
+.bossRow{grid-template-columns:repeat(5,1fr)}
+.ctrlBtn{
+  min-height:58px;border:2px solid var(--line);background:#fff;border-radius:14px;
+  font-size:20px;font-weight:950;cursor:pointer;touch-action:manipulation
+}
+.ctrlBtn small{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-top:2px}
+.ctrlBtn:active{transform:translateY(1px)}
+.sin{border-color:#8bb4ff}
+.cos{border-color:#8fd5ae}
+.tan{border-color:#f3bd79}
+.angleBtn{border-color:#f0b46c;color:#7a2e0e}
+.utility{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.reset{min-height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 14px;font-weight:850;cursor:pointer}
+.hidden{display:none!important}
+details.howto{margin-top:8px}
+details.howto summary{cursor:pointer;color:var(--muted);font-size:12px;font-weight:800}
+details.howto .body{font-size:12px;color:var(--muted);line-height:1.55;padding-top:6px}
+@media(max-width:620px){
+  .app{padding:6px}
+  .ctrlBtn{min-height:54px;font-size:18px}
+  .bossRow{gap:5px}
+  .bossRow .ctrlBtn{padding:0;font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="title">🏃 Trig Runner</div>
+  </div>
+
+  <div class="stage">
+    <div class="canvasWrap">
+      <canvas id="game" width="960" height="500" aria-label="삼각비 러너 게임"></canvas>
+    </div>
+
+    <div class="controls">
+      <div class="modeBar">
+        <div class="trigRow" id="trigRow">
+          <button class="ctrlBtn sin" data-answer="sin">SIN<small>A 키</small></button>
+          <button class="ctrlBtn cos" data-answer="cos">COS<small>S 키</small></button>
+          <button class="ctrlBtn tan" data-answer="tan">TAN<small>D 키</small></button>
+        </div>
+        <div class="bossRow hidden" id="bossRow">
+          <button class="ctrlBtn angleBtn" data-boss-angle="0">0°</button>
+          <button class="ctrlBtn angleBtn" data-boss-angle="30">30°</button>
+          <button class="ctrlBtn angleBtn" data-boss-angle="45">45°</button>
+          <button class="ctrlBtn angleBtn" data-boss-angle="60">60°</button>
+          <button class="ctrlBtn angleBtn" data-boss-angle="90">90°</button>
+        </div>
+      </div>
+
+      <div class="utility">
+        <button class="reset" id="resetBtn">다시 시작</button>
+      </div>
+
+      <details class="howto">
+        <summary>게임 방법 보기</summary>
+        <div class="body">
+          일반 구간에서는 주황색 기준각과 색으로 강조된 두 변을 보고 SIN / COS / TAN을 누릅니다.
+          보스전에서는 보스가 수식이 적힌 공격탄을 날립니다. 화면 아래 0°, 30°, 45°, 60°, 90° 버튼 중 알맞은 각도를 눌러 공격탄을 되돌려 보내면 됩니다. 참고로 tan 90°는 정의되지 않으므로 문제에 나오지 않습니다.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+const trigRow=document.getElementById('trigRow');
+const bossRow=document.getElementById('bossRow');
+const resetBtn=document.getElementById('resetBtn');
+
+let hp,combo,best,score,distance,speed,baseSpeed,obstacle,nextSpawn,last,gameOver;
+let runnerY,runnerVy,actionTimer,currentAction,flashText,flashTimer,feedbackText,feedbackKind,feedbackTimer;
+let bossMode,bossHp,bossQuestion,bossTimer,nextBossAt,bossIndex,bossProjectile,bossPulse;
+
+const groundY=405;
+const runnerX=170;
+const judgeX=235;
+
+const answers=['sin','cos','tan'];
+const bossQuestions=[
+  {eq:'sin □ = 0',ans:0},
+  {eq:'cos □ = 1',ans:0},
+  {eq:'tan □ = 0',ans:0},
+  {eq:'sin □ = 1/2',ans:30},
+  {eq:'cos □ = √3/2',ans:30},
+  {eq:'tan □ = 1',ans:45},
+  {eq:'sin □ = √2/2',ans:45},
+  {eq:'cos □ = √2/2',ans:45},
+  {eq:'sin □ = √3/2',ans:60},
+  {eq:'cos □ = 1/2',ans:60},
+  {eq:'tan □ = √3',ans:60},
+  {eq:'sin □ = 1',ans:90},
+  {eq:'cos □ = 0',ans:90}
+];
+const obstacleTypes=[
+  {name:'절벽 점프',icon:'⛰️',action:'jump'},
+  {name:'공중 보석',icon:'💎',action:'jump'},
+  {name:'낮은 터널',icon:'🪨',action:'slide'},
+  {name:'긴 발판',icon:'🪵',action:'slide'},
+  {name:'끊어진 경사로',icon:'🌉',action:'bridge'},
+  {name:'성벽 오르기',icon:'🏯',action:'bridge'}
+];
+const sideNames={
+  left:{hyp:'c',opp:'a',adj:'b'},
+  right:{hyp:'c',opp:'b',adj:'a'}
+};
+const ratioInfo={
+  sin:{roles:['opp','hyp'],desc:'높이 / 빗변'},
+  cos:{roles:['adj','hyp'],desc:'밑변 / 빗변'},
+  tan:{roles:['opp','adj'],desc:'높이 / 밑변'}
+};
+
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function roleOf(side,ref){
+  const n=sideNames[ref];
+  if(side===n.hyp)return '빗변';
+  if(side===n.opp)return '높이';
+  if(side===n.adj)return '밑변';
+  return side;
+}
+function setControls(){
+  trigRow.classList.toggle('hidden',bossMode);
+  bossRow.classList.toggle('hidden',!bossMode);
+}
+function setFeedback(text,kind='info',ms=1300){
+  feedbackText=text;
+  feedbackKind=kind;
+  feedbackTimer=ms;
+}
+function spawnObstacle(){
+  const answer=rand(answers);
+  const type=rand(obstacleTypes);
+  const ref=rand(['left','right']);
+  const names=sideNames[ref];
+  const info=ratioInfo[answer];
+  obstacle={
+    x:canvas.width+20,
+    answer,
+    name:type.name,
+    side1:names[info.roles[0]],
+    side2:names[info.roles[1]],
+    ref, desc:info.desc, icon:type.icon, action:type.action, resolved:false
+  };
+}
+
+function launchBossProjectile(){
+  bossProjectile={
+    x:canvas.width-185,
+    y:150+Math.sin(performance.now()*0.01)*10,
+    vx:-2.7,
+    state:'incoming',
+    glow:0
+  };
+  bossTimer=0;
+}
+
+function makeBossQuestion(){
+  bossQuestion=rand(bossQuestions);
+  launchBossProjectile();
+}
+function startBoss(){
+  bossMode=true;
+  bossHp=5;
+  obstacle=null;
+  nextSpawn=999999;
+  bossPulse=0;
+  makeBossQuestion();
+  setControls();
+  setFeedback('보스가 공격탄을 날립니다! 0°, 30°, 45°, 60°, 90° 중 맞는 각도를 눌러 되받아치세요.', 'warn', 1700);
+}
+function endBoss(){
+  bossMode=false;
+  bossProjectile=null;
+  nextBossAt+=350;
+  nextSpawn=360;
+  bossIndex++;
+  baseSpeed=Math.max(baseSpeed,speed)+0.08;
+  speed=baseSpeed;
+  score+=1000;
+  flashText='BOSS DOWN!';
+  flashTimer=1100;
+  setControls();
+  setFeedback(`보스 격파! 다음 구간 시작 속도 ${speed.toFixed(1)}x`, 'good', 1600);
+}
+function bossHitPlayer(){
+  hp--;
+  combo=0;
+  flashText='BOSS HIT!';
+  flashTimer=850;
+  bossProjectile=null;
+  if(hp<=0){
+    gameOver=true;
+    setControls();
+    return;
+  }
+  setFeedback(`피격! 정답은 ${bossQuestion.ans}°`, 'bad', 1200);
+  makeBossQuestion();
+}
+function bossHitByCounter(){
+  bossHp--;
+  score+=350;
+  combo++;
+  best=Math.max(best,combo);
+  flashText='COUNTER!';
+  flashTimer=700;
+  setFeedback(`${bossQuestion.eq.replace('□',bossQuestion.ans+'°')}`, 'good', 1100);
+  bossProjectile=null;
+  if(bossHp<=0) endBoss();
+  else makeBossQuestion();
+}
+function answerBoss(v){
+  if(!bossMode||gameOver||!bossProjectile)return;
+  if(bossProjectile.state!=='incoming')return;
+
+  if(v===bossQuestion.ans){
+    bossProjectile.state='returning';
+    bossProjectile.vx=7.2;
+    bossProjectile.glow=1;
+    setFeedback(`반격! ${bossQuestion.eq.replace('□',v+'°')}`, 'good', 900);
+  }else{
+    bossHitPlayer();
+  }
+}
+function reset(){
+
+  hp=3; combo=0; best=0; score=0; distance=0;
+  speed=1; baseSpeed=1;
+  obstacle=null; nextSpawn=620; last=performance.now(); gameOver=false;
+  runnerY=0; runnerVy=0; actionTimer=0; currentAction='run';
+  flashText=''; flashTimer=0; feedbackText=''; feedbackTimer=0; feedbackKind='info';
+  bossMode=false; bossHp=5; bossQuestion=null; bossTimer=0; nextBossAt=350; bossIndex=0; bossProjectile=null; bossPulse=0;
+  spawnObstacle();
+  setControls();
+  setFeedback('준비! 화면 아래 버튼으로 시작하세요.', 'info', 1200);
+}
+function handleAnswer(ans){
+  if(bossMode||gameOver||!obstacle||obstacle.resolved)return;
+  const delta=Math.abs(obstacle.x-judgeX);
+  if(delta>105){
+    combo=0;
+    setFeedback('너무 일찍 눌렀습니다.', 'bad', 900);
+    return;
+  }
+  obstacle.resolved=true;
+  if(ans===obstacle.answer){
+    combo++;
+    best=Math.max(best,combo);
+    const timing=delta<28?'PERFECT':delta<62?'GREAT':'GOOD';
+    const add=timing==='PERFECT'?300:timing==='GREAT'?200:120;
+    score+=add+combo*10;
+    actionTimer=760;
+    currentAction=obstacle.action;
+    if(obstacle.action==='jump') runnerVy=-10.4;
+    flashText=`${timing}! ${ans.toUpperCase()}`;
+    flashTimer=800;
+    setFeedback(`∠${obstacle.ref==='left'?'A':'B'}: ${obstacle.side1}=${roleOf(obstacle.side1,obstacle.ref)}, ${obstacle.side2}=${roleOf(obstacle.side2,obstacle.ref)}`, 'good', 1150);
+  }else{
+    hp--; combo=0;
+    score=Math.max(0,score-100);
+    flashText='MISS!';
+    flashTimer=700;
+    setFeedback(`정답: ${obstacle.answer.toUpperCase()} (${obstacle.desc})`, 'bad', 1100);
+    if(hp<=0) gameOver=true;
+  }
+}
+function update(dt){
+  if(gameOver)return;
+
+  const distanceBoost=Math.min(1.0,Math.floor(distance/250)*0.08);
+  const comboBoost=Math.min(.45,Math.floor(combo/5)*0.08);
+  const targetSpeed=baseSpeed+distanceBoost+comboBoost;
+  speed=Math.max(speed,targetSpeed);
+
+  if(bossMode){
+    bossPulse += dt*0.01;
+    if(bossProjectile){
+      bossProjectile.x += bossProjectile.vx * (dt/16.67);
+      bossProjectile.y += Math.sin(bossPulse*2.1)*0.45;
+      if(bossProjectile.state==='incoming' && bossProjectile.x <= runnerX+20){
+        bossHitPlayer();
+      }else if(bossProjectile.state==='returning' && bossProjectile.x >= canvas.width-150){
+        bossHitByCounter();
+      }
+    }else{
+      makeBossQuestion();
+    }
+    runnerVy+=0.38;
+    runnerY+=runnerVy;
+    if(runnerY>0){runnerY=0;runnerVy=0}
+    if(actionTimer>0) actionTimer-=dt;
+    else currentAction='run';
+    if(flashTimer>0) flashTimer-=dt;
+    if(feedbackTimer>0) feedbackTimer-=dt;
+    return;
+  }
+
+  distance+=dt*0.008*speed;
+  if(distance>=nextBossAt){ startBoss(); return; }
+
+  if(obstacle){
+    obstacle.x-=dt*0.26*speed;
+    if(obstacle.x<judgeX-75&&!obstacle.resolved){
+      obstacle.resolved=true;
+      hp--; combo=0;
+      flashText='LATE!'; flashTimer=700;
+      setFeedback(`정답: ${obstacle.answer.toUpperCase()}`, 'bad', 900);
+      if(hp<=0) gameOver=true;
+    }
+    if(obstacle.x<-120){
+      obstacle=null;
+      nextSpawn=300+Math.random()*260;
+    }
+  }else{
+    nextSpawn-=dt*speed;
+    if(nextSpawn<=0) spawnObstacle();
+  }
+
+  runnerVy+=0.38;
+  runnerY+=runnerVy;
+  if(runnerY>0){runnerY=0;runnerVy=0}
+  if(actionTimer>0) actionTimer-=dt;
+  else currentAction='run';
+  if(flashTimer>0) flashTimer-=dt;
+  if(feedbackTimer>0) feedbackTimer-=dt;
+}
+function drawBackground(){
+  const g=ctx.createLinearGradient(0,0,0,groundY);
+  g.addColorStop(0,'#c9edff'); g.addColorStop(1,'#f8fcff');
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle='#ffffffbb';
+  for(let i=0;i<4;i++){
+    const x=((distance*4+i*270)%1200)-120;
+    ctx.beginPath(); ctx.ellipse(canvas.width-x,90+i*28,55,18,0,0,Math.PI*2); ctx.fill();
+  }
+
+  ctx.fillStyle='#b9ddb2';
+  ctx.beginPath(); ctx.moveTo(0,groundY);
+  for(let x=0;x<=canvas.width;x+=120){
+    ctx.lineTo(x,groundY-45-Math.sin((x+distance*2)*.01)*28);
+  }
+  ctx.lineTo(canvas.width,groundY); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle='#7fbd72'; ctx.fillRect(0,groundY,canvas.width,95);
+  ctx.fillStyle='#5f9d57'; ctx.fillRect(0,groundY+34,canvas.width,61);
+
+  ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=3;
+  for(let x=0;x<canvas.width+120;x+=110){
+    const sx=(x-(distance*12)%110);
+    ctx.beginPath(); ctx.moveTo(sx,groundY+55); ctx.lineTo(sx+45,groundY+55); ctx.stroke();
+  }
+
+  ctx.strokeStyle='rgba(36,94,234,.58)'; ctx.lineWidth=2.5; ctx.setLineDash([8,7]);
+  ctx.beginPath(); ctx.moveTo(judgeX,100); ctx.lineTo(judgeX,groundY); ctx.stroke(); ctx.setLineDash([]);
+}
+function drawHud(){
+  const pad=10;
+  function pill(x,y,w,h){
+    ctx.fillStyle='rgba(255,255,255,.82)';
+    ctx.beginPath(); ctx.roundRect(x,y,w,h,12); ctx.fill();
+    ctx.strokeStyle='rgba(23,32,51,.08)'; ctx.lineWidth=1; ctx.stroke();
+  }
+  pill(12,12,250,34);
+  ctx.fillStyle='#172033';
+  ctx.font='900 16px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText(`❤️ ${hp}`,24,29);
+  ctx.fillText(`⚡ ${speed.toFixed(1)}x`,96,29);
+  ctx.fillText(`⭐ ${score}`,184,29);
+
+  pill(canvas.width-220,12,208,34);
+  ctx.textAlign='left';
+  ctx.fillText(`거리 ${Math.floor(distance)}m`,canvas.width-208,29);
+  ctx.fillText(`콤보 ${combo}`,canvas.width-100,29);
+
+  if(bossMode){
+    const w=360,h=70,x=(canvas.width-w)/2,y=18;
+    ctx.fillStyle='rgba(255,250,242,.90)';
+    ctx.beginPath(); ctx.roundRect(x,y,w,h,16); ctx.fill();
+    ctx.strokeStyle='rgba(247,144,9,.35)'; ctx.lineWidth=2; ctx.stroke();
+
+    ctx.fillStyle='#93370d';
+    ctx.font='900 14px system-ui'; ctx.textAlign='center';
+    ctx.fillText(`👹 BOSS  ·  HP ${bossHp}/5`,canvas.width/2,y+18);
+
+    ctx.fillStyle='#172033';
+    ctx.font='850 17px system-ui';
+    ctx.fillText('날아오는 수식을 보고 맞는 각도를 눌러 반격하세요',canvas.width/2,y+45);
+  }
+}
+
+function drawActionFx(){
+  const t=Math.max(0,actionTimer)/760;
+  ctx.save();
+  if(currentAction==='slide' && actionTimer>0){
+    ctx.strokeStyle='rgba(36,94,234,.22)';
+    ctx.lineWidth=3;
+    for(let i=0;i<4;i++){
+      const sy=groundY-16+i*8;
+      ctx.beginPath();
+      ctx.moveTo(runnerX-65-i*8, sy);
+      ctx.lineTo(runnerX-18, sy-2);
+      ctx.stroke();
+    }
+    ctx.fillStyle='rgba(170,140,90,.25)';
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      ctx.ellipse(runnerX-20-i*8, groundY+4, 10-i, 4-i*0.4, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  if(currentAction==='jump' && actionTimer>0){
+    ctx.strokeStyle='rgba(247,144,9,.28)';
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.arc(runnerX-28, groundY-38, 42, Math.PI*1.08, Math.PI*1.78, false);
+    ctx.stroke();
+    ctx.fillStyle='rgba(170,140,90,.22)';
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.ellipse(runnerX-14-i*8, groundY+2, 8-i, 3.5-i*0.3, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  if(currentAction==='bridge' && actionTimer>0){
+    ctx.strokeStyle='rgba(245,158,11,.32)';
+    ctx.lineWidth=3;
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.moveTo(runnerX-10-i*10, groundY-10-i*2);
+      ctx.lineTo(runnerX+24-i*2, groundY-34-i*5);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawRunner(){
+  const runPhase=performance.now()*0.014*speed;
+  const stride=Math.sin(runPhase);
+  const counter=Math.sin(runPhase+Math.PI);
+  const bob=2.4*Math.abs(Math.sin(runPhase));
+  const yBase=groundY-54+runnerY+bob;
+  const jumpMode = currentAction==='jump' && actionTimer>0;
+  const slideMode = currentAction==='slide' && actionTimer>0;
+  const bridgeMode = currentAction==='bridge' && actionTimer>0;
+  const airborne = runnerY < -3 || jumpMode;
+  const bodyLean = slideMode ? -0.55 : bridgeMode ? -0.18 : airborne ? -0.12 : 0.06 + stride*0.03;
+  const bodyY = slideMode ? yBase+17 : yBase;
+  const hipY = slideMode ? 17 : 16;
+
+  ctx.save();
+  ctx.translate(runnerX, bodyY);
+  ctx.rotate(bodyLean);
+
+  // ground shadow
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.globalAlpha = airborne ? 0.11 : 0.18;
+  ctx.fillStyle='#172033';
+  ctx.beginPath();
+  const shw = airborne ? 20 : 28;
+  ctx.ellipse(runnerX, groundY+46, shw, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // backpack
+  ctx.fillStyle='#7a5af8';
+  ctx.beginPath();
+  ctx.roundRect(-21,-10,14,26,6);
+  ctx.fill();
+
+  // torso
+  ctx.fillStyle='#245eea';
+  ctx.beginPath();
+  ctx.roundRect(-11,-18,24,33,10);
+  ctx.fill();
+
+  // scarf / accent
+  ctx.fillStyle='#9ec5ff';
+  ctx.fillRect(-8,-10,15,4);
+
+  // neck + head
+  ctx.strokeStyle='#ffd3ad';
+  ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(1,-20); ctx.lineTo(1,-24); ctx.stroke();
+  ctx.fillStyle='#ffd3ad';
+  ctx.beginPath(); ctx.arc(3,-36,13,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#344054';
+  ctx.beginPath(); ctx.arc(1,-40,13,Math.PI,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#f79009';
+  ctx.fillRect(-6,-52,20,5);
+  ctx.fillStyle='#172033';
+  ctx.beginPath(); ctx.arc(7,-36,1.7,0,Math.PI*2); ctx.fill();
+
+  function limb(p0,p1,p2,color,w1,w2){
+    ctx.strokeStyle=color;
+    ctx.lineCap='round';
+    ctx.lineWidth=w1;
+    ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+    ctx.lineWidth=w2;
+    ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  }
+
+  // arms
+  const shoulderL={x:-7,y:-9}, shoulderR={x:11,y:-9};
+  let armFront = 12*stride;
+  let armBack = 12*counter;
+  if(airborne){ armFront=7; armBack=-7; }
+  if(slideMode){ armFront=2; armBack=-2; }
+
+  const elbowL={x:shoulderL.x-8+armBack*0.45, y:shoulderL.y+10+Math.abs(armBack)*0.1};
+  const handL ={x:elbowL.x-8+armBack*0.3, y:elbowL.y+11};
+  const elbowR={x:shoulderR.x+8+armFront*0.45, y:shoulderR.y+10+Math.abs(armFront)*0.05};
+  const handR ={x:elbowR.x+8+armFront*0.28, y:elbowR.y+10};
+
+  limb(shoulderL,elbowL,handL,'#ffd3ad',5.8,5.2);
+  limb(shoulderR,elbowR,handR,'#ffd3ad',5.8,5.2);
+
+  // legs with knees
+  const hipL={x:-3,y:hipY}, hipR={x:8,y:hipY};
+  let stepFront = 14*stride;
+  let stepBack = 14*counter;
+  let kneeLiftFront = 10*Math.max(0,stride);
+  let kneeLiftBack = 6*Math.max(0,counter);
+
+  if(airborne){
+    stepFront = 7;
+    stepBack = -7;
+    kneeLiftFront = 14;
+    kneeLiftBack = 11;
+  }
+  if(slideMode){
+    stepFront = 18;
+    stepBack = -5;
+    kneeLiftFront = 1;
+    kneeLiftBack = 3;
+  }
+  if(bridgeMode){
+    stepFront = 10;
+    stepBack = -2;
+    kneeLiftFront = 6;
+    kneeLiftBack = 4;
+  }
+
+  const kneeL={x:hipL.x-4+stepBack*0.42, y:hipL.y+16-kneeLiftBack};
+  const footL={x:kneeL.x-6+stepBack*0.35, y:kneeL.y+15+kneeLiftBack*0.8};
+  const kneeR={x:hipR.x+4+stepFront*0.42, y:hipR.y+16-kneeLiftFront};
+  const footR={x:kneeR.x+8+stepFront*0.35, y:kneeR.y+15+kneeLiftFront*0.85};
+
+  limb(hipL,kneeL,footL,'#263b63',6.6,6.2);
+  limb(hipR,kneeR,footR,'#263b63',6.6,6.2);
+
+  // shoes
+  ctx.strokeStyle='#172033';
+  ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(footL.x-3,footL.y); ctx.lineTo(footL.x+8,footL.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(footR.x-2,footR.y); ctx.lineTo(footR.x+9,footR.y); ctx.stroke();
+
+  ctx.restore();
+}
+function drawTriangleHint(ob){
+  const x=ob.x,y=groundY-150;
+  const A={x:x-48,y:y+54},B={x:x+48,y:y-34},C={x:x+48,y:y+54};
+  const sides=[
+    {name:'c',p1:A,p2:B},
+    {name:'a',p1:B,p2:C},
+    {name:'b',p1:A,p2:C}
+  ];
+  ctx.save();
+  ctx.strokeStyle='#f79009'; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.beginPath();
+  if(ob.ref==='left'){
+    const r=30, ang=Math.atan2(B.y-A.y,B.x-A.x);
+    ctx.arc(A.x,A.y,r,ang,-0.03,false);
+  }else{
+    const r=29;
+    const startAng=Math.atan2(A.y-B.y,A.x-B.x);
+    const endAng=Math.atan2(C.y-B.y,C.x-B.x);
+    ctx.arc(B.x,B.y,r,startAng,endAng,true);
+  }
+  ctx.stroke();
+
+  for(const s of sides){
+    const active1=s.name===ob.side1, active2=s.name===ob.side2;
+    ctx.strokeStyle=active1?'#245eea':active2?'#a855f7':'rgba(102,112,133,.68)';
+    ctx.lineWidth=(active1||active2)?7:3;
+    ctx.beginPath(); ctx.moveTo(s.p1.x,s.p1.y); ctx.lineTo(s.p2.x,s.p2.y); ctx.stroke();
+  }
+
+  ctx.strokeStyle='rgba(23,32,51,.9)';
+  ctx.lineWidth=2.5;
+  ctx.strokeRect(C.x-17,C.y-17,17,17);
+
+  ctx.fillStyle='rgba(23,32,51,.88)';
+  ctx.font='850 13px system-ui'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText('A',A.x-14,A.y+16); ctx.fillText('B',B.x+14,B.y-8); ctx.fillText('C',C.x+14,C.y+16);
+
+  function sideLabel(name,lx,ly){
+    const active1=ob.side1===name, active2=ob.side2===name;
+    ctx.fillStyle=active1?'#245eea':active2?'#a855f7':'rgba(102,112,133,.92)';
+    ctx.font='950 15px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(name,lx,ly);
+  }
+  sideLabel('c',x-10,y+2);
+  sideLabel('a',x+66,y+10);
+  sideLabel('b',x,y+73);
+  ctx.restore();
+}
+
+function drawObstacle(){
+  if(!obstacle)return;
+  const ob=obstacle;
+  const pulse = Math.sin(performance.now()*0.012 + ob.x*0.01)*3;
+  drawTriangleHint(ob);
+
+  // obstacle icon reacts slightly to movement
+  ctx.save();
+  ctx.translate(ob.x, groundY-42 + pulse*0.2);
+  if(ob.action==='jump') ctx.rotate(Math.sin(performance.now()*0.01)*0.06);
+  if(ob.action==='slide') ctx.scale(1.03, 1);
+  if(ob.action==='bridge') ctx.translate(0,-2);
+  ctx.font='50px system-ui';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(ob.icon,0,0);
+  ctx.restore();
+
+  if(ob.resolved&&ob.answer){
+    ctx.font='900 17px system-ui';
+    ctx.fillStyle='#172033';
+    ctx.fillText(ob.answer.toUpperCase(),ob.x,groundY-205);
+  }
+
+  if(ob.resolved && actionTimer>0){
+    const p = 1 - Math.max(0,actionTimer)/760; // 0 -> 1
+    if(ob.action==='bridge'){
+      ctx.strokeStyle='#9a6b34';
+      ctx.lineWidth=10;
+      ctx.lineCap='round';
+      const x1 = runnerX+24;
+      const y1 = groundY-8;
+      const x2 = x1 + (ob.x-20-x1)*Math.min(1,p*1.3);
+      const y2 = y1 + (groundY-72-y1)*Math.min(1,p*1.3);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+
+      ctx.strokeStyle='rgba(255,214,102,.45)';
+      ctx.lineWidth=2.5;
+      for(let i=0;i<4;i++){
+        const sx=x1+(x2-x1)*(0.2+i*0.18);
+        const sy=y1+(y2-y1)*(0.2+i*0.18);
+        ctx.beginPath(); ctx.arc(sx,sy,3.5,0,Math.PI*2); ctx.stroke();
+      }
+    }
+    if(ob.action==='slide'){
+      ctx.fillStyle='rgba(120,120,120,.16)';
+      ctx.fillRect(ob.x-28, groundY-54, 56, 10);
+    }
+    if(ob.action==='jump'){
+      ctx.strokeStyle='rgba(247,144,9,.25)';
+      ctx.lineWidth=4;
+      ctx.beginPath();
+      ctx.arc(ob.x-6, groundY-38, 34, Math.PI*1.02, Math.PI*1.78);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawBossCharacter(){
+  if(!bossMode)return;
+  ctx.save();
+  const bx=canvas.width-150, by=groundY-82 + Math.sin(performance.now()*0.01)*3;
+  ctx.font='74px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('👹',bx,by);
+
+  // boss platform
+  ctx.strokeStyle='rgba(247,144,9,.8)'; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(bx-38,by+54); ctx.lineTo(bx+38,by+54); ctx.stroke();
+
+  // boss aura
+  ctx.strokeStyle='rgba(247,144,9,.25)';
+  ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(bx,by,46+Math.sin(performance.now()*0.015)*3,0,Math.PI*2); ctx.stroke();
+
+  if(bossProjectile){
+    const p=bossProjectile;
+    const countered = p.state==='returning';
+
+    // trail
+    for(let i=0;i<4;i++){
+      ctx.fillStyle = countered ? `rgba(36,94,234,${0.18-i*0.03})` : `rgba(247,144,9,${0.18-i*0.03})`;
+      ctx.beginPath();
+      ctx.arc(p.x - (countered?-1:1)*i*16, p.y, 14-i*2.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // projectile core
+    const grad=ctx.createRadialGradient(p.x-4,p.y-4,4,p.x,p.y,22);
+    if(countered){
+      grad.addColorStop(0,'rgba(255,255,255,.98)');
+      grad.addColorStop(0.45,'rgba(125,185,255,.98)');
+      grad.addColorStop(1,'rgba(36,94,234,.30)');
+    }else{
+      grad.addColorStop(0,'rgba(255,255,255,.98)');
+      grad.addColorStop(0.45,'rgba(255,196,107,.98)');
+      grad.addColorStop(1,'rgba(247,144,9,.30)');
+    }
+    ctx.fillStyle=grad;
+    ctx.beginPath(); ctx.arc(p.x,p.y,20,0,Math.PI*2); ctx.fill();
+
+    // equation bubble attached to projectile
+    const bubbleW=190, bubbleH=42;
+    const bx0=p.x-bubbleW/2, by0=p.y-48;
+    ctx.fillStyle='rgba(255,255,255,.92)';
+    ctx.beginPath(); ctx.roundRect(bx0,by0,bubbleW,bubbleH,12); ctx.fill();
+    ctx.strokeStyle=countered?'rgba(36,94,234,.35)':'rgba(247,144,9,.35)';
+    ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x-8,by0+bubbleH);
+    ctx.lineTo(p.x,p.y-18);
+    ctx.lineTo(p.x+8,by0+bubbleH);
+    ctx.stroke();
+
+    ctx.fillStyle='#172033';
+    ctx.font='900 20px system-ui';
+    ctx.textAlign='center';
+    ctx.fillText(bossQuestion?bossQuestion.eq:'',p.x,by0+26);
+  }
+  ctx.restore();
+}
+function drawFeedback(){
+  if(feedbackTimer<=0||!feedbackText)return;
+  ctx.save();
+  ctx.globalAlpha=Math.min(1,feedbackTimer/300);
+  const w=Math.min(canvas.width-90, ctx.measureText(feedbackText).width+28);
+  const x=(canvas.width-w)/2, y=canvas.height-86, h=34;
+  ctx.fillStyle=feedbackKind==='good'?'rgba(236,253,243,.92)':feedbackKind==='bad'?'rgba(255,244,237,.95)':feedbackKind==='warn'?'rgba(255,248,237,.95)':'rgba(255,255,255,.92)';
+  ctx.beginPath(); ctx.roundRect(x,y,w,h,12); ctx.fill();
+  ctx.fillStyle=feedbackKind==='good'?'#05603a':feedbackKind==='bad'?'#9c2a10':feedbackKind==='warn'?'#93370d':'#172033';
+  ctx.font='850 14px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(feedbackText,canvas.width/2,y+h/2);
+  ctx.restore();
+}
+function drawFlash(){
+  if(flashTimer<=0)return;
+  ctx.save();
+  ctx.globalAlpha=Math.min(1,flashTimer/250);
+  ctx.font='950 34px system-ui'; ctx.textAlign='center';
+  ctx.fillStyle=flashText.includes('MISS')||flashText.includes('LATE')||flashText.includes('HIT')?'#c4320a':'#14804a';
+  ctx.fillText(flashText,canvas.width/2,112);
+  ctx.restore();
+}
+function drawGameOver(){
+  if(!gameOver)return;
+  ctx.fillStyle='rgba(17,24,39,.62)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#fff'; ctx.textAlign='center';
+  ctx.font='950 42px system-ui'; ctx.fillText('GAME OVER',canvas.width/2,205);
+  ctx.font='800 20px system-ui'; ctx.fillText(`점수 ${score} · 거리 ${Math.floor(distance)}m · 최고 콤보 ${best}`,canvas.width/2,245);
+}
+function draw(){
+  drawBackground();
+  drawHud();
+  drawActionFx();
+  drawRunner();
+  drawObstacle();
+  drawBossCharacter();
+  drawFlash();
+  drawFeedback();
+  drawGameOver();
+}
+function loop(t){
+  const dt=Math.min(32,t-last); last=t;
+  update(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+document.querySelectorAll('[data-answer]').forEach(btn=>{
+  btn.addEventListener('click',()=>handleAnswer(btn.dataset.answer));
+});
+document.querySelectorAll('[data-boss-angle]').forEach(btn=>{
+  btn.addEventListener('click',()=>answerBoss(Number(btn.dataset.bossAngle)));
+});
+window.addEventListener('keydown',e=>{
+  if(e.repeat)return;
+  const k=e.key.toLowerCase();
+  if(bossMode){
+    if(k==='0')answerBoss(0);
+    if(k==='3')answerBoss(30);
+    if(k==='4')answerBoss(45);
+    if(k==='6')answerBoss(60);
+    if(k==='9')answerBoss(90);
+    return;
+  }
+  if(k==='a')handleAnswer('sin');
+  if(k==='s')handleAnswer('cos');
+  if(k==='d')handleAnswer('tan');
+});
+resetBtn.addEventListener('click',reset);
+
+reset();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
+
