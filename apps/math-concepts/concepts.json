@@ -267,5 +267,31 @@
     "areaOrder": 1,
     "unitOrder": 1,
     "conceptOrder": 3
+  },
+  {
+    "id": "various-quadrilaterals",
+    "school": "중학교",
+    "grade": "2학년",
+    "area": "도형과 측정",
+    "unit": "삼각형과 사각형의 성질",
+    "title": "여러 가지 사각형의 성질",
+    "description": "직사각형·마름모·정사각형·등변사다리꼴의 대각선 성질을 합동과 포함 관계로 연결하여 이해합니다.",
+    "href": "./middle-2/various-quadrilaterals/",
+    "tags": [
+      "사각형",
+      "사다리꼴",
+      "평행사변형",
+      "직사각형",
+      "마름모",
+      "정사각형",
+      "대각선",
+      "포함 관계"
+    ],
+    "published": true,
+    "schoolOrder": 1,
+    "gradeOrder": 2,
+    "areaOrder": 1,
+    "unitOrder": 1,
+    "conceptOrder": 4
   }
 ]
