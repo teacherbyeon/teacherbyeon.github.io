@@ -24,9 +24,9 @@
         <span class="badge">중학교 3학년</span>
         <h1>2학기 1차 시험 대비<br>정답·해설</h1>
         <p>선생님께 받은 학습지를 먼저 충분히 풀어본 뒤 확인하세요.</p>
-        <form class="field" id="loginForm"><input id="password" type="password" autocomplete="current-password" placeholder="입장 비밀번호" aria-label="입장 비밀번호" required><button type="submit">정답 확인</button></form>
+        <form class="field" id="loginForm"><input id="password" type="password" autocomplete="current-password" placeholder="입장 비밀번호 (영문 자판)" aria-label="입장 비밀번호" required><button type="submit">정답 확인</button></form>
         <p class="error" id="error" role="alert" aria-live="polite"></p>
-        <p class="notice">이 자료는 화면 열람용입니다. 다운로드와 인쇄 기능은 제공하지 않습니다.</p>
+        <p class="notice">비밀번호는 영문 자판 상태로 입력하세요.<br>이 자료는 화면 열람용이며 다운로드와 인쇄 기능은 제공하지 않습니다.</p>
       </div>
     </section>
     <section class="shell viewer" id="viewer" hidden>
@@ -35,7 +35,7 @@
     </section>
   </main>
   <script>
-    const EXPECTED='25da68b768bdc5e87bf58784ac1c68ced2351fbc34c5b3cce5fc39e1943ddc7e';
+    const EXPECTED='aa4183784e4ed584a4d57c98389c2a9f70fdf3908457e45d604bc2fe22a428c6';
     const gate=document.querySelector('#gate'),viewer=document.querySelector('#viewer'),form=document.querySelector('#loginForm'),password=document.querySelector('#password'),error=document.querySelector('#error'),pages=document.querySelector('#pages');
     async function sha256(value){const data=new TextEncoder().encode(value);const digest=await crypto.subtle.digest('SHA-256',data);return [...new Uint8Array(digest)].map(v=>v.toString(16).padStart(2,'0')).join('')}
     function loadPages(){if(pages.childElementCount)return;pages.innerHTML=Array.from({length:6},(_,i)=>`<article class="page"><span class="pageNo">${i+1} / 6</span><img src="./pages/answer-${i+1}.jpg" alt="정답 및 해설 ${i+1}쪽" loading="${i?'lazy':'eager'}" draggable="false"></article>`).join('')}
