@@ -30,20 +30,22 @@
       </div>
     </section>
     <section class="shell viewer" id="viewer" hidden>
-      <div class="viewerHead"><div><h1>중3 2학기 1차 시험 대비</h1><p>압축 해설 6쪽 · 문제 및 자세한 해설 20쪽</p></div><button class="exit" id="exitBtn">열람 종료</button></div>
-      <div class="tabs" id="tabs" role="tablist" aria-label="자료 선택"><button class="tab active" type="button" data-set="answers" role="tab" aria-selected="true">압축 정답·해설</button><button class="tab" type="button" data-set="full" role="tab" aria-selected="false">문제·상세 해설</button></div>\n      <div class="pages" id="pages"></div>
+      <div class="viewerHead"><div><h1>중3 2학기 1차 시험 대비</h1><p>삼각비 정답·해설 6쪽 · 원의 접선 정답·해설 6쪽</p></div><button class="exit" id="exitBtn">열람 종료</button></div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="자료 선택"><button class="tab active" type="button" data-set="trig" role="tab" aria-selected="true">삼각비 정답·해설</button><button class="tab" type="button" data-set="tangent" role="tab" aria-selected="false">원의 접선 정답·해설</button></div>
+      <div class="pages" id="pages"></div>
     </section>
   </main>
   <script>
-    const EXPECTED='aa4183784e4ed584a4d57c98389c2a9f70fdf3908457e45d604bc2fe22a428c6';
+    const EXPECTED='cmhrZGZ1d25kMTIz';
     const gate=document.querySelector('#gate'),viewer=document.querySelector('#viewer'),form=document.querySelector('#loginForm'),password=document.querySelector('#password'),error=document.querySelector('#error'),pages=document.querySelector('#pages');
-    async function sha256(value){const data=new TextEncoder().encode(value);const digest=await crypto.subtle.digest('SHA-256',data);return [...new Uint8Array(digest)].map(v=>v.toString(16).padStart(2,'0')).join('')}
-    const materialSets={answers:{count:6,prefix:'./pages/answer-',pad:false,label:'압축 정답 및 해설'},full:{count:20,prefix:'./worksheet-pages/worksheet-',pad:true,label:'문제 및 자세한 해설'}};let currentSet='answers';
+    function passwordMatches(value){try{return btoa(value)===EXPECTED}catch{return false}}
+    const materialSets={trig:{count:6,prefix:'./pages/answer-',pad:false,label:'삼각비 정답 및 해설'},tangent:{count:6,prefix:'./tangent-pages/answer-',pad:false,label:'원의 접선 정답 및 해설'}};let currentSet='trig';
     function loadPages(kind=currentSet){currentSet=kind;const set=materialSets[kind];pages.innerHTML=Array.from({length:set.count},(_,i)=>{const number=i+1,file=set.pad?String(number).padStart(2,'0'):String(number);return `<article class="page"><span class="pageNo">${number} / ${set.count}</span><img src="${set.prefix}${file}.jpg" alt="${set.label} ${number}쪽" loading="${i?'lazy':'eager'}" draggable="false"></article>`}).join('');document.querySelectorAll('.tab').forEach(button=>{const active=button.dataset.set===kind;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});window.scrollTo(0,0)}
     function openViewer(){sessionStorage.setItem('bbb-exam-answer-access','yes');loadPages();gate.hidden=true;viewer.hidden=false;window.scrollTo(0,0)}
     function closeViewer(){sessionStorage.removeItem('bbb-exam-answer-access');viewer.hidden=true;gate.hidden=false;password.value='';error.textContent='';password.focus();window.scrollTo(0,0)}
-    form.addEventListener('submit',async e=>{e.preventDefault();error.textContent='확인 중입니다.';const ok=await sha256(password.value)===EXPECTED;if(ok){error.textContent='';openViewer()}else{error.textContent='비밀번호가 맞지 않습니다. 다시 입력해 주세요.';password.select()}});
-    document.querySelector('#exitBtn').addEventListener('click',closeViewer);\n    document.querySelector('#tabs').addEventListener('click',e=>{const button=e.target.closest('[data-set]');if(button)loadPages(button.dataset.set)});
+    form.addEventListener('submit',async e=>{e.preventDefault();error.textContent='확인 중입니다.';const ok=passwordMatches(password.value);if(ok){error.textContent='';openViewer()}else{error.textContent='비밀번호가 맞지 않습니다. 다시 입력해 주세요.';password.select()}});
+    document.querySelector('#exitBtn').addEventListener('click',closeViewer);
+    document.querySelector('#tabs').addEventListener('click',e=>{const button=e.target.closest('[data-set]');if(button)loadPages(button.dataset.set)});
     document.addEventListener('contextmenu',e=>{if(!viewer.hidden)e.preventDefault()});
     document.addEventListener('keydown',e=>{if(!viewer.hidden&&(e.ctrlKey||e.metaKey)&&['s','p'].includes(e.key.toLowerCase())){e.preventDefault();alert('이 자료는 화면 열람용입니다.')}});
     if(sessionStorage.getItem('bbb-exam-answer-access')==='yes')openViewer();
