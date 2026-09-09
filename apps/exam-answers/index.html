@@ -31,7 +31,7 @@
   <main>
     <section class="shell gate" id="gate">
       <div class="card">
-        <span class="badge">중학교 3학년</span>
+        <span class="badge">중학교 2·3학년</span>
         <h1>2학기 1차 시험 대비<br>정답·해설</h1>
         <p>선생님께 받은 학습지를 먼저 충분히 풀어본 뒤 확인하세요.</p>
         <form class="field" id="loginForm"><input id="password" type="password" autocomplete="current-password" placeholder="입장 비밀번호 (영문 자판)" aria-label="입장 비밀번호" required><button type="submit">정답 확인</button></form>
@@ -40,8 +40,8 @@
       </div>
     </section>
     <section class="shell viewer" id="viewer" hidden>
-      <div class="viewerHead"><div><h1>중3 2학기 1차 시험 대비</h1><p>삼각비 정답·해설 6쪽 · 원의 접선 정답·해설 6쪽</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="exit" id="printBtn" type="button">선택한 해설 인쇄</button><button class="exit" id="exitBtn">열람 종료</button></div></div>
-      <div class="tabs" id="tabs" role="tablist" aria-label="자료 선택"><button class="tab active" type="button" data-set="trig" role="tab" aria-selected="true">삼각비 정답·해설</button><button class="tab" type="button" data-set="tangent" role="tab" aria-selected="false">원의 접선 정답·해설</button></div>
+      <div class="viewerHead"><div><h1>중2·중3 2학기 1차 시험 대비</h1><p>학년과 단원을 선택한 뒤 정답·해설을 확인하거나 인쇄하세요.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="exit" id="printBtn" type="button">선택한 해설 인쇄</button><button class="exit" id="exitBtn">열람 종료</button></div></div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="자료 선택"><button class="tab active" type="button" data-set="trig" role="tab" aria-selected="true">중3 삼각비</button><button class="tab" type="button" data-set="tangent" role="tab" aria-selected="false">중3 원의 접선</button><button class="tab" type="button" data-set="linear" role="tab" aria-selected="false">중2 일차함수와 연립방정식</button><button class="tab" type="button" data-set="geometry2" role="tab" aria-selected="false">중2 평행사변형·외심·내심</button></div>
       <p class="print-status" id="printStatus" role="status" aria-live="polite"></p>
       <div class="pages" id="pages"></div>
     </section>
@@ -50,7 +50,7 @@
     const EXPECTED='cmhrZGZ1d25kMTIz';
     const gate=document.querySelector('#gate'),viewer=document.querySelector('#viewer'),form=document.querySelector('#loginForm'),password=document.querySelector('#password'),error=document.querySelector('#error'),pages=document.querySelector('#pages');
     function passwordMatches(value){try{return btoa(value)===EXPECTED}catch{return false}}
-    const materialSets={trig:{count:6,prefix:'./pages/answer-',pad:false,label:'삼각비 정답 및 해설'},tangent:{count:6,prefix:'./tangent-pages/answer-',pad:false,label:'원의 접선 정답 및 해설'}};let currentSet='trig';
+    const materialSets={trig:{count:6,prefix:'./pages/answer-',pad:false,label:'삼각비 정답 및 해설'},tangent:{count:6,prefix:'./tangent-pages/answer-',pad:false,label:'원의 접선 정답 및 해설'},linear:{count:3,prefix:'./linear-pages/answer-',pad:false,label:'중2 일차함수와 연립방정식 정답 및 해설'},geometry2:{count:6,prefix:'./geometry2-pages/answer-',pad:false,label:'중2 평행사변형·외심·내심 정답 및 해설'}};let currentSet='trig';
     function loadPages(kind=currentSet){currentSet=kind;const set=materialSets[kind];pages.innerHTML=Array.from({length:set.count},(_,i)=>{const number=i+1,file=set.pad?String(number).padStart(2,'0'):String(number);return `<article class="page"><span class="pageNo">${number} / ${set.count}</span><img src="${set.prefix}${file}.jpg" alt="${set.label} ${number}쪽" loading="eager" draggable="false"></article>`}).join('');document.querySelectorAll('.tab').forEach(button=>{const active=button.dataset.set===kind;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});window.scrollTo(0,0)}
     function openViewer(){sessionStorage.setItem('bbb-exam-answer-access','yes');loadPages();gate.hidden=true;viewer.hidden=false;window.scrollTo(0,0)}
     function closeViewer(){sessionStorage.removeItem('bbb-exam-answer-access');viewer.hidden=true;gate.hidden=false;password.value='';error.textContent='';password.focus();window.scrollTo(0,0)}
