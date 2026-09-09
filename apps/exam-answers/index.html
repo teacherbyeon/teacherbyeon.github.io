@@ -13,7 +13,17 @@
     .gate{min-height:calc(100vh - 66px);display:grid;place-items:center;padding:36px 0}.card{width:min(520px,100%);background:#fff;border:2px solid var(--ink);border-radius:16px;padding:clamp(24px,6vw,44px);box-shadow:8px 8px 0 var(--lime)}.badge{display:inline-block;background:var(--lime);border:2px solid var(--ink);padding:6px 10px;border-radius:999px;font-weight:900;font-size:.82rem}.card h1{font-size:clamp(1.8rem,6vw,2.65rem);letter-spacing:-.05em;margin:22px 0 12px}.card p{color:var(--muted);line-height:1.65}.field{display:flex;gap:8px;margin-top:24px}.field input{min-width:0;flex:1;border:2px solid var(--ink);border-radius:11px;padding:13px 14px;outline:none}.field input:focus{box-shadow:0 0 0 4px #3158ff25}.field button,.exit{border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:11px;padding:12px 17px;font-weight:900;cursor:pointer}.error{min-height:24px;color:var(--bad);font-weight:800;margin:10px 0 0}.notice{font-size:.82rem;color:var(--muted);margin-top:19px!important}
     .viewer[hidden],.gate[hidden]{display:none}.viewer{padding:32px 0 70px}.viewerHead{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:24px}.viewerHead h1{font-size:clamp(1.8rem,5vw,3rem);letter-spacing:-.05em;margin:0 0 7px}.viewerHead p{margin:0;color:var(--muted)}.exit{background:#fff;color:var(--ink);white-space:nowrap}.tabs{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 22px}.tab{border:2px solid var(--ink);background:#fff;border-radius:999px;padding:10px 16px;font-weight:900;cursor:pointer}.tab.active{background:var(--lime)}.pages{display:grid;gap:24px}.page{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 5px 18px #18203314;position:relative}.page img{display:block;width:100%;height:auto;-webkit-user-drag:none;user-select:none}.pageNo{position:absolute;right:10px;top:10px;background:#182033dc;color:#fff;border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:900}
     @media(max-width:560px){.top{min-height:58px}.gate{min-height:calc(100vh - 60px)}.field{display:grid}.field button{width:100%}.viewerHead{align-items:start;flex-direction:column}.exit{align-self:flex-end}.viewer{padding-top:24px}.pages{gap:15px}}
-    @media print{body{display:none!important}}
+    @page{size:A4 portrait;margin:8mm}
+    @media print{
+      html,body{margin:0!important;background:white!important}
+      .top,.gate,.viewerHead,.tabs,.print-status,.pageNo{display:none!important}
+      .viewer{width:100%!important;margin:0!important;padding:0!important}
+      .viewer[hidden]{display:none!important}
+      .pages{display:block!important}
+      .page{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:0!important;break-inside:avoid;break-after:page;page-break-after:always}
+      .page:last-child{break-after:auto;page-break-after:auto}
+      .page img{width:100%!important;height:280mm!important;object-fit:contain}
+    }
   </style>
 </head>
 <body>
@@ -26,12 +36,13 @@
         <p>선생님께 받은 학습지를 먼저 충분히 풀어본 뒤 확인하세요.</p>
         <form class="field" id="loginForm"><input id="password" type="password" autocomplete="current-password" placeholder="입장 비밀번호 (영문 자판)" aria-label="입장 비밀번호" required><button type="submit">정답 확인</button></form>
         <p class="error" id="error" role="alert" aria-live="polite"></p>
-        <p class="notice">비밀번호는 영문 자판 상태로 입력하세요.<br>이 자료는 화면 열람용이며 다운로드와 인쇄 기능은 제공하지 않습니다.</p>
+        <p class="notice">비밀번호는 영문 자판 상태로 입력하세요.<br>입장 후 원하는 자료를 선택하여 열람하거나 인쇄할 수 있습니다.</p>
       </div>
     </section>
     <section class="shell viewer" id="viewer" hidden>
-      <div class="viewerHead"><div><h1>중3 2학기 1차 시험 대비</h1><p>삼각비 정답·해설 6쪽 · 원의 접선 정답·해설 6쪽</p></div><button class="exit" id="exitBtn">열람 종료</button></div>
+      <div class="viewerHead"><div><h1>중3 2학기 1차 시험 대비</h1><p>삼각비 정답·해설 6쪽 · 원의 접선 정답·해설 6쪽</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="exit" id="printBtn" type="button">선택한 해설 인쇄</button><button class="exit" id="exitBtn">열람 종료</button></div></div>
       <div class="tabs" id="tabs" role="tablist" aria-label="자료 선택"><button class="tab active" type="button" data-set="trig" role="tab" aria-selected="true">삼각비 정답·해설</button><button class="tab" type="button" data-set="tangent" role="tab" aria-selected="false">원의 접선 정답·해설</button></div>
+      <p class="print-status" id="printStatus" role="status" aria-live="polite"></p>
       <div class="pages" id="pages"></div>
     </section>
   </main>
@@ -40,14 +51,41 @@
     const gate=document.querySelector('#gate'),viewer=document.querySelector('#viewer'),form=document.querySelector('#loginForm'),password=document.querySelector('#password'),error=document.querySelector('#error'),pages=document.querySelector('#pages');
     function passwordMatches(value){try{return btoa(value)===EXPECTED}catch{return false}}
     const materialSets={trig:{count:6,prefix:'./pages/answer-',pad:false,label:'삼각비 정답 및 해설'},tangent:{count:6,prefix:'./tangent-pages/answer-',pad:false,label:'원의 접선 정답 및 해설'}};let currentSet='trig';
-    function loadPages(kind=currentSet){currentSet=kind;const set=materialSets[kind];pages.innerHTML=Array.from({length:set.count},(_,i)=>{const number=i+1,file=set.pad?String(number).padStart(2,'0'):String(number);return `<article class="page"><span class="pageNo">${number} / ${set.count}</span><img src="${set.prefix}${file}.jpg" alt="${set.label} ${number}쪽" loading="${i?'lazy':'eager'}" draggable="false"></article>`}).join('');document.querySelectorAll('.tab').forEach(button=>{const active=button.dataset.set===kind;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});window.scrollTo(0,0)}
+    function loadPages(kind=currentSet){currentSet=kind;const set=materialSets[kind];pages.innerHTML=Array.from({length:set.count},(_,i)=>{const number=i+1,file=set.pad?String(number).padStart(2,'0'):String(number);return `<article class="page"><span class="pageNo">${number} / ${set.count}</span><img src="${set.prefix}${file}.jpg" alt="${set.label} ${number}쪽" loading="eager" draggable="false"></article>`}).join('');document.querySelectorAll('.tab').forEach(button=>{const active=button.dataset.set===kind;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});window.scrollTo(0,0)}
     function openViewer(){sessionStorage.setItem('bbb-exam-answer-access','yes');loadPages();gate.hidden=true;viewer.hidden=false;window.scrollTo(0,0)}
     function closeViewer(){sessionStorage.removeItem('bbb-exam-answer-access');viewer.hidden=true;gate.hidden=false;password.value='';error.textContent='';password.focus();window.scrollTo(0,0)}
     form.addEventListener('submit',async e=>{e.preventDefault();error.textContent='확인 중입니다.';const ok=passwordMatches(password.value);if(ok){error.textContent='';openViewer()}else{error.textContent='비밀번호가 맞지 않습니다. 다시 입력해 주세요.';password.select()}});
     document.querySelector('#exitBtn').addEventListener('click',closeViewer);
     document.querySelector('#tabs').addEventListener('click',e=>{const button=e.target.closest('[data-set]');if(button)loadPages(button.dataset.set)});
     document.addEventListener('contextmenu',e=>{if(!viewer.hidden)e.preventDefault()});
-    document.addEventListener('keydown',e=>{if(!viewer.hidden&&(e.ctrlKey||e.metaKey)&&['s','p'].includes(e.key.toLowerCase())){e.preventDefault();alert('이 자료는 화면 열람용입니다.')}});
+    let printing=false;
+    async function printSelected(){
+      if(viewer.hidden||printing)return;
+      printing=true;
+      const controls=[document.querySelector('#printBtn'),document.querySelector('#exitBtn'),...document.querySelectorAll('.tab')];
+      const status=document.querySelector('#printStatus');
+      controls.forEach(button=>button.disabled=true);
+      status.textContent='인쇄할 해설을 준비하고 있습니다.';
+      try{
+        const images=[...pages.querySelectorAll('img')];
+        await Promise.all(images.map(img=>new Promise((resolve,reject)=>{
+          const timer=setTimeout(()=>finish(new Error('timeout')),20000);
+          function finish(err){clearTimeout(timer);img.removeEventListener('load',loaded);img.removeEventListener('error',failed);err?reject(err):resolve()}
+          function loaded(){finish(img.naturalWidth?null:new Error('image'))}
+          function failed(){finish(new Error('image'))}
+          if(img.complete){loaded();return}
+          img.addEventListener('load',loaded);img.addEventListener('error',failed);
+        })));
+        status.textContent='';
+        window.print();
+      }catch{
+        status.textContent='일부 페이지를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 인쇄해 주세요.';
+      }finally{
+        controls.forEach(button=>button.disabled=false);printing=false;
+      }
+    }
+    document.querySelector('#printBtn').addEventListener('click',printSelected);
+    document.addEventListener('keydown',e=>{if(!viewer.hidden&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'){e.preventDefault();printSelected()}});
     if(sessionStorage.getItem('bbb-exam-answer-access')==='yes')openViewer();
   </script>
 </body>
