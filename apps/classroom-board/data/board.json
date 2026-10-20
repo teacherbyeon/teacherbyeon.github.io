@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "isSample": true,
+  "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-20T08:00:00+09:00",
+  "generatedAt": "2026-10-21T00:22:38+09:00",
   "school": {
     "name": "광려중학교"
   },
   "defaults": {
     "grade": 3,
-    "classNumber": 3
+    "classNumber": 4
   },
   "staleAfterMinutes": {
     "timetable": 180,
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-20T08:00:00+09:00",
+    "updatedAt": "2026-10-20T15:22:39.142Z",
     "validFrom": "2026-10-19",
     "validTo": "2026-10-23",
     "classes": [
@@ -29,58 +29,38 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "국어",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "subject": "체육",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "수학",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "미술",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "영어",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "기가",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "과학",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "수학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "사회",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "역사",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "체육",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
-                "changed": false
-              },
-              {
-                "period": 7,
-                "subject": "창체",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -91,63 +71,44 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "수학",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "subject": "역사",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "영어",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
-                "changed": true,
-                "original": {
-                  "subject": "미술",
-                  "teacher": "예시 교사 H"
-                },
-                "note": "예시 변경 수업"
+                "subject": "기가",
+                "teacher": "",
+                "changed": false
               },
               {
                 "period": 3,
                 "subject": "국어",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "역사",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "정보",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "음악",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "과학",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 7,
-                "subject": "체육",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "스포",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -158,50 +119,43 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "과학",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "국어",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
-                "changed": false
+                "subject": "수학",
+                "teacher": "",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": ""
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 3,
-                "subject": "수학",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "국어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "영어",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "기가",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "기술·가정",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "수학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "도덕",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -212,58 +166,44 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "영어",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "역사",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "미술",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "체육",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "수학",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "역사",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "국어",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "미술",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "국어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 7,
-                "subject": "과학",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "창체",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -275,49 +215,42 @@
               {
                 "period": 1,
                 "subject": "국어",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "과학",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "체육",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "영어",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "사회",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
-                "changed": false
+                "subject": "체육",
+                "teacher": "",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": ""
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 5,
-                "subject": "수학",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "진로",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "창체",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -335,57 +268,37 @@
               {
                 "period": 1,
                 "subject": "수학",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "영어",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "정보",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "과학",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "사회",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "체육",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "기가",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "창체",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
-                "changed": false
-              },
-              {
-                "period": 7,
-                "subject": "국어",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "역사",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -397,62 +310,43 @@
               {
                 "period": 1,
                 "subject": "영어",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "국어",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
-                "changed": true,
-                "original": {
-                  "subject": "미술",
-                  "teacher": "예시 교사 H"
-                },
-                "note": "예시 변경 수업"
+                "teacher": "",
+                "changed": false
               },
               {
                 "period": 3,
-                "subject": "역사",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "체육",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "음악",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "과학",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "체육",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "미술",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 7,
-                "subject": "수학",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "스포",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -464,49 +358,37 @@
               {
                 "period": 1,
                 "subject": "국어",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "수학",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "영어",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "기술·가정",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "수학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "도덕",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "체육",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "과학",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "기가",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -518,57 +400,43 @@
               {
                 "period": 1,
                 "subject": "역사",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "체육",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "기가",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "수학",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "국어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "국어",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "수학",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "미술",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "사회",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "과학",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "체육",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 7,
-                "subject": "영어",
-                "teacher": "예시 교사 G",
-                "start": "15:10",
-                "end": "15:55",
+                "subject": "창체",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -579,50 +447,38 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "과학",
-                "teacher": "예시 교사 A",
-                "start": "08:50",
-                "end": "09:35",
+                "subject": "미술",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "영어",
-                "teacher": "예시 교사 B",
-                "start": "09:45",
-                "end": "10:30",
+                "subject": "진로",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "사회",
-                "teacher": "예시 교사 C",
-                "start": "10:40",
-                "end": "11:25",
+                "subject": "영어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "수학",
-                "teacher": "예시 교사 D",
-                "start": "11:35",
-                "end": "12:20",
+                "subject": "역사",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "창체",
-                "teacher": "예시 교사 E",
-                "start": "13:20",
-                "end": "14:05",
+                "subject": "국어",
+                "teacher": "",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "국어",
-                "teacher": "예시 교사 F",
-                "start": "14:15",
-                "end": "15:00",
+                "subject": "과학",
+                "teacher": "",
                 "changed": false
               }
             ]
@@ -632,69 +488,70 @@
     ]
   },
   "meals": {
-    "updatedAt": "2026-10-20T08:00:00+09:00",
+    "updatedAt": "2026-10-20T15:06:52.981Z",
     "days": [
       {
         "date": "2026-10-19",
         "status": "available",
         "menu": [
-          "현미밥",
-          "된장국",
-          "닭고기볶음",
-          "나물무침",
-          "배추김치"
-        ],
-        "note": "실제 급식이 아닌 예시 메뉴입니다."
+          "클로렐라차조밥",
+          "한우육개장 (5.6.16.18)",
+          "새콤달콤무생채 (13)",
+          "로제떡볶이 (1.2.5.6.10.13.15.16)",
+          "해물동그랑땡계란부침 (1.2.5.6.8.9.10.15.16.17.18)",
+          "배추김치(전체자율) (9)",
+          "방울토마토 (12)"
+        ]
       },
       {
         "date": "2026-10-20",
         "status": "available",
         "menu": [
-          "잡곡밥",
-          "미역국",
-          "두부조림",
-          "계란말이",
-          "깍두기",
-          "사과"
-        ],
-        "note": "실제 급식이 아닌 예시 메뉴입니다."
+          "귀리쌀밥",
+          "근대된장국 (5.6.8.9.18)",
+          "돼지수육*쌈장 (10)",
+          "콩나물파채무침 (5.6.13)",
+          "비빔막국수(백리6-중-산청) (3.5.6.13)",
+          "직접담은생김치 (9.13)",
+          "유러피안쌈(자) (5.6)"
+        ]
       },
       {
         "date": "2026-10-21",
         "status": "available",
         "menu": [
-          "카레라이스",
-          "콩나물국",
-          "샐러드",
-          "배추김치"
-        ],
-        "note": "실제 급식이 아닌 예시 메뉴입니다."
+          "카레라이스 (2.5.6.10.12.13.16.18)",
+          "통살새우타코또띠아 (1.2.5.6)",
+          "북어계란국 (1.5.6.8.9.18)",
+          "멸치찹쌀콩볶음 (5.6.13)",
+          "배추김치 (9)",
+          "샤인머스캣"
+        ]
       },
       {
         "date": "2026-10-22",
         "status": "available",
         "menu": [
-          "보리밥",
-          "순두부국",
-          "생선구이",
-          "채소볶음",
-          "배추김치"
-        ],
-        "note": "실제 급식이 아닌 예시 메뉴입니다."
+          "혼합잡곡밥 (5)",
+          "들깨감자수제비국 (5.6.18)",
+          "온두부+김치볶음 (5.9.13)",
+          "고춧잎나물무침(자) (5.6.13)",
+          "생선까스&알새우칩*타르타르소스 (1.5.6.9.13)",
+          "갓김치(자율) (9)"
+        ]
       },
       {
         "date": "2026-10-23",
         "status": "available",
         "menu": [
-          "쌀밥",
-          "떡국",
-          "불고기",
-          "오이무침",
-          "깍두기"
-        ],
-        "note": "실제 급식이 아닌 예시 메뉴입니다."
+          "찰보리밥",
+          "곤드레나물*양념장(자) (5.6.13.18)",
+          "한국식마라탕 (1.2.5.6.9.10.12.13.15.16.18)",
+          "꿔바로우깐풍 (1.5.6.10.12.13.18)",
+          "배추김치 (9)",
+          "애플파이&사과착즙쥬스(사과데이) (1.2.5.6)"
+        ]
       }
     ]
   }
 }
-
