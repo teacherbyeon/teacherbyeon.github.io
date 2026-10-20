@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "isSample": true,
+  "timezone": "Asia/Seoul",
+  "generatedAt": "2026-10-20T08:00:00+09:00",
+  "school": {
+    "name": "광려중학교"
+  },
+  "defaults": {
+    "grade": 3,
+    "classNumber": 3
+  },
+  "staleAfterMinutes": {
+    "timetable": 180,
+    "meals": 1440
+  },
+  "timetable": {
+    "updatedAt": "2026-10-20T08:00:00+09:00",
+    "validFrom": "2026-10-19",
+    "validTo": "2026-10-23",
+    "classes": [
+      {
+        "grade": 3,
+        "classNumber": 3,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "사회",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": true,
+                "original": {
+                  "subject": "미술",
+                  "teacher": "예시 교사 H"
+                },
+                "note": "예시 변경 수업"
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "역사",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "음악",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "체육",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "기술·가정",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "도덕",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "미술",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "과학",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "창체",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 4,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "창체",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "국어",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": true,
+                "original": {
+                  "subject": "미술",
+                  "teacher": "예시 교사 H"
+                },
+                "note": "예시 변경 수업"
+              },
+              {
+                "period": 3,
+                "subject": "역사",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "음악",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "수학",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기술·가정",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "도덕",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "미술",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "영어",
+                "teacher": "예시 교사 G",
+                "start": "15:10",
+                "end": "15:55",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "예시 교사 A",
+                "start": "08:50",
+                "end": "09:35",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "예시 교사 B",
+                "start": "09:45",
+                "end": "10:30",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "예시 교사 C",
+                "start": "10:40",
+                "end": "11:25",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "예시 교사 D",
+                "start": "11:35",
+                "end": "12:20",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "창체",
+                "teacher": "예시 교사 E",
+                "start": "13:20",
+                "end": "14:05",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "예시 교사 F",
+                "start": "14:15",
+                "end": "15:00",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meals": {
+    "updatedAt": "2026-10-20T08:00:00+09:00",
+    "days": [
+      {
+        "date": "2026-10-19",
+        "status": "available",
+        "menu": [
+          "현미밥",
+          "된장국",
+          "닭고기볶음",
+          "나물무침",
+          "배추김치"
+        ],
+        "note": "실제 급식이 아닌 예시 메뉴입니다."
+      },
+      {
+        "date": "2026-10-20",
+        "status": "available",
+        "menu": [
+          "잡곡밥",
+          "미역국",
+          "두부조림",
+          "계란말이",
+          "깍두기",
+          "사과"
+        ],
+        "note": "실제 급식이 아닌 예시 메뉴입니다."
+      },
+      {
+        "date": "2026-10-21",
+        "status": "available",
+        "menu": [
+          "카레라이스",
+          "콩나물국",
+          "샐러드",
+          "배추김치"
+        ],
+        "note": "실제 급식이 아닌 예시 메뉴입니다."
+      },
+      {
+        "date": "2026-10-22",
+        "status": "available",
+        "menu": [
+          "보리밥",
+          "순두부국",
+          "생선구이",
+          "채소볶음",
+          "배추김치"
+        ],
+        "note": "실제 급식이 아닌 예시 메뉴입니다."
+      },
+      {
+        "date": "2026-10-23",
+        "status": "available",
+        "menu": [
+          "쌀밥",
+          "떡국",
+          "불고기",
+          "오이무침",
+          "깍두기"
+        ],
+        "note": "실제 급식이 아닌 예시 메뉴입니다."
+      }
+    ]
+  }
+}
+

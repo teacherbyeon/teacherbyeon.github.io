@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#121826">
+  <title>오늘의 시간표·급식 | BBB쌤의 수학 실험실</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="shell top"><a href="../../">B³ · BBB쌤의 수학 실험실</a><button id="fullscreen" type="button">전체화면</button></header>
+  <main class="shell">
+    <div class="heading"><div><p class="eyebrow">CLASSROOM BOARD</p><h1>오늘의 시간표·급식</h1><p id="school">광려중학교 · 3학년 3반</p></div><div class="clock"><time id="clock"></time><p id="todayLabel"></p></div></div>
+    <div id="sample" class="notice sample" hidden>예시 데이터로 보는 화면입니다. 실제 시간표·급식과 다릅니다.</div>
+    <div id="message" class="notice" role="status" aria-live="polite">자료를 불러오고 있습니다.</div>
+    <div class="controls">
+      <label>학년 <select id="grade" disabled><option value="3">3학년</option></select></label>
+      <label>반 <select id="classNumber" disabled><option value="3">3반</option></select></label>
+      <label>날짜 <input id="date" type="date" required></label>
+      <button id="goToday" type="button">오늘</button><button id="refresh" type="button">새로고침</button>
+    </div>
+    <div class="dashboard">
+      <section class="panel"><div class="panel-head"><div><p class="eyebrow">TODAY'S CLASS</p><h2 id="dayTitle">오늘 시간표</h2></div><span class="pill" id="classLabel">3학년 3반</span></div><p id="dayNote" class="muted"></p><ol id="lessons" class="lessons"></ol><p class="updated" id="timetableUpdated"></p></section>
+      <section class="panel meal"><div class="panel-head"><div><p class="eyebrow">LUNCH TIME</p><h2 id="mealTitle">오늘의 중식</h2></div><span class="meal-icon" aria-hidden="true">♨</span></div><p id="mealDate" class="muted"></p><ul id="menu"></ul><p id="mealNote" class="muted"></p><p class="updated" id="mealUpdated"></p></section>
+    </div>
+    <section class="panel week-panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PLAN</p><h2>월~금 시간표</h2></div><div class="week-nav"><button id="previousWeek" type="button" aria-label="이전 주">←</button><span id="weekLabel"></span><button id="nextWeek" type="button" aria-label="다음 주">→</button></div></div><p class="muted">변경 수업은 ‘변경’ 표시와 원래 수업을 함께 보여줍니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="주간 시간표, 가로로 스크롤할 수 있습니다"><table><caption class="sr-only">선택한 학급의 월요일부터 금요일까지 시간표</caption><thead id="weekHead"></thead><tbody id="weekBody"></tbody></table></div></section>
+    <footer>시간표: 컴시간 · 급식: 나이스 중식 · 공개 JSON 자료 기준 <span id="generated"></span></footer>
+  </main>
+</body>
+</html>
+
