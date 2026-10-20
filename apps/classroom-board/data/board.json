@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-21T00:22:38+09:00",
+  "generatedAt": "2026-10-21T00:46:07+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,13 +15,13 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-20T15:22:39.142Z",
+    "updatedAt": "2026-10-20T15:46:07.481Z",
     "validFrom": "2026-10-19",
     "validTo": "2026-10-23",
     "classes": [
       {
-        "grade": 3,
-        "classNumber": 3,
+        "grade": 1,
+        "classNumber": 1,
         "days": [
           {
             "date": "2026-10-19",
@@ -29,38 +29,38 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "체육",
-                "teacher": "",
+                "subject": "영어",
+                "teacher": "장은*",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "미술",
-                "teacher": "",
+                "subject": "수학",
+                "teacher": "우정*",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "기가",
-                "teacher": "",
+                "subject": "음악",
+                "teacher": "권신*",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "수학",
-                "teacher": "",
+                "subject": "국어",
+                "teacher": "탁수*",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "역사",
-                "teacher": "",
+                "subject": "체육",
+                "teacher": "김남*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "과학",
-                "teacher": "",
+                "teacher": "김민*",
                 "changed": false
               }
             ]
@@ -71,44 +71,44 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "역사",
-                "teacher": "",
+                "subject": "영어",
+                "teacher": "장은*",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "기가",
-                "teacher": "",
+                "subject": "과학",
+                "teacher": "강미*",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "국어",
-                "teacher": "",
+                "subject": "수학",
+                "teacher": "배욱*",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "정보",
-                "teacher": "",
+                "subject": "도덕",
+                "teacher": "신윤*",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "과학",
-                "teacher": "",
+                "subject": "스포",
+                "teacher": "명준*",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "영어",
-                "teacher": "",
+                "subject": "사회",
+                "teacher": "남기*",
                 "changed": false
               },
               {
                 "period": 7,
-                "subject": "스포",
-                "teacher": "",
+                "subject": "국어",
+                "teacher": "탁수*",
                 "changed": false
               }
             ]
@@ -119,43 +119,38 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "사회",
-                "teacher": "",
+                "subject": "음악",
+                "teacher": "권신*",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "수학",
-                "teacher": "",
-                "changed": true,
-                "original": {
-                  "subject": "체육",
-                  "teacher": ""
-                },
-                "note": "수업 변경"
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
               },
               {
                 "period": 3,
-                "subject": "국어",
-                "teacher": "",
+                "subject": "과학",
+                "teacher": "김민*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "기가",
-                "teacher": "",
+                "teacher": "신영*",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "수학",
-                "teacher": "",
+                "subject": "영어",
+                "teacher": "장은*",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "영어",
-                "teacher": "",
+                "subject": "도덕",
+                "teacher": "홍성*",
                 "changed": false
               }
             ]
@@ -166,44 +161,282 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "사회",
-                "teacher": "",
+                "subject": "체육",
+                "teacher": "김남*",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "미술",
-                "teacher": "",
+                "subject": "과학",
+                "teacher": "김민*",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "영어",
-                "teacher": "",
+                "subject": "수학",
+                "teacher": "우정*",
                 "changed": false
               },
               {
                 "period": 4,
-                "subject": "역사",
-                "teacher": "",
+                "subject": "사회",
+                "teacher": "남기*",
                 "changed": false
               },
               {
                 "period": 5,
-                "subject": "과학",
-                "teacher": "",
+                "subject": "기가",
+                "teacher": "신영*",
                 "changed": false
               },
               {
                 "period": 6,
-                "subject": "국어",
-                "teacher": "",
+                "subject": "동아리",
+                "teacher": "김연*",
                 "changed": false
               },
               {
                 "period": 7,
                 "subject": "창체",
-                "teacher": "",
+                "teacher": "탁수*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 2,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "탁수*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "스포",
+                "teacher": "이주*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "도덕",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "공재*",
                 "changed": false
               }
             ]
@@ -215,42 +448,3227 @@
               {
                 "period": 1,
                 "subject": "국어",
-                "teacher": "",
+                "teacher": "탁수*",
                 "changed": false
               },
               {
                 "period": 2,
-                "subject": "체육",
-                "teacher": "",
+                "subject": "영어",
+                "teacher": "장은*",
                 "changed": false
               },
               {
                 "period": 3,
-                "subject": "영어",
-                "teacher": "",
+                "subject": "기가",
+                "teacher": "신영*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "체육",
-                "teacher": "",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "탁수*",
                 "changed": true,
                 "original": {
                   "subject": "수학",
-                  "teacher": ""
+                  "teacher": "배욱*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 3,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "도덕",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "사회",
+                  "teacher": "남기*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "스포",
+                "teacher": "이진*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "황미*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "남기*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 4,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "스포",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "도덕",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "김남*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 5,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "스포",
+                "teacher": "배욱*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "도덕",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "우정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 6,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "도덕",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "스포",
+                "teacher": "이윤*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "곽수*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "김남*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 1,
+        "classNumber": 7,
+        "days": [
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 6,
+                "subject": "동아리",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "동아리",
+                  "teacher": "배욱*"
+                },
+                "note": "담당교사 변경"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 1,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "송인*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김성*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": true,
+                "original": {
+                  "subject": "역사",
+                  "teacher": "유정*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "명준*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김성*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "변범*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "김연*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "황미*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": true,
+                "original": {
+                  "subject": "보건",
+                  "teacher": "강우*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": true,
+                "original": {
+                  "subject": "역사",
+                  "teacher": "유정*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": true,
+                "original": {
+                  "subject": "도덕",
+                  "teacher": "신윤*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "김연*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 2,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "이주*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "조정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 3,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": true,
+                "original": {
+                  "subject": "영어",
+                  "teacher": "서혜*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": "최인*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "이진*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "최인*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "조정*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "김연*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 4,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "김연*"
+                },
+                "note": "담당교사 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "송인*"
+                },
+                "note": "담당교사 변경"
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": true,
+                "original": {
+                  "subject": "보건",
+                  "teacher": "강우*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": true,
+                "original": {
+                  "subject": "기가",
+                  "teacher": "심규*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "김연*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": "최인*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": true,
+                "original": {
+                  "subject": "미술",
+                  "teacher": "이안*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 5,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": true,
+                "original": {
+                  "subject": "영어",
+                  "teacher": "서혜*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": true,
+                "original": {
+                  "subject": "기가",
+                  "teacher": "심규*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "배욱*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "신윤*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 6,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "보건",
+                "teacher": "강우*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "강희*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "스포",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "최인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "김연*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "권신*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 2,
+        "classNumber": 7,
+        "days": [
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "김성*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 1,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "사회",
+                  "teacher": "홍성*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "정보",
+                "teacher": "이윤*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": "정의*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "스포",
+                "teacher": "명준*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "정의*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": true,
+                "original": {
+                  "subject": "미술",
+                  "teacher": "이안*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": true,
+                "original": {
+                  "subject": "영어",
+                  "teacher": "최혜*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 2,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": "정의*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "정보",
+                "teacher": "이윤*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "스포",
+                "teacher": "이주*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "조혜*",
+                "changed": true,
+                "original": {
+                  "subject": "창체",
+                  "teacher": "배욱*"
+                },
+                "note": "담당교사 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 3,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "정보",
+                "teacher": "이윤*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "스포",
+                "teacher": "이진*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "체육",
+                  "teacher": "정의*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "변범*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
                 },
                 "note": "수업 변경"
               },
               {
                 "period": 5,
                 "subject": "진로",
-                "teacher": "",
+                "teacher": "변범*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "사회",
-                "teacher": "",
+                "teacher": "홍성*",
                 "changed": false
               }
             ]
@@ -268,37 +3686,37 @@
               {
                 "period": 1,
                 "subject": "수학",
-                "teacher": "",
+                "teacher": "변범*",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "정보",
-                "teacher": "",
+                "teacher": "이윤*",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "영어",
-                "teacher": "",
+                "teacher": "최혜*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "과학",
-                "teacher": "",
+                "teacher": "강미*",
                 "changed": false
               },
               {
                 "period": 5,
                 "subject": "기가",
-                "teacher": "",
+                "teacher": "신영*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "역사",
-                "teacher": "",
+                "teacher": "조혜*",
                 "changed": false
               }
             ]
@@ -310,43 +3728,43 @@
               {
                 "period": 1,
                 "subject": "영어",
-                "teacher": "",
+                "teacher": "최혜*",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "국어",
-                "teacher": "",
+                "teacher": "신지*",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "체육",
-                "teacher": "",
+                "teacher": "정의*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "과학",
-                "teacher": "",
+                "teacher": "강미*",
                 "changed": false
               },
               {
                 "period": 5,
                 "subject": "사회",
-                "teacher": "",
+                "teacher": "홍성*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "미술",
-                "teacher": "",
+                "teacher": "이안*",
                 "changed": false
               },
               {
                 "period": 7,
                 "subject": "스포",
-                "teacher": "",
+                "teacher": "변범*",
                 "changed": false
               }
             ]
@@ -358,37 +3776,37 @@
               {
                 "period": 1,
                 "subject": "국어",
-                "teacher": "",
+                "teacher": "송인*",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "영어",
-                "teacher": "",
+                "teacher": "최혜*",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "사회",
-                "teacher": "",
+                "teacher": "홍성*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "수학",
-                "teacher": "",
+                "teacher": "배욱*",
                 "changed": false
               },
               {
                 "period": 5,
                 "subject": "체육",
-                "teacher": "",
+                "teacher": "정의*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "기가",
-                "teacher": "",
+                "teacher": "신영*",
                 "changed": false
               }
             ]
@@ -400,43 +3818,43 @@
               {
                 "period": 1,
                 "subject": "역사",
-                "teacher": "",
+                "teacher": "조혜*",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "기가",
-                "teacher": "",
+                "teacher": "신영*",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "국어",
-                "teacher": "",
+                "teacher": "신지*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "수학",
-                "teacher": "",
+                "teacher": "변범*",
                 "changed": false
               },
               {
                 "period": 5,
                 "subject": "사회",
-                "teacher": "",
+                "teacher": "홍성*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "체육",
-                "teacher": "",
+                "teacher": "정의*",
                 "changed": false
               },
               {
                 "period": 7,
                 "subject": "창체",
-                "teacher": "",
+                "teacher": "이안*",
                 "changed": false
               }
             ]
@@ -448,37 +3866,541 @@
               {
                 "period": 1,
                 "subject": "미술",
-                "teacher": "",
+                "teacher": "이안*",
                 "changed": false
               },
               {
                 "period": 2,
                 "subject": "진로",
-                "teacher": "",
+                "teacher": "변범*",
                 "changed": false
               },
               {
                 "period": 3,
                 "subject": "영어",
-                "teacher": "",
+                "teacher": "서혜*",
                 "changed": false
               },
               {
                 "period": 4,
                 "subject": "역사",
-                "teacher": "",
+                "teacher": "조혜*",
                 "changed": false
               },
               {
                 "period": 5,
                 "subject": "국어",
-                "teacher": "",
+                "teacher": "송인*",
                 "changed": false
               },
               {
                 "period": 6,
                 "subject": "과학",
-                "teacher": "",
+                "teacher": "강미*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 5,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "정보",
+                "teacher": "이윤*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "변범*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "송인*"
+                },
+                "note": "수업 변경"
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "변범*"
+                },
+                "note": "담당교사 변경"
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "스포",
+                "teacher": "배욱*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "이민*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
+                },
+                "note": "담당교사 변경"
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "신지*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 6,
+        "days": [
+          {
+            "date": "2026-10-19",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "정보",
+                "teacher": "이윤*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-20",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "미술",
+                  "teacher": "이안*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 6,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "스포",
+                "teacher": "이윤*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-21",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "과학",
+                "teacher": "강미*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 4,
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "체육",
+                "teacher": "정의*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
+              },
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "송인*",
+                "changed": false
+              }
+            ]
+          },
+          {
+            "date": "2026-10-23",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 1,
+                "subject": "역사",
+                "teacher": "조혜*",
+                "changed": false
+              },
+              {
+                "period": 2,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": false
+              },
+              {
+                "period": 3,
+                "subject": "미술",
+                "teacher": "이안*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
+              },
+              {
+                "period": 4,
+                "subject": "사회",
+                "teacher": "홍성*",
+                "changed": false
+              },
+              {
+                "period": 5,
+                "subject": "영어",
+                "teacher": "장은*",
+                "changed": false
+              },
+              {
+                "period": 6,
+                "subject": "수학",
+                "teacher": "변범*",
+                "changed": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "grade": 3,
+        "classNumber": 7,
+        "days": [
+          {
+            "date": "2026-10-22",
+            "status": "scheduled",
+            "lessons": [
+              {
+                "period": 7,
+                "subject": "창체",
+                "teacher": "강우*",
                 "changed": false
               }
             ]
@@ -488,7 +4410,7 @@
     ]
   },
   "meals": {
-    "updatedAt": "2026-10-20T15:06:52.981Z",
+    "updatedAt": "2026-10-20T15:39:17.018Z",
     "days": [
       {
         "date": "2026-10-19",
