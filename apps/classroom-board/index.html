@@ -3,30 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#121826">
+  <meta name="theme-color" content="#101721">
   <title>오늘의 시간표·급식 | BBB쌤의 수학 실험실</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.mjs"></script>
+  <link rel="stylesheet" href="./style.css?v=2">
+  <script type="module" src="./app.mjs?v=2"></script>
 </head>
-<body>
-  <header class="shell top"><a href="../../">B³ · BBB쌤의 수학 실험실</a><button id="fullscreen" type="button">전체화면</button></header>
-  <main class="shell">
-    <div class="heading"><div><p class="eyebrow">CLASSROOM BOARD</p><h1>오늘의 시간표·급식</h1><p id="school">광려중학교 · 3학년 3반</p></div><div class="clock"><time id="clock"></time><p id="todayLabel"></p></div></div>
-    <div id="sample" class="notice sample" hidden>예시 데이터로 보는 화면입니다. 실제 시간표·급식과 다릅니다.</div>
+<body data-mode="classroom">
+  <header class="shell top">
+    <a class="brand" href="../../">B³ <span>BBB쌤의 수학 실험실</span></a>
+    <div class="top-actions"><div class="mode-switch" role="group" aria-label="화면 모드">
+      <button id="classroomMode" type="button" aria-pressed="true">교실 모드</button>
+      <button id="detailMode" type="button" aria-pressed="false">상세 모드</button>
+    </div><button id="fullscreen" type="button">전체화면</button></div>
+  </header>
+  <main class="shell board-shell">
+    <div class="heading"><div><p class="eyebrow">CLASSROOM BOARD</p><h1>오늘의 시간표·급식</h1><p id="school">자료 확인 중</p></div><div class="clock"><time id="clock"></time><p id="todayLabel"></p></div></div>
+    <div id="sample" class="notice sample" hidden>예시 데이터입니다. 실제 시간표·급식과 다릅니다.</div>
     <div id="message" class="notice" role="status" aria-live="polite">자료를 불러오고 있습니다.</div>
     <div class="controls">
-      <label>학년 <select id="grade" disabled><option value="3">3학년</option></select></label>
-      <label>반 <select id="classNumber" disabled><option value="3">3반</option></select></label>
+      <label>학년 <select id="grade" disabled><option>확인 중</option></select></label>
+      <label>반 <select id="classNumber" disabled><option>확인 중</option></select></label>
       <label>날짜 <input id="date" type="date" required></label>
-      <button id="goToday" type="button">오늘</button><button id="refresh" type="button">새로고침</button>
+      <div class="control-actions"><button id="goToday" type="button">오늘로 이동</button><button id="refresh" type="button">새로고침</button><button id="editSchedule" type="button">수업 시간 설정</button></div>
     </div>
     <div class="dashboard">
-      <section class="panel"><div class="panel-head"><div><p class="eyebrow">TODAY'S CLASS</p><h2 id="dayTitle">오늘 시간표</h2></div><span class="pill" id="classLabel">3학년 3반</span></div><p id="dayNote" class="muted"></p><ol id="lessons" class="lessons"></ol><p class="updated" id="timetableUpdated"></p></section>
+      <section class="panel timetable"><div class="panel-head"><div><p class="eyebrow">TODAY'S CLASS</p><h2 id="dayTitle">오늘 시간표</h2></div><span class="pill" id="classLabel">학급 확인 중</span></div>
+        <div class="day-meta"><p id="dayNote" class="muted"></p><p id="sessionStatus" class="session-status"></p></div>
+        <ol id="lessons" class="lessons"></ol><p class="updated" id="timetableUpdated"></p>
+      </section>
       <section class="panel meal"><div class="panel-head"><div><p class="eyebrow">LUNCH TIME</p><h2 id="mealTitle">오늘의 중식</h2></div><span class="meal-icon" aria-hidden="true">♨</span></div><p id="mealDate" class="muted"></p><ul id="menu"></ul><p id="mealNote" class="muted"></p><p class="updated" id="mealUpdated"></p></section>
     </div>
-    <section class="panel week-panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PLAN</p><h2>월~금 시간표</h2></div><div class="week-nav"><button id="previousWeek" type="button" aria-label="이전 주">←</button><span id="weekLabel"></span><button id="nextWeek" type="button" aria-label="다음 주">→</button></div></div><p class="muted">변경 수업은 ‘변경’ 표시와 원래 수업을 함께 보여줍니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="주간 시간표, 가로로 스크롤할 수 있습니다"><table><caption class="sr-only">선택한 학급의 월요일부터 금요일까지 시간표</caption><thead id="weekHead"></thead><tbody id="weekBody"></tbody></table></div></section>
-    <footer>시간표: 컴시간 · 급식: 나이스 중식 · 공개 JSON 자료 기준 <span id="generated"></span></footer>
+    <section id="weeklyPanel" class="panel week-panel" hidden><div class="panel-head"><div><p class="eyebrow">WEEKLY PLAN</p><h2>월~금 주간 시간표</h2></div><div class="week-nav"><button id="previousWeek" type="button" aria-label="이전 주">←</button><span id="weekLabel"></span><button id="nextWeek" type="button" aria-label="다음 주">→</button></div></div><p class="muted">현재 자료에 포함된 날짜만 표시합니다. ‘변경’을 누르면 원래 수업을 확인할 수 있습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="주간 시간표, 가로로 스크롤할 수 있습니다"><table><caption class="sr-only">선택 학급의 월요일부터 금요일까지 시간표</caption><thead id="weekHead"></thead><tbody id="weekBody"></tbody></table></div></section>
+    <footer><span>컴시간 시간표 · 나이스 중식</span><span id="generated"></span></footer>
   </main>
+  <dialog id="scheduleDialog" aria-labelledby="scheduleTitle"><form id="scheduleForm"><h2 id="scheduleTitle">수업 시간 설정</h2><p class="muted">JSON에 수업 시각이 없을 때 사용할 시정표입니다. 이 브라우저에만 저장됩니다. 학교의 실제 시작·종료 시각을 입력하세요.</p><div id="scheduleInputs"></div><p id="scheduleError" class="form-error" role="alert"></p><div class="dialog-actions"><button id="clearSchedule" type="button">설정 지우기</button><button id="cancelSchedule" type="button">취소</button><button class="primary" type="submit">저장</button></div></form></dialog>
+  <dialog id="lessonDialog" aria-labelledby="lessonDialogTitle"><h2 id="lessonDialogTitle">변경 수업</h2><div id="lessonDialogBody"></div><button id="closeLessonDialog" type="button">닫기</button></dialog>
 </body>
 </html>
 

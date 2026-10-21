@@ -29,3 +29,21 @@ export function validateData(d){
 }
 export function freshness(updatedAt,minutes,now=Date.now()){const age=now-Date.parse(updatedAt);return age < -300000?'future':age>minutes*60000?'stale':'fresh';}
 
+export function minuteOfDay(value){if(typeof value!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(value))return null;const [h,m]=value.split(':').map(Number);return h*60+m;}
+export function validateSchedule(rows){
+  if(!Array.isArray(rows))throw new Error('수업 시간을 다시 입력하세요.');
+  const result=[];let previousEnd=-1;const periods=new Set();
+  for(const row of rows){if(!row.start&&!row.end)continue;const start=minuteOfDay(row.start),end=minuteOfDay(row.end);
+    if(!Number.isInteger(row.period)||row.period<1||periods.has(row.period)||start===null||end===null||end<=start||start<previousEnd)throw new Error('시작·종료 시각과 교시 순서를 확인하세요. 시간은 겹치지 않아야 합니다.');
+    periods.add(row.period);previousEnd=end;result.push({period:row.period,start:row.start,end:row.end});
+  }
+  return result;
+}
+export function lessonTiming(lessons,date,now=new Date(),schedule=[]){
+  if(date!==koreaDate(now))return {available:false,current:null,next:null,reason:'other-date'};
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:ZONE,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now);
+  const minutes=Number(parts.find(p=>p.type==='hour').value)*60+Number(parts.find(p=>p.type==='minute').value);
+  const timed=lessons.map(l=>{const fallback=schedule.find(s=>s.period===l.period),source=l.start&&l.end?l:fallback;return {...l,start:source?.start,end:source?.end};}).filter(l=>minuteOfDay(l.start)!==null&&minuteOfDay(l.end)>minuteOfDay(l.start)).sort((a,b)=>minuteOfDay(a.start)-minuteOfDay(b.start));
+  return {available:timed.length>0,current:timed.find(l=>minutes>=minuteOfDay(l.start)&&minutes<minuteOfDay(l.end))?.period??null,next:timed.find(l=>minutes<minuteOfDay(l.start))?.period??null,partial:timed.length<lessons.length,reason:timed.length?'':'no-times'};
+}
+
