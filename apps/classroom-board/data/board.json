@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-21T16:00:14+09:00",
+  "generatedAt": "2026-10-21T16:30:15+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-21T07:00:14.641Z",
+    "updatedAt": "2026-10-21T07:30:15.891Z",
     "validFrom": "2026-10-19",
     "validTo": "2026-10-23",
     "classes": [
@@ -690,9 +690,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "음악",
-                "teacher": "권신*",
-                "changed": false
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": true,
+                "original": {
+                  "subject": "음악",
+                  "teacher": "권신*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -4420,7 +4425,7 @@
     ]
   },
   "meals": {
-    "updatedAt": "2026-10-21T07:00:14.737Z",
+    "updatedAt": "2026-10-21T07:30:15.956Z",
     "days": [
       {
         "date": "2026-10-19",
