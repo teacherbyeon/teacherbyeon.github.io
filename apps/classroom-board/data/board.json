@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-22T10:30:04+09:00",
+  "generatedAt": "2026-10-22T11:00:06+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-22T01:30:04.697Z",
+    "updatedAt": "2026-10-22T02:00:06.074Z",
     "validFrom": "2026-10-19",
     "validTo": "2026-10-23",
     "classes": [
@@ -1401,9 +1401,14 @@
               },
               {
                 "period": 3,
-                "subject": "음악",
-                "teacher": "권신*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "음악",
+                  "teacher": "권신*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
@@ -2662,9 +2667,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "도덕",
-                "teacher": "신윤*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "도덕",
+                  "teacher": "신윤*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -2674,9 +2684,14 @@
               },
               {
                 "period": 3,
-                "subject": "수학",
-                "teacher": "조정*",
-                "changed": false
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "조정*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
@@ -4425,7 +4440,7 @@
     ]
   },
   "meals": {
-    "updatedAt": "2026-10-22T01:30:04.775Z",
+    "updatedAt": "2026-10-22T02:00:06.149Z",
     "days": [
       {
         "date": "2026-10-19",
