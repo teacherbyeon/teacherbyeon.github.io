@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-22T15:30:18+09:00",
+  "generatedAt": "2026-10-22T16:00:19+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-22T06:30:18.252Z",
+    "updatedAt": "2026-10-22T07:00:19.556Z",
     "validFrom": "2026-10-19",
     "validTo": "2026-10-23",
     "classes": [
@@ -4440,7 +4440,7 @@
     ]
   },
   "meals": {
-    "updatedAt": "2026-10-22T06:30:18.312Z",
+    "updatedAt": "2026-10-22T07:00:19.607Z",
     "days": [
       {
         "date": "2026-10-19",
