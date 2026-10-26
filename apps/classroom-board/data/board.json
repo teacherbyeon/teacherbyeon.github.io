@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-26T08:50:09+09:00",
+  "generatedAt": "2026-10-26T09:00:09+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-25T23:50:09.313Z",
+    "updatedAt": "2026-10-26T00:00:09.820Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -1463,9 +1463,14 @@
               },
               {
                 "period": 3,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": false
+                "subject": "국어",
+                "teacher": "신지*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
@@ -1541,9 +1546,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "국어",
-                "teacher": "신지*",
-                "changed": false
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "신지*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -2387,14 +2397,9 @@
               },
               {
                 "period": 2,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": true,
-                "original": {
-                  "subject": "국어",
-                  "teacher": "탁수*"
-                },
-                "note": "수업 변경"
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": false
               },
               {
                 "period": 3,
@@ -2488,9 +2493,14 @@
               },
               {
                 "period": 3,
-                "subject": "국어",
-                "teacher": "탁수*",
-                "changed": false
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "탁수*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
