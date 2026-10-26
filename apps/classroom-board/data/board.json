@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-26T15:00:10+09:00",
+  "generatedAt": "2026-10-26T15:30:12+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-26T06:00:10.908Z",
+    "updatedAt": "2026-10-26T06:30:12.255Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -8412,8 +8412,13 @@
               {
                 "period": 7,
                 "subject": "창체",
-                "teacher": "강우*",
-                "changed": false
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "창체",
+                  "teacher": "강우*"
+                },
+                "note": "담당교사 변경"
               }
             ]
           }
