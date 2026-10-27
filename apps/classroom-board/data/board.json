@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-27T10:00:03+09:00",
+  "generatedAt": "2026-10-27T10:30:04+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-27T01:00:03.386Z",
+    "updatedAt": "2026-10-27T01:30:04.725Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -1101,9 +1101,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "수학",
-                "teacher": "배욱*",
-                "changed": false
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "배욱*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -1119,9 +1124,14 @@
               },
               {
                 "period": 4,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "배욱*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 5,
@@ -2003,14 +2013,9 @@
               },
               {
                 "period": 5,
-                "subject": "기가",
-                "teacher": "신영*",
-                "changed": true,
-                "original": {
-                  "subject": "한문",
-                  "teacher": "공재*"
-                },
-                "note": "수업 변경"
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
               },
               {
                 "period": 6,
@@ -2050,9 +2055,14 @@
               },
               {
                 "period": 5,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
@@ -2080,14 +2090,9 @@
               },
               {
                 "period": 2,
-                "subject": "한문",
-                "teacher": "공재*",
-                "changed": true,
-                "original": {
-                  "subject": "기가",
-                  "teacher": "신영*"
-                },
-                "note": "수업 변경"
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": false
               },
               {
                 "period": 3,
@@ -2940,14 +2945,9 @@
               },
               {
                 "period": 5,
-                "subject": "한문",
-                "teacher": "공재*",
-                "changed": true,
-                "original": {
-                  "subject": "기가",
-                  "teacher": "심규*"
-                },
-                "note": "수업 변경"
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": false
               },
               {
                 "period": 6,
@@ -2999,14 +2999,9 @@
               },
               {
                 "period": 6,
-                "subject": "기가",
-                "teacher": "심규*",
-                "changed": true,
-                "original": {
-                  "subject": "한문",
-                  "teacher": "공재*"
-                },
-                "note": "수업 변경"
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
               }
             ]
           },
@@ -3466,9 +3461,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "음악",
-                "teacher": "권신*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "음악",
+                  "teacher": "권신*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -3490,9 +3490,14 @@
               },
               {
                 "period": 5,
-                "subject": "수학",
-                "teacher": "조정*",
-                "changed": false
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "조정*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
