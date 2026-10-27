@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-27T08:50:00+09:00",
+  "generatedAt": "2026-10-27T09:00:00+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-26T23:50:00.140Z",
+    "updatedAt": "2026-10-27T00:00:00.608Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -1113,15 +1113,25 @@
               },
               {
                 "period": 3,
-                "subject": "도덕",
-                "teacher": "신윤*",
-                "changed": false
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "도덕",
+                  "teacher": "신윤*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": false
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 5,
@@ -3901,14 +3911,9 @@
               },
               {
                 "period": 3,
-                "subject": "음악",
-                "teacher": "권신*",
-                "changed": true,
-                "original": {
-                  "subject": "한문",
-                  "teacher": "공재*"
-                },
-                "note": "수업 변경"
+                "subject": "한문",
+                "teacher": "공재*",
+                "changed": false
               },
               {
                 "period": 4,
@@ -3954,14 +3959,9 @@
               },
               {
                 "period": 4,
-                "subject": "한문",
-                "teacher": "공재*",
-                "changed": true,
-                "original": {
-                  "subject": "음악",
-                  "teacher": "권신*"
-                },
-                "note": "수업 변경"
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": false
               },
               {
                 "period": 5,
