@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-30T08:40:02+09:00",
+  "generatedAt": "2026-10-30T08:50:03+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-29T23:40:03.015Z",
+    "updatedAt": "2026-10-29T23:50:03.477Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -4206,9 +4206,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "기가",
-                "teacher": "심규*",
-                "changed": false
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": true,
+                "original": {
+                  "subject": "기가",
+                  "teacher": "심규*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -4230,9 +4235,14 @@
               },
               {
                 "period": 5,
-                "subject": "과학",
-                "teacher": "김성*",
-                "changed": false
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김성*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
@@ -4690,15 +4700,25 @@
               },
               {
                 "period": 5,
-                "subject": "기가",
-                "teacher": "심규*",
-                "changed": false
+                "subject": "과학",
+                "teacher": "김성*",
+                "changed": true,
+                "original": {
+                  "subject": "기가",
+                  "teacher": "심규*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
-                "subject": "과학",
-                "teacher": "김성*",
-                "changed": false
+                "subject": "기가",
+                "teacher": "심규*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김성*"
+                },
+                "note": "수업 변경"
               }
             ]
           },
