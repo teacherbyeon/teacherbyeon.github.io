@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-30T15:00:05+09:00",
+  "generatedAt": "2026-10-30T15:30:06+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-30T06:00:05.499Z",
+    "updatedAt": "2026-10-30T06:30:06.793Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -2216,9 +2216,14 @@
               },
               {
                 "period": 6,
-                "subject": "수학",
-                "teacher": "우정*",
-                "changed": false
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "우정*"
+                },
+                "note": "수업 변경"
               }
             ]
           },
@@ -2342,9 +2347,14 @@
               },
               {
                 "period": 5,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": true,
+                "original": {
+                  "subject": "진로",
+                  "teacher": "조은*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
