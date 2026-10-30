@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-30T12:30:13+09:00",
+  "generatedAt": "2026-10-30T13:00:14+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-30T03:30:13.629Z",
+    "updatedAt": "2026-10-30T04:00:15.001Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -2808,9 +2808,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "과학",
-                "teacher": "김민*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "우정*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김민*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -2832,9 +2837,14 @@
               },
               {
                 "period": 5,
-                "subject": "수학",
-                "teacher": "우정*",
-                "changed": false
+                "subject": "국어",
+                "teacher": "탁수*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "우정*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
@@ -2849,8 +2859,8 @@
               },
               {
                 "period": 7,
-                "subject": "국어",
-                "teacher": "탁수*",
+                "subject": "과학",
+                "teacher": "김민*",
                 "changed": true,
                 "original": {
                   "subject": "창체",
