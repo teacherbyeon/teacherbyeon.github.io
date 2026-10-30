@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-10-30T11:30:10+09:00",
+  "generatedAt": "2026-10-30T12:00:12+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-10-30T02:30:10.873Z",
+    "updatedAt": "2026-10-30T03:00:12.284Z",
     "validFrom": "2026-10-26",
     "validTo": "2026-11-06",
     "classes": [
@@ -1411,9 +1411,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "음악",
-                "teacher": "권신*",
-                "changed": false
+                "subject": "사회",
+                "teacher": "남기*",
+                "changed": true,
+                "original": {
+                  "subject": "음악",
+                  "teacher": "권신*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
@@ -1435,9 +1440,14 @@
               },
               {
                 "period": 5,
-                "subject": "사회",
-                "teacher": "남기*",
-                "changed": false
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": true,
+                "original": {
+                  "subject": "사회",
+                  "teacher": "남기*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 6,
@@ -2314,14 +2324,9 @@
               },
               {
                 "period": 2,
-                "subject": "진로",
-                "teacher": "조은*",
-                "changed": true,
-                "original": {
-                  "subject": "도덕",
-                  "teacher": "신윤*"
-                },
-                "note": "수업 변경"
+                "subject": "도덕",
+                "teacher": "신윤*",
+                "changed": false
               },
               {
                 "period": 3,
@@ -2337,14 +2342,9 @@
               },
               {
                 "period": 5,
-                "subject": "도덕",
-                "teacher": "신윤*",
-                "changed": true,
-                "original": {
-                  "subject": "진로",
-                  "teacher": "조은*"
-                },
-                "note": "수업 변경"
+                "subject": "진로",
+                "teacher": "조은*",
+                "changed": false
               },
               {
                 "period": 6,
@@ -3309,19 +3309,14 @@
               },
               {
                 "period": 2,
-                "subject": "도덕",
-                "teacher": "신윤*",
-                "changed": true,
-                "original": {
-                  "subject": "영어",
-                  "teacher": "서혜*"
-                },
-                "note": "수업 변경"
+                "subject": "영어",
+                "teacher": "서혜*",
+                "changed": false
               },
               {
                 "period": 3,
-                "subject": "영어",
-                "teacher": "서혜*",
+                "subject": "보건",
+                "teacher": "강우*",
                 "changed": true,
                 "original": {
                   "subject": "음악",
@@ -3361,9 +3356,14 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "보건",
-                "teacher": "강우*",
-                "changed": false
+                "subject": "음악",
+                "teacher": "권신*",
+                "changed": true,
+                "original": {
+                  "subject": "보건",
+                  "teacher": "강우*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
