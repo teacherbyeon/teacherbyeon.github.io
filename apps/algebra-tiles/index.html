@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, maximum-scale=5" />
   <link rel="stylesheet" href="style.css">
-  <title>Algebra Tiles MVP</title>
+  <title>대수막대 | BBB쌤의 수학 실험실</title>
 
   <!-- (선택) style.css를 쓰지 않고 여기서 스타일을 유지하고 싶으면 이 <style>을 남겨도 됩니다 -->
   <style>
@@ -38,6 +38,19 @@
     .selected { outline: 3px solid rgba(0,0,0,.35); }
     .hint { font-size: 13px; color:#555; line-height:1.4; }
     .small { font-size: 12px; color:#666; }
+    .app { grid-template-columns: 240px minmax(0, 1fr); }
+    .workspace-wrap { min-width: 0; }
+    .topbar { flex-wrap: wrap; }
+    #target { box-sizing: border-box; min-width: 0; }
+    @media (max-width: 700px) {
+      .app { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+      .sidebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; border-right: 0; border-bottom: 1px solid #ddd; }
+      .sidebar h3, .sidebar hr, .sidebar .hint { grid-column: 1 / -1; }
+      .sidebar h3 { margin: 6px 0; }
+      .sidebar .btn { margin: 0; min-height: 44px; }
+      .workspace-wrap { min-height: 65vh; grid-template-rows: auto minmax(450px, 1fr); }
+      #target { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; min-height: 44px; }
+    }
   </style>
 </head>
 

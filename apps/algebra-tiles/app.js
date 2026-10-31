@@ -449,8 +449,10 @@
 
   // ---------- Delete/Backspace로 삭제 ----------
   window.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
     // Undo 단축키는 아래 별도 핸들러가 있어서 여기서 건드리지 않음
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+      e.preventDefault();
       pushUndo();
       tiles = tiles.filter(t => t.id !== selectedId);
       selectedId = null;
@@ -469,11 +471,10 @@
   // ---------- 목표/설명 입력칸: 로컬 저장 ----------
   if (targetEl) {
     const key = 'algebra_tiles_target_text';
-    const saved = localStorage.getItem(key);
-    if (saved !== null) targetEl.value = saved;
+    try { const saved = localStorage.getItem(key); if (saved !== null) targetEl.value = saved; } catch {}
 
     targetEl.addEventListener('input', () => {
-      localStorage.setItem(key, targetEl.value);
+      try { localStorage.setItem(key, targetEl.value); } catch {}
     });
   }
 
@@ -483,6 +484,7 @@
 
   // Ctrl+Z / Cmd+Z
   window.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
     const isZ = (e.key === 'z' || e.key === 'Z');
     const isUndoKey = isZ && (e.ctrlKey || e.metaKey);
     if (isUndoKey) {

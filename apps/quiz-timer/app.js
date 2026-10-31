@@ -1,22 +1,23 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => [...document.querySelectorAll(s)];
-  const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+  const clamp = (n,a,b) => Number.isFinite(n) ? Math.max(a,Math.min(b,n)) : a;
   const fmt = (sec) => { const s=Math.max(0,Math.ceil(sec)); return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; };
   const LS_KEY="quiz_timer_v1";
-  const load=()=>{try{return JSON.parse(localStorage.getItem(LS_KEY)||"{}")}catch{return {}}};
-  const save=(patch)=>{settings={...settings,...patch};localStorage.setItem(LS_KEY,JSON.stringify(settings));return settings};
+  const load=()=>{try{const value=JSON.parse(localStorage.getItem(LS_KEY)||"{}");return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return {}}};
+  let lastSavedSecond=null;
+  const save=(patch)=>{settings={...settings,...patch};try{localStorage.setItem(LS_KEY,JSON.stringify(settings))}catch{}return settings};
   const beep=(freq=880,ms=120)=>{try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=freq;g.gain.value=.0001;o.start();const now=ctx.currentTime;g.gain.exponentialRampToValueAtTime(.16,now+.01);g.gain.exponentialRampToValueAtTime(.0001,now+ms/1000);setTimeout(()=>{o.stop();ctx.close()},ms+80)}catch{}};
   let settings=load(),base=clamp(Number(settings.baseSeconds??180),5,3600),remaining=clamp(Number(settings.remaining??base),0,3600),running=false,lastTick=0;
   let hintVisible=Boolean(settings.hintVisible??false),optBeepEnd=Boolean(settings.optBeepEnd??true),optBeep10=Boolean(settings.optBeep10??false),didBeep10=false,didBeepEnd=false;
   const timeText=$("#timeText"),stateText=$("#stateText"),timerArea=$(".timerArea"),promptText=$("#promptText"),hintText=$("#hintText"),panel=$("#panel"),scrim=$("#scrim"),btnStartPause=$("#btnStartPause");
   const syncInputs=()=>{$("#baseMinutes").value=Math.floor(base/60);$("#baseSecondsPart").value=base%60;$$('[data-set]').forEach(b=>b.classList.toggle("active",Number(b.dataset.set)===base))};
   const render=()=>{timeText.textContent=fmt(remaining);timerArea.classList.toggle("danger",remaining<=10);timerArea.classList.toggle("warn",remaining>10&&remaining<=30);btnStartPause.textContent=running?"Ⅱ 일시정지":"▶ 시작";stateText.textContent=running?"진행 중":remaining<=0?"종료":"준비";stateText.classList.toggle("running",running)};
-  const setRunning=(v)=>{running=v;lastTick=performance.now();render();if(v)requestAnimationFrame(tick)};
+  const setRunning=(v)=>{running=v;lastTick=performance.now();if(!v)save({remaining});render();if(v)requestAnimationFrame(tick)};
   const resetFlags=()=>{didBeep10=false;didBeepEnd=false};
   const setTime=(seconds)=>{setRunning(false);base=clamp(seconds,5,3600);remaining=base;save({baseSeconds:base,remaining});resetFlags();syncInputs();render()};
   const addSeconds=(d)=>{remaining=clamp(remaining+d,0,3600);save({remaining});resetFlags();render()};
-  const tick=(now)=>{if(!running)return;remaining-=((now-lastTick)/1000);lastTick=now;if(optBeep10&&!didBeep10&&remaining<=10&&remaining>0){didBeep10=true;beep(740)}if(remaining<=0){remaining=0;setRunning(false);if(optBeepEnd&&!didBeepEnd){didBeepEnd=true;beep(880,180);setTimeout(()=>beep(660,180),220)}}save({remaining});render();if(running)requestAnimationFrame(tick)};
+  const tick=(now)=>{if(!running)return;remaining-=((now-lastTick)/1000);lastTick=now;if(optBeep10&&!didBeep10&&remaining<=10&&remaining>0){didBeep10=true;beep(740)}if(remaining<=0){remaining=0;setRunning(false);if(optBeepEnd&&!didBeepEnd){didBeepEnd=true;beep(880,180);setTimeout(()=>beep(660,180),220)}}const second=Math.ceil(remaining);if(second!==lastSavedSecond){lastSavedSecond=second;save({remaining})}render();if(running)requestAnimationFrame(tick)};
   const openPanel=()=>{panel.classList.add("open");panel.setAttribute("aria-hidden","false");$("#btnPanel").setAttribute("aria-expanded","true");scrim.hidden=false};
   const closePanel=()=>{panel.classList.remove("open");panel.setAttribute("aria-hidden","true");$("#btnPanel").setAttribute("aria-expanded","false");scrim.hidden=true};
   $("#btnPanel").onclick=openPanel;$("#btnClosePanel").onclick=closePanel;scrim.onclick=closePanel;
@@ -29,6 +30,7 @@
   $("#btnToggleHint").onclick=()=>{hintVisible=!hintVisible;save({hintVisible});hintText.textContent=hintVisible?$("#hintInput").value.trim():"";$("#btnToggleHint").textContent=hintVisible?"힌트 숨기기":"힌트 표시"};
   $("#optBeepEnd").onchange=e=>{optBeepEnd=e.target.checked;save({optBeepEnd})};$("#optBeep10").onchange=e=>{optBeep10=e.target.checked;save({optBeep10})};
   $("#btnFullscreen").onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch{}};
-  window.onkeydown=(e)=>{if(["input","textarea"].includes(e.target.tagName?.toLowerCase()))return;if(e.key===" "){e.preventDefault();btnStartPause.click()}else if(e.key==="ArrowUp"){e.preventDefault();addSeconds(10)}else if(e.key==="ArrowDown"){e.preventDefault();addSeconds(-10)}else if(e.key.toLowerCase()==="r")setTime(base);else if(e.key.toLowerCase()==="f")$("#btnFullscreen").click();else if(e.key==="Escape")closePanel()};
+  window.onkeydown=(e)=>{if(e.key==="Escape"){closePanel();return}if(["input","textarea","select","button","a"].includes(e.target.tagName?.toLowerCase())||e.target.isContentEditable)return;if(e.key===" "){e.preventDefault();btnStartPause.click()}else if(e.key==="ArrowUp"){e.preventDefault();addSeconds(10)}else if(e.key==="ArrowDown"){e.preventDefault();addSeconds(-10)}else if(e.key.toLowerCase()==="r")setTime(base);else if(e.key.toLowerCase()==="f")$("#btnFullscreen").click()};
+  window.addEventListener('pagehide',()=>save({remaining}));
   const p=settings.promptText??"문제를 풀어보세요.",h=settings.hintText??"";promptText.textContent=p;$("#promptInput").value=p;$("#hintInput").value=h;hintText.textContent=hintVisible?h:"";$("#btnToggleHint").textContent=hintVisible?"힌트 숨기기":"힌트 표시";$("#optBeepEnd").checked=optBeepEnd;$("#optBeep10").checked=optBeep10;syncInputs();render();
 })();
