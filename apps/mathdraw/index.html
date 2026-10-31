@@ -4046,7 +4046,7 @@ function updateEditActions() {
     if (saveSvgBtn) saveSvgBtn.disabled = noObjects;
 }
 function makePoint(x, y) {
-    const p = { id: newId('p'), kind: 'point', x, y, label: nextLabel(), labelVisible: true, visible: true, labelStyle: 'italic', labelDx: 10, labelDy: -10, size: 5, pointStyle: 'filled', color: DEFAULT_COLOR };
+    const p = { id: newId('p'), kind: 'point', x, y, label: nextLabel(), labelVisible: true, visible: true, labelStyle: 'roman', labelDx: 10, labelDy: -10, size: 5, pointStyle: 'filled', color: DEFAULT_COLOR };
     objects.push(p);
     return p;
 }
@@ -5436,7 +5436,7 @@ function makeText(x, y, content = 'x') {
     return t;
 }
 function makeHiddenPoint(x, y) {
-    const p = { id: newId('p'), kind: 'point', x, y, label: '', labelVisible: false, visible: false, labelStyle: 'italic', labelDx: 10, labelDy: -10, size: 5, pointStyle: 'filled', color: DEFAULT_COLOR };
+    const p = { id: newId('p'), kind: 'point', x, y, label: '', labelVisible: false, visible: false, labelStyle: 'roman', labelDx: 10, labelDy: -10, size: 5, pointStyle: 'filled', color: DEFAULT_COLOR };
     objects.push(p);
     return p;
 }
