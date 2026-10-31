@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BBBtecacher MathDraw v0.9h3c-r2</title>
+  <title>BBBtecacher MathDraw v0.9h3c-r9</title>
   <style>
 :root {
   font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
@@ -184,6 +184,52 @@ body { min-width:760px; }
 #rotationCenterInfo{font-size:11px;line-height:1.5;margin:0;color:#64748b}
 @media(max-width:1000px){.workspace-wrap{grid-template-columns:minmax(0,1fr) 270px}.command-row{gap:8px}.brand{font-size:13px}.topbar{padding:0 10px}.ui-menu>summary{padding:8px}.tool-btn{padding:0 8px}.command-row .version{display:none}}
 
+/* Inspector workbench, shared keyboard dock and readable controls. */
+body{min-width:360px;background:#f3f6fa;color:#172033}
+.workspace-wrap{grid-template-columns:minmax(0,1fr) 344px;gap:12px;padding:12px}
+.properties{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;scroll-padding-top:70px}
+.panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #edf0f4;margin-bottom:12px}
+.panel-title small{font-size:11px;font-weight:500;color:#64748b;white-space:nowrap}
+.prop-group select{width:100%;min-height:38px;border:1px solid #cfd6e1;border-radius:9px;background:#fff;padding:7px 9px;color:#172033;min-width:0}
+.prop-group input[type=color]{width:100%;height:36px;border:1px solid #cfd6e1;border-radius:8px;background:white;padding:3px}
+.style-row>*{min-width:0}.prop-group input,.prop-group select{font-size:14px}
+button,summary,input,select{touch-action:manipulation}
+button:focus-visible,summary:focus-visible,select:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.tool-btn.active{box-shadow:0 2px 5px #0f172a1a}
+.topbar .tool-btn span{display:inline}
+#toolHint{display:block!important;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#64748b}
+.canvas-head{gap:12px}.canvas-head>div:first-child{min-width:0}.status-chip{font-size:11px;flex-shrink:0;max-width:42%}
+.ux-workbench{min-width:0}.ux-context{font-size:12px;color:#64748b;margin:0 0 10px;line-height:1.6}
+.ux-tabs{display:flex;gap:3px;padding:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:14px}
+.ux-tabs button{flex:1;min-width:0;min-height:34px;border:0;border-radius:7px;background:transparent;color:#64748b;font-size:12px;font-weight:650;padding:6px 3px;white-space:nowrap}
+.ux-tabs button[aria-selected=true]{background:white;color:#1d4ed8;box-shadow:0 1px 4px #0f172a14}
+.ux-inactive{display:none!important}
+#formulaGraphProperties,#coordinatePointPanel{border:0;margin-bottom:6px;padding-bottom:8px}
+#formulaGraphProperties>strong,#coordinatePointPanel>strong{font-size:15px;margin:0 0 4px}
+#formulaExpression,#formulaExpressionY,#coordinatePointX,#coordinatePointY{font-family:Consolas,'Courier New',monospace;background:#f8fafc;font-size:16px;min-height:43px}
+#formulaExpression:focus,#formulaExpressionY:focus,#coordinatePointX:focus,#coordinatePointY:focus{background:white}
+#formulaApply,#coordinatePointApply{background:#172033;color:white;border:1px solid #172033;min-height:41px;font-weight:650}
+#formulaApply:hover,#coordinatePointApply:hover{background:#334155}
+#formulaError:empty,#coordinatePointError:empty{display:none}
+#formulaError:not(:empty),#coordinatePointError:not(:empty){padding:9px 11px;margin:2px 0;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;font-size:12px;line-height:1.6}
+.ux-details{border:1px solid #e2e8f0;border-radius:9px;padding:8px 10px;background:#fbfcfe;margin:4px 0}
+.ux-details>summary{font-size:12px;font-weight:650;color:#475569;cursor:pointer;padding:3px 0}
+.ux-details>div{display:flex;flex-direction:column;gap:7px;padding-top:8px}.ux-details p{font-size:12px;line-height:1.7;color:#64748b;margin:7px 0}
+.ux-coordinate-field{display:flex;align-items:center;gap:7px;min-width:0}.ux-coordinate-field span{font-family:Georgia,serif;color:#475569;font-style:italic;font-size:17px}
+.ux-math-dock{position:sticky;bottom:-14px;z-index:3;background:#fff;border-top:1px solid #e2e8f0;padding:10px 0 4px;box-shadow:0 -7px 15px #fff}
+.ux-math-dock:empty{display:none}.ux-math-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.ux-math-head button{border:1px solid #dbe2ea;border-radius:7px;background:#f8fafc;min-height:29px;padding:3px 8px;font-size:11px;color:#475569}
+.ux-math-target{font-size:11px;font-weight:650;color:#1d4ed8}
+#formulaKeyboard{margin:0;padding:8px;background:#f8fafc;border-radius:10px}
+#formulaKeyboard>label{display:none!important}#formulaKeyboard .math-key-row{margin-bottom:4px}#formulaKeyboard .math-key-btn{height:33px}
+.ux-dock-collapsed #formulaKeyboard{display:none!important}
+.ux-help-intro{margin-top:12px;font-size:12px;line-height:1.8;color:#64748b}.ux-help-intro strong{color:#334155}
+@media(max-width:1100px){.workspace-wrap{grid-template-columns:minmax(0,1fr) 320px}#toolHint{max-width:220px}}
+@media(max-width:760px){#toolHint{display:none!important}.command-row{gap:6px;flex-wrap:wrap}.brand-wrap{flex:1}.command-menus{order:3;width:100%;padding-bottom:5px}.command-menus .ui-menu{flex:1}.toolbar{gap:4px}.tool-btn{padding:0 8px}.workspace-wrap{padding:7px;gap:7px;grid-template-columns:minmax(0,1fr) 300px}.brand{font-size:13px}}
+@media(max-width:620px){.workspace-wrap{grid-template-columns:1fr;grid-template-rows:minmax(210px,1fr) minmax(220px,1fr)}.properties{padding:12px}.canvas-head{padding:0 8px}.canvas-head strong{font-size:12px}.status-chip{max-width:55%}.ux-math-dock{position:static;box-shadow:none}.panel-title{top:-12px}.command-row{min-height:42px}.toolbar{padding:6px 0}.ui-menu-body{max-width:calc(100vw - 24px)!important}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -191,7 +237,7 @@ body { min-width:760px; }
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand">BBBtecacher MathDraw</div>
-        <div class="version">v0.9h3c-r2 · 점 이름 크기</div>
+        <div class="version">v0.9h3c-r9 · 작업별 속성창</div>
       </div>
       <div class="toolbar" id="toolbar">
         <button class="tool-btn active" data-tool="select" title="선택/이동 (V)">↖ <span>선택</span></button>
@@ -628,6 +674,8 @@ body { min-width:760px; }
               <button id="multiPointItalicBtn" class="style-btn" type="button"><i>Italic</i></button>
               <button id="multiPointRomanBtn" class="style-btn" type="button">Roman</button>
             </div>
+            <label for="multiPointLabelSizeInput">점 이름 글자 크기 일괄 변경 <output id="multiPointLabelSizeValue" for="multiPointLabelSizeInput">24 px</output></label>
+            <input id="multiPointLabelSizeInput" type="range" min="8" max="72" step="1" />
             <label>점 크기 일괄 변경</label>
             <input id="multiPointSizeInput" type="range" min="1" max="12" step="1" />
             <label>점 모양 일괄 변경</label>
@@ -1201,6 +1249,8 @@ const multiWidthInput = document.querySelector('#multiWidthInput');
 const multiPointItalicBtn = document.querySelector('#multiPointItalicBtn');
 const multiPointRomanBtn = document.querySelector('#multiPointRomanBtn');
 const multiPointSizeInput = document.querySelector('#multiPointSizeInput');
+const multiPointLabelSizeInput = document.querySelector('#multiPointLabelSizeInput');
+const multiPointLabelSizeValue = document.querySelector('#multiPointLabelSizeValue');
 const multiPointFilledBtn = document.querySelector('#multiPointFilledBtn');
 const multiPointOpenBtn = document.querySelector('#multiPointOpenBtn');
 const multiPointHideBtn = document.querySelector('#multiPointHideBtn');
@@ -2417,6 +2467,7 @@ function linearConstructionPoint(linear, pointIdKey, freeXKey, freeYKey) {
     return null;
 }
 function movePointToTarget(p, target) {
+    if(p?.construction==='coordinatePoint'&&target){moveCoordinatePoint(p,target);return;}
     if(p?.construction==='pointOnFunctionGraph'){const o=getObject(p.sourceObjectId);const proj=o&&projectFunctionGraph(o,target);if(proj){p.x=proj.x;p.y=proj.y;p.curveT=proj.t;}return;}
     if (!p || !target) return;
     if (p.construction === 'pointOnCircle') {
@@ -2642,7 +2693,7 @@ function releasePoint(p){
     p.constructionInvalid=false;
 }
 function mapObjectReferences(o,map){
-    for(const key of ['a','b','c','sourceA','sourceB','sourceC','sourceId','anchorId','sourceObjectId','sourceAngleId','sourceCircleId','sourceStartPointId','sourceEndPointId','sourceBendPointId','sourceVertexPointId','sourcePointId','sourceBulgePointId','sourceCenterPointId','sourceRadiusPointId','sourceExternalPointId','tangentPointId'])if(o[key])o[key]=map(o[key]);
+    for(const key of ['a','b','c','sourceA','sourceB','sourceC','sourceId','anchorId','sourceObjectId','sourcePlaneId','sourceAngleId','sourceCircleId','sourceStartPointId','sourceEndPointId','sourceBendPointId','sourceVertexPointId','sourcePointId','sourceBulgePointId','sourceCenterPointId','sourceRadiusPointId','sourceExternalPointId','tangentPointId'])if(o[key])o[key]=map(o[key]);
     for(const key of ['pointIds','segmentIds','arcIds','curveIds'])if(Array.isArray(o[key]))o[key]=o[key].map(map);
     if(Array.isArray(o.points))for(const p of o.points)if(p.sourcePointId)p.sourcePointId=map(p.sourcePointId);
     if(Array.isArray(o.orderedBoundary))for(const part of o.orderedBoundary)if(part.id)part.id=map(part.id);
@@ -3455,6 +3506,7 @@ function expandIdsToGroups(ids) {
 }
 function copyClosureForSelection() {
     const ids = new Set(selectedIds);
+    for(const o of objects)if((o.kind==='formulaGraph'||o.construction==='coordinatePoint')&&(ids.has(o.id)||ids.has(o.sourcePlaneId))){ids.add(o.id);ids.add(o.sourcePlaneId);}
     let changed = true;
     while (changed) {
         changed = false;
@@ -3580,6 +3632,7 @@ function pasteInternalClipboard(offsetOverride = null) {
         if (o.sourceC && idMap.has(o.sourceC)) o.sourceC = idMap.get(o.sourceC);
         if (o.sourceId && idMap.has(o.sourceId)) o.sourceId = idMap.get(o.sourceId);
         if (o.anchorId && idMap.has(o.anchorId)) o.anchorId = idMap.get(o.anchorId);
+        if (o.sourcePlaneId && idMap.has(o.sourcePlaneId)) o.sourcePlaneId = idMap.get(o.sourcePlaneId);
         if (o.sourceObjectId && idMap.has(o.sourceObjectId)) o.sourceObjectId = idMap.get(o.sourceObjectId);
         if (o.sourceAngleId && idMap.has(o.sourceAngleId)) o.sourceAngleId = idMap.get(o.sourceAngleId);
         if (o.sourceCircleId && idMap.has(o.sourceCircleId)) o.sourceCircleId = idMap.get(o.sourceCircleId);
@@ -3664,7 +3717,7 @@ const PROJECT_MAX_BYTES = 20 * 1024 * 1024;
 let projectFilename = '';
 function serializeProject() {
     return JSON.stringify({ format:PROJECT_FORMAT, schemaVersion:PROJECT_SCHEMA_VERSION,
-        appVersion:'v0.9h3c', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
+        appVersion:'v0.9h3c-r9', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
 }
 function parseProject(text) {
     const fail = message => { throw new Error(message); };
@@ -3683,7 +3736,7 @@ function parseProject(text) {
     if (typeof s.workspaceGridVisible !== 'boolean' || typeof s.showHiddenPoints !== 'boolean')
         fail('작업 파일의 표시 설정이 올바르지 않습니다.');
     const kinds = new Set(['point','segment','line','ray','arrow','hline','vline','axis','coordinatePlane',
-        'circle','arc','bezier','quadraticGraph','cubicGraph','quarticGraph','functionGraph','angle','rightAngle','text','outsideFill','intersectionFill',
+        'circle','arc','bezier','quadraticGraph','cubicGraph','quarticGraph','functionGraph','formulaGraph','angle','rightAngle','text','outsideFill','intersectionFill',
         'closedRegionFill','areaIntersection','areaDifference','areaUnion']);
     const ids = new Set();
     let maxId = 0;
@@ -3700,6 +3753,8 @@ function parseProject(text) {
         if(o.kind==='functionGraph'&&o.frame!=null&&(!Array.isArray(o.frame)||o.frame.length!==4||!o.frame.every(Number.isFinite)||
             Math.abs(o.frame[0]*o.frame[0]+o.frame[2]*o.frame[2]-1)>1e-6||Math.abs(o.frame[1]*o.frame[1]+o.frame[3]*o.frame[3]-1)>1e-6||Math.abs(o.frame[0]*o.frame[1]+o.frame[2]*o.frame[3])>1e-6))fail('그래프 방향 정보가 올바르지 않습니다.');
         if(o.kind==='functionGraph'&&o.family==='parabola'&&![o.paramMin,o.paramMax].every(Number.isFinite))fail('포물선 범위가 올바르지 않습니다.');
+        if(o.construction==='coordinatePoint'&&(![o.coordinateX,o.coordinateY].every(Number.isFinite)||!s.objects.some(p=>p.kind==='coordinatePlane'&&p.id===o.sourcePlaneId)))fail('점의 좌표 또는 좌표평면이 올바르지 않습니다.');
+        if(o.kind==='formulaGraph'){try{validateFormulaObject(o,s.objects);}catch(e){fail(e.message);}}
         ids.add(o.id);
         const suffix = o.id.match(/(\d+)$/);
         if (suffix) maxId = Math.max(maxId, Number(suffix[1]));
@@ -4015,7 +4070,8 @@ function syncConstructedPoints() {
         if (!p.construction) { resolved.add(p.id); return; }
         if (resolving.has(p.id)) return;
         resolving.add(p.id);
-        if (p.construction === 'circleCenterPoint') {
+        if(p.construction==='coordinatePoint'){syncCoordinatePoint(p);}
+        else if (p.construction === 'circleCenterPoint') {
             const circle = getObject(p.sourceCircleId);
             if (circle?.kind === 'circle' && !circle.constructionInvalid && !circle.radiusDependencyInvalid) {
                 p.x = circle.cx;
@@ -6424,6 +6480,7 @@ function makePointFromAttachProjection(attach) {
     return p;
 }
 function pointDependencyDescription(p) {
+    if(p?.construction==='coordinatePoint')return `좌표평면의 점 (${formatAxisNumber(p.coordinateX)}, ${formatAxisNumber(p.coordinateY)}) — 드래그로 좌표를 바꿀 수 있습니다.`;
     if (!p || p.kind !== 'point' || !p.construction) return '자유점 — 드래그하면 원하는 위치로 이동합니다.';
     if (p.construction === 'pointOnSegment') return '선분 위의 종속점 — 드래그해도 해당 선분 위에서만 움직입니다.';
     if (p.construction === 'pointOnLinear') {
@@ -6494,6 +6551,91 @@ function setGroupData(g, id, kind) {
     g.dataset.kind = kind;
     g.classList.add('math-object');
 }
+// Formula graphs: a restricted expression parser; no eval or dynamic code execution.
+const formulaFunctions = {sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,sqrt:Math.sqrt,abs:Math.abs,exp:Math.exp,ln:Math.log,log:Math.log10,log10:Math.log10,log2:Math.log2,floor:Math.floor,ceil:Math.ceil,round:Math.round,sign:Math.sign,min:Math.min,max:Math.max,pow:Math.pow};
+function compileFormula(source, variables=['x']) {
+    if(typeof source!=='string'||source.length>500)throw Error('수식은 500자 이내로 입력하세요.');
+    let s=source.replace(/π/g,'pi').replace(/−/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/√/g,'sqrt').replace(/\*\*/g,'^').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g,m=>'^'+[...m].map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join(''));
+    let bar=false;s=s.replace(/\|/g,()=>{bar=!bar;return bar?'abs(':')';});if(bar)throw Error('절댓값 기호를 닫아 주세요.');
+    const tokens=[];let at=0;
+    while(at<s.length){if(/\s/.test(s[at])){at++;continue;}const m=s.slice(at).match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|^[a-zA-Z]+|^[+\-*/^(),]/);if(!m)throw Error('지원하지 않는 기호: '+s[at]);tokens.push(m[0]);at+=m[0].length;}
+    if(tokens.length>300)throw Error('수식이 너무 복잡합니다.');let i=0;
+    function expr(min=0){let t=tokens[i++],left;if(!t)throw Error('수식이 비어 있거나 완성되지 않았습니다.');
+        if(t==='+'||t==='-'){const a=expr(25);left=v=>t==='-'?-a(v):a(v);}
+        else if(t==='('){left=expr();if(tokens[i++]!==')')throw Error('괄호를 닫아 주세요.');}
+        else if(/^\d|^\./.test(t)){const n=Number(t);left=()=>n;}
+        else if(Object.hasOwn(formulaFunctions,t)){if(tokens[i++]!=='(')throw Error(t+' 함수에는 괄호가 필요합니다.');const args=[expr()];while(tokens[i]===','){i++;args.push(expr());}if(tokens[i++]!==')')throw Error('함수 괄호를 확인하세요.');if((['min','max'].includes(t)&&args.length<2)||(t==='pow'&&args.length!==2)||(!['min','max','pow'].includes(t)&&args.length!==1))throw Error('함수 인수 개수를 확인하세요.');left=v=>formulaFunctions[t](...args.map(a=>a(v)));}
+        else if(t==='pi'||t==='e'){const n=t==='pi'?Math.PI:Math.E;left=()=>n;}
+        else if(variables.includes(t)){left=v=>v[t];}
+        else throw Error('알 수 없는 변수 또는 함수: '+t);
+        while(i<tokens.length){const next=tokens[i];let op=next,implicit=false,bp=next==='+'||next==='-'?10:next==='*'||next==='/'?20:next==='^'?30:0;
+            if(!bp&&next!==')'&&next!==','){bp=20;op='*';implicit=true;}if(!bp||bp<min)break;if(!implicit)i++;
+            const a=left,b=expr(op==='^'?bp:bp+1);left=v=>{const x=a(v),y=b(v);return op==='+'?x+y:op==='-'?x-y:op==='*'?x*y:op==='/'?x/y:x**y;};
+        }return left;
+    }
+    const fn=expr();if(i!==tokens.length)throw Error('수식을 확인하세요.');return values=>{try{return fn(values);}catch{return NaN;}};
+}
+function formulaExpression(source, mode){
+    const parts=source.split('=');if(parts.length>2)throw Error('등호는 하나만 입력하세요.');
+    if(mode==='implicit')return parts.length===2?'('+parts[0]+')-('+parts[1]+')':source;
+    if(parts.length===2){if(!/^(?:y|f\s*\(\s*x\s*\))$/.test(parts[0].trim()))throw Error('일반 함수는 y=수식으로 입력하세요.');return parts[1];}return source;
+}
+function compileFormulaGraph(o){
+    if(!['explicit','parametric','implicit'].includes(o.mode))throw Error('그래프 종류를 확인하세요.');
+    if(!Number.isFinite(o.min)||!Number.isFinite(o.max)||o.min>=o.max)throw Error('범위는 최소값 < 최대값이어야 합니다.');
+    if(o.mode==='parametric')return [compileFormula(o.expression,['t']),compileFormula(o.expressionY,['t'])];
+    return [compileFormula(formulaExpression(o.expression,o.mode),o.mode==='implicit'?['x','y']:['x'])];
+}
+function formulaGraphSegments(o,plane){
+    const f=compileFormulaGraph(o),segments=[],b=planeBounds(plane),scale=planeUnitScale(plane);
+    const valid=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y);
+    function add(a,c){if(!valid(a)||!valid(c))return; // Clip every segment in plane coordinates.
+        let lo=0,hi=1,dx=c.x-a.x,dy=c.y-a.y;
+        for(const [p,q] of [[-dx,a.x-b.left],[dx,b.right-a.x],[-dy,a.y-b.top],[dy,b.bottom-a.y]]){
+            if(p===0){if(q<0)return;}else{const t=q/p;if(p<0)lo=Math.max(lo,t);else hi=Math.min(hi,t);if(lo>hi)return;}}
+        segments.push([{x:a.x+lo*dx,y:a.y+lo*dy},{x:a.x+hi*dx,y:a.y+hi*dy}]);
+    }
+    if(o.mode!=='implicit'){
+        const start=o.mode==='explicit'?Math.max(o.min,Number(plane.xMin)):o.min,end=o.mode==='explicit'?Math.min(o.max,Number(plane.xMax)):o.max;
+        if(start>=end)return segments;
+        const point=t=>o.mode==='explicit'?planePointAt(plane,t,f[0]({x:t})):planePointAt(plane,f[0]({t}),f[1]({t}));
+        function subdiv(a,pa,c,pc,depth){const mid=(a+c)/2,pm=point(mid);if(!valid(pa)||!valid(pc)||!valid(pm)){if(depth<8){subdiv(a,pa,mid,pm,depth+1);subdiv(mid,pm,c,pc,depth+1);}return;}
+            const error=Math.hypot(pm.x-(pa.x+pc.x)/2,pm.y-(pa.y+pc.y)/2),length=Math.hypot(pc.x-pa.x,pc.y-pa.y);
+            if(error>.6||length>24){if(depth<8){subdiv(a,pa,mid,pm,depth+1);subdiv(mid,pm,c,pc,depth+1);}return;}add(pa,pc);
+        }
+        const n=320;let a=start,pa=point(a);for(let k=1;k<=n;k++){const c=start+(end-start)*k/n,pc=point(c);subdiv(a,pa,c,pc,0);a=c;pa=pc;}
+    }else{
+        const xmin=Math.max(o.min,Number(plane.xMin)),xmax=Math.min(o.max,Number(plane.xMax)),ymin=Number(plane.yMin),ymax=Number(plane.yMax);if(xmin>=xmax)return segments;
+        const nx=Math.max(24,Math.min(240,Math.ceil((xmax-xmin)*scale/5))),ny=Math.max(24,Math.min(240,Math.ceil((ymax-ymin)*scale/5)));
+        const dx=(xmax-xmin)/nx,dy=(ymax-ymin)/ny,values=[];
+        for(let j=0;j<=ny;j++){values[j]=[];for(let i=0;i<=nx;i++)values[j][i]=f[0]({x:xmin+i*dx,y:ymin+j*dy});}
+        function crossing(a,c,va,vc){if(!Number.isFinite(va)||!Number.isFinite(vc)||(va<0)===(vc<0))return null;
+            let lo=a,hi=c,vl=va,vh=vc;const base=Math.max(Math.abs(va),Math.abs(vc));
+            for(let k=0;k<22;k++){const m={x:(lo.x+hi.x)/2,y:(lo.y+hi.y)/2},v=f[0](m);if(!Number.isFinite(v))return null;if((v<0)===(vl<0)){lo=m;vl=v;}else{hi=m;vh=v;}}
+            const p=Math.abs(vl)<Math.abs(vh)?lo:hi,v=Math.min(Math.abs(vl),Math.abs(vh));if(v>base*.02)return null;return planePointAt(plane,p.x,p.y);
+        }
+        for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+            const x=xmin+i*dx,y=ymin+j*dy,p=[{x,y},{x:x+dx,y},{x:x+dx,y:y+dy},{x,y:y+dy}],v=[values[j][i],values[j][i+1],values[j+1][i+1],values[j+1][i]],edges=[];
+            for(let k=0;k<4;k++){const q=crossing(p[k],p[(k+1)%4],v[k],v[(k+1)%4]);if(q)edges.push({edge:k,p:q});}
+            if(edges.length===2)add(edges[0].p,edges[1].p);
+            if(edges.length===4){const center=f[0]({x:x+dx/2,y:y+dy/2});if(!Number.isFinite(center))continue;const same=(center<0)===(v[0]<0);if(same){add(edges[0].p,edges[1].p);add(edges[2].p,edges[3].p);}else{add(edges[0].p,edges[3].p);add(edges[1].p,edges[2].p);}}
+        }
+    }return segments;
+}
+const formulaGeometryCache=new Map();
+function getFormulaGeometry(o){const p=getObject(o.sourcePlaneId);if(p?.kind!=='coordinatePlane')return [];const key=JSON.stringify([o.mode,o.expression,o.expressionY,o.min,o.max,p.originX,p.originY,p.xMin,p.xMax,p.yMin,p.yMax,planeUnitScale(p)]);const previous=formulaGeometryCache.get(o.id);if(previous?.key===key)return previous.segments;const segments=formulaGraphSegments(o,p);if(formulaGeometryCache.size>150)formulaGeometryCache.clear();formulaGeometryCache.set(o.id,{key,segments});return segments;}
+function renderFormulaGraph(o){
+    const plane=getObject(o.sourcePlaneId);if(!plane||shouldSkipHiddenObject(plane))return;
+    let segments;try{segments=getFormulaGeometry(o);}catch{return;}if(!segments.length)return;
+    const d=segments.map(([a,b])=>`M${a.x.toFixed(3)},${a.y.toFixed(3)}L${b.x.toFixed(3)},${b.y.toFixed(3)}`).join(' '),g=el('g');setGroupData(g,o.id,o.kind);
+    g.appendChild(el('path',setDashAttr({d,fill:'none',stroke:drawColor(o),'stroke-width':String(o.width??2),class:'math-segment','pointer-events':'none'},o.lineStyle)));
+    g.appendChild(el('path',{d,fill:'none',stroke:'transparent','stroke-width':'14','pointer-events':'stroke'}));applyHiddenObjectStyle(g,o);drawingLayer.appendChild(g);
+}
+function validateFormulaObject(o,all){
+    compileFormulaGraph(o);if(!all.some(p=>p.id===o.sourcePlaneId&&p.kind==='coordinatePlane'))throw Error('함수의 좌표평면을 찾을 수 없습니다.');
+    if(!Number.isFinite(o.width)||o.width<1||o.width>12)throw Error('함수 선 굵기가 올바르지 않습니다.');
+}
+
 function render() {
     syncConstructedPoints();
     syncConstructedCircles();
@@ -6541,6 +6683,7 @@ function render() {
             renderCubicGraph(o);
         else if (o.kind === 'quarticGraph')
             renderQuarticGraph(o);
+        else if (o.kind === 'formulaGraph') renderFormulaGraph(o);
         else if (o.kind === 'functionGraph') renderFunctionGraph(o);
         else if (o.kind === 'angle')
             renderAngle(o);
@@ -7635,6 +7778,7 @@ function renderMarquee() {
     previewLayer.appendChild(el('rect', { x: String(r.x), y: String(r.y), width: String(r.w), height: String(r.h), class: 'marquee' }));
 }
 function objectBounds(o) {
+    if(o?.kind==='formulaGraph'){const ss=getFormulaGeometry(o),pts=ss.flat();if(!pts.length)return null;let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;for(const p of pts){x1=Math.min(x1,p.x);y1=Math.min(y1,p.y);x2=Math.max(x2,p.x);y2=Math.max(y2,p.y);}return {x1,y1,x2,y2};}
     if(o?.kind==='functionGraph'){const pts=functionGraphSamples(o);if(!pts.length)return null;return {x1:Math.min(...pts.map(p=>p.x)),y1:Math.min(...pts.map(p=>p.y)),x2:Math.max(...pts.map(p=>p.x)),y2:Math.max(...pts.map(p=>p.y))};}
     if (shouldSkipHiddenObject(o)) return null;
     if (o.kind === 'point') { return { x1: o.x - o.size, y1: o.y - o.size, x2: o.x + o.size, y2: o.y + o.size }; }
@@ -7841,6 +7985,7 @@ function prepareGroupDrag() {
             if (o.sourcePointId) pointIds.add(o.sourcePointId);
         }
         else if (o.kind === 'axis') axisIds.add(o.id);
+        else if (o.kind === 'formulaGraph') planeIds.add(o.sourcePlaneId);
         else if (o.kind === 'coordinatePlane') planeIds.add(o.id);
         else if (o.kind === 'circle') circleIds.add(o.id);
         else if (['intersectionFill','areaIntersection','areaDifference','areaUnion','outsideFill'].includes(o.kind)) collectRegionMovables(o, pointIds, circleIds, arcIds, bezierIds, quadraticIds);
@@ -7871,6 +8016,7 @@ function moveSelectedBy(dx, dy) {
     for (const id of dragMovedPointIds) {
         const p = getPoint(id);
         if (!p) continue;
+        if(p.construction==='coordinatePoint'){if(!dragMovedPlaneIds.includes(p.sourcePlaneId))moveCoordinatePoint(p,{x:p.x+dx,y:p.y+dy});continue;}
         if(p.construction==='pointOnFunctionGraph'){if(!dragMovedFunctionIds.includes(p.sourceObjectId))movePointToTarget(p,{x:p.x+dx,y:p.y+dy});continue;}
 
         if (p.construction === 'pointOnCircle') {
@@ -8219,6 +8365,10 @@ function updateProperties() {
             multiPointItalicBtn.classList.toggle('active', sameLabelStyle === 'italic');
             multiPointRomanBtn.classList.toggle('active', sameLabelStyle === 'roman');
             multiPointSizeInput.value = String(selected[0].size ?? 5);
+            const labelSizes = selected.map(o => o.labelSize ?? 24);
+            const sameLabelSize = labelSizes.every(size => size === labelSizes[0]);
+            multiPointLabelSizeInput.value = String(labelSizes[0]);
+            multiPointLabelSizeValue.textContent = sameLabelSize ? `${labelSizes[0]} px` : '서로 다름';
             const pointStyles = selected.map(o => o.pointStyle ?? 'filled');
             const samePointStyle = pointStyles.every(s => s === pointStyles[0]) ? pointStyles[0] : null;
             multiPointFilledBtn.classList.toggle('active', samePointStyle === 'filled');
@@ -8577,6 +8727,7 @@ function deleteSelected() {
         const add = id => { if (id && !removeIds.has(id)) { removeIds.add(id); changed = true; } };
         for (const o of objects) {
             if (removeIds.has(o.id)) continue;
+            if((o.kind==='formulaGraph'||o.construction==='coordinatePoint') && removeIds.has(o.sourcePlaneId)) add(o.id);
             if ((o.kind === 'segment' || o.kind === 'line') && (removeIds.has(o.a) || removeIds.has(o.b))) add(o.id);
             else if (o.kind === 'point' && (o.construction === 'pointOnCircle' || o.construction === 'circleCenterPoint') && removeIds.has(o.sourceCircleId)) add(o.id);
             else if (o.kind === 'point' && o.construction === 'pointOnSegment' && removeIds.has(o.sourceObjectId)) add(o.id);
@@ -10128,6 +10279,19 @@ multiPointRomanBtn.addEventListener('click', () => {
     if (!selectedObjects().every(o => o.kind === 'point')) return;
     mutateMulti(o => { o.labelStyle = 'roman'; });
 });
+let multiPointLabelSizeEditing = false;
+multiPointLabelSizeInput.addEventListener('input', () => {
+    const points = selectedObjects();
+    if (points.length < 2 || !points.every(o => o.kind === 'point')) return;
+    const size = Math.max(8, Math.min(72, Number(multiPointLabelSizeInput.value)));
+    if (!Number.isFinite(size) || points.every(o => (o.labelSize ?? 24) === size)) return;
+    if (!multiPointLabelSizeEditing) { pushHistory(); multiPointLabelSizeEditing = true; }
+    for (const point of points) point.labelSize = size;
+    multiPointLabelSizeValue.textContent = `${size} px`;
+    render();
+});
+multiPointLabelSizeInput.addEventListener('change', () => { multiPointLabelSizeEditing = false; updateProperties(); });
+multiPointLabelSizeInput.addEventListener('blur', () => { multiPointLabelSizeEditing = false; });
 multiPointSizeInput.addEventListener('change', () => {
     if (!selectedObjects().every(o => o.kind === 'point')) return;
     mutateMulti(o => { o.size = Number(multiPointSizeInput.value); });
@@ -10785,6 +10949,222 @@ function initializeCompactUI(){
 }
 initializeCompactUI();
 
-  </script>
+  const formulaPanel=document.createElement('div');formulaPanel.id='formulaGraphProperties';formulaPanel.className='prop-group hidden';
+formulaPanel.innerHTML=`<strong id="formulaHeading">함수 추가</strong>
+<label for="formulaMode">입력 방식</label><select id="formulaMode"><option value="explicit">일반 함수 y=f(x)</option><option value="parametric">매개변수 · 벡터 (x(t), y(t))</option><option value="implicit">음함수 F(x,y)=0</option></select>
+<label for="formulaExample">예제 선택</label><select id="formulaExample"><option value="">직접 입력</option><option value="quadratic">이차함수</option><option value="cubic">삼차함수</option><option value="quartic">사차함수</option><option value="rational">유리함수</option><option value="root">무리함수</option><option value="absolute">절댓값함수</option><option value="sine">삼각함수</option><option value="ellipse">벡터 곡선 · 타원</option><option value="spiral">벡터 곡선 · 나선</option><option value="circle">음함수 · 원</option><option value="hyperbola">음함수 · 쌍곡선</option></select>
+<label id="formulaExpressionLabel" for="formulaExpression">y =</label><input id="formulaExpression" type="text" maxlength="500" autocomplete="off" spellcheck="false" value="x^2-2x-3" />
+<div id="formulaYRow" class="hidden"><label for="formulaExpressionY">y(t) =</label><input id="formulaExpressionY" type="text" maxlength="500" autocomplete="off" spellcheck="false" value="sin(t)" /></div>
+<label id="formulaRangeLabel">표시할 x 범위</label><div class="style-row"><input id="formulaMin" type="number" step="any" value="-5" aria-label="함수 범위 최소값"/><input id="formulaMax" type="number" step="any" value="5" aria-label="함수 범위 최대값"/></div>
+<label for="formulaColor">색상</label><input id="formulaColor" type="color" value="#000000"/>
+<label for="formulaWidth">선 굵기</label><input id="formulaWidth" type="number" min="1" max="12" step="1" value="2"/>
+<label for="formulaLineStyle">선 모양</label><select id="formulaLineStyle"><option value="solid">실선</option><option value="dashed">파선</option><option value="dotted">점선</option></select>
+<p id="formulaError" role="status" style="color:#b91c1c;white-space:pre-line"></p>
+<button id="formulaApply" class="ghost-btn" type="button">그래프 추가</button><button id="formulaNew" class="ghost-btn hidden" type="button">이 좌표평면에 다른 함수 추가</button>
+<div id="formulaList"></div>
+<p style="font-size:12px;color:#64748b;line-height:1.6">거듭제곱: x^2 · 곱셈: 2x 또는 2*x<br>sqrt(x), abs(x), sin(x), cos(x), tan(x), ln(x), log(x), exp(x), pi, e<br>삼각함수 각도는 라디안입니다. 매개변수 곡선은 벡터의 x·y 성분을 각각 입력하세요. 음함수는 x^2+y^2=4처럼 입력할 수 있습니다.<br>그래프는 좌표평면 안에서 수치 근사로 표시됩니다. 아주 작은 곡선이나 특이점은 누락될 수 있습니다.</p>`;
+document.querySelector('#planeProperties').before(formulaPanel);
+const fq=id=>document.getElementById(id);let formulaTargetPlane=null,formulaEditingId=null,formulaLastState=null;
+function updateFormulaMode(){const mode=fq('formulaMode').value;fq('formulaYRow').classList.toggle('hidden',mode!=='parametric');fq('formulaExpressionLabel').textContent=mode==='parametric'?'x(t) =':mode==='implicit'?'방정식 F(x,y)=0':'y =';fq('formulaRangeLabel').textContent=mode==='parametric'?'매개변수 t 범위':'표시할 x 범위';}
+fq('formulaMode').addEventListener('change',()=>{updateFormulaMode();fq('formulaError').textContent='';});
+const formulaExamples={quadratic:['explicit','x^2-2x-3','',-5,5],cubic:['explicit','x^3-3x','',-3,3],quartic:['explicit','x^4-4x^2+2','',-3,3],rational:['explicit','1/x','',-5,5],root:['explicit','sqrt(x)','',0,5],absolute:['explicit','abs(x-2)+1','',-5,5],sine:['explicit','sin(x)','',-5,5],ellipse:['parametric','3*cos(t)','2*sin(t)',0,2*Math.PI],spiral:['parametric','0.2*t*cos(t)','0.2*t*sin(t)',0,6*Math.PI],circle:['implicit','x^2+y^2=9','',-5,5],hyperbola:['implicit','x^2-y^2=1','',-5,5]};
+fq('formulaExample').addEventListener('change',()=>{const e=formulaExamples[fq('formulaExample').value];if(!e)return;[fq('formulaMode').value,fq('formulaExpression').value,fq('formulaExpressionY').value,fq('formulaMin').value,fq('formulaMax').value]=e;updateFormulaMode();fq('formulaError').textContent='';});
+function updateFormulaProperties(){
+    const selected=selectedObjects(),o=selected.length===1?selected[0]:null,plane=o?.kind==='coordinatePlane'?o:o?.kind==='formulaGraph'?getObject(o.sourcePlaneId):null;
+    formulaPanel.classList.toggle('hidden',!plane);if(!plane){formulaEditingId=null;formulaTargetPlane=null;return;}
+    const stateKey=JSON.stringify(o);
+    const changed=formulaTargetPlane!==plane.id||formulaEditingId!==(o.kind==='formulaGraph'?o.id:null)||formulaLastState!==stateKey;formulaLastState=stateKey;formulaTargetPlane=plane.id;formulaEditingId=o.kind==='formulaGraph'?o.id:null;
+    fq('formulaHeading').textContent=formulaEditingId?'함수 수식 편집':'좌표평면에 함수 추가';fq('formulaApply').textContent=formulaEditingId?'수정 적용':'그래프 추가';fq('formulaNew').classList.toggle('hidden',!formulaEditingId);
+    if(changed){fq('formulaError').textContent='';fq('formulaExample').value='';if(formulaEditingId){fq('formulaMode').value=o.mode;fq('formulaExpression').value=o.expression;fq('formulaExpressionY').value=o.expressionY||'';fq('formulaMin').value=o.min;fq('formulaMax').value=o.max;fq('formulaColor').value=o.color;fq('formulaWidth').value=o.width;fq('formulaLineStyle').value=o.lineStyle||'solid';}else{fq('formulaColor').value='#000000';fq('formulaMode').value='explicit';fq('formulaExpression').value='x^2-2x-3';fq('formulaMin').value=plane.xMin;fq('formulaMax').value=plane.xMax;}updateFormulaMode();}
+    fq('formulaList').replaceChildren();const graphs=objects.filter(g=>g.kind==='formulaGraph'&&g.sourcePlaneId===plane.id);if(graphs.length){const title=document.createElement('label');title.textContent='이 좌표평면의 함수 ('+graphs.length+')';fq('formulaList').appendChild(title);}
+    for(const graph of graphs){const button=document.createElement('button');button.type='button';button.className='ghost-btn';button.style.cssText='width:100%;text-align:left;overflow-wrap:anywhere;height:auto;min-height:34px;margin-top:4px';button.textContent=graph.mode==='parametric'?'('+graph.expression+', '+graph.expressionY+')':graph.mode==='explicit'?'y = '+graph.expression:graph.expression;button.addEventListener('click',()=>{selectedIds=new Set([graph.id]);render();updateProperties();});fq('formulaList').appendChild(button);}
+}
+fq('formulaNew').addEventListener('click',()=>{if(!formulaTargetPlane)return;selectedIds=new Set([formulaTargetPlane]);render();updateProperties();});
+fq('formulaApply').addEventListener('click',()=>{
+    try{const plane=getObject(formulaTargetPlane);if(plane?.kind!=='coordinatePlane')throw Error('먼저 좌표평면을 선택하세요.');
+        const candidate={kind:'formulaGraph',sourcePlaneId:plane.id,mode:fq('formulaMode').value,expression:fq('formulaExpression').value.trim(),expressionY:fq('formulaExpressionY').value.trim(),min:Number(fq('formulaMin').value),max:Number(fq('formulaMax').value),color:fq('formulaColor').value,width:Number(fq('formulaWidth').value),lineStyle:fq('formulaLineStyle').value};
+        if(!fq('formulaMin').value.trim()||!fq('formulaMax').value.trim())throw Error('범위를 입력하세요.');validateFormulaObject(candidate,objects);
+        const segments=formulaGraphSegments(candidate,plane);if(!segments.length)throw Error('현재 좌표평면 범위에서 곡선을 찾지 못했습니다. 수식과 범위를 확인하세요.');
+        pushHistory();let graph=getObject(formulaEditingId);if(graph?.kind==='formulaGraph')Object.assign(graph,candidate);else{graph={id:newId('eq'),...candidate};objects.push(graph);}selectedIds=new Set([graph.id]);formulaTargetPlane=null;render();updateProperties();showToast('수식 그래프를 적용했습니다.');
+    }catch(e){fq('formulaError').textContent=e.message;}
+});
+const originalUpdatePropertiesForFormula=updateProperties;
+updateProperties=function(){originalUpdatePropertiesForFormula();updateFormulaProperties();};
+updateProperties();
+
+// On-screen math keyboard shared by the two formula component fields.
+const formulaKeyboard=document.createElement('div');formulaKeyboard.id='formulaKeyboard';formulaKeyboard.className='math-quick-input';formulaKeyboard.setAttribute('role','group');formulaKeyboard.setAttribute('aria-label','공용 수식 입력 키보드');
+formulaKeyboard.innerHTML='<label>수식 입력 키보드 <span id="formulaKeyboardTarget" style="font-weight:400">수식</span></label>';
+
+let formulaKeyboardInput=fq('formulaExpression');
+for(const id of ['formulaExpression','formulaExpressionY'])fq(id).addEventListener('focus',()=>{formulaKeyboardInput=fq(id);fq('formulaKeyboardTarget').textContent=id==='formulaExpressionY'?'y(t) 입력 중':fq('formulaExpressionLabel').textContent.replace('=','')+' 입력 중';});
+function formulaKeyboardEdit(input,key){
+    const start=input.selectionStart??input.value.length,end=input.selectionEnd??start,selected=input.value.slice(start,end);
+    let text=key.text??'',caret=null;
+    if(key.action==='left'||key.action==='right'){
+        const p=key.action==='left'?(start!==end?start:Math.max(0,start-1)):(start!==end?end:Math.min(input.value.length,end+1));input.focus({preventScroll:true});input.setSelectionRange(p,p);return;
+    }
+    if(key.action==='backspace'){
+        const from=start===end?Math.max(0,start-1):start;input.setRangeText('',from,end,'end');
+    }else if(key.action==='clear'){input.setRangeText('',0,input.value.length,'end');}
+    else{
+        if(key.action==='wrap'){text=key.prefix+selected+key.suffix;caret=start+key.prefix.length+selected.length;}
+        if(key.action==='square'){text=selected?'('+selected+')^2':'^2';}
+        if(key.action==='power'){text=(selected?'('+selected+')':'')+'^()';caret=start+text.length-1;}
+        if(key.action==='fraction'){text='('+selected+')/()';caret=selected?start+text.length-1:start+1;}
+        if(input.value.length-(end-start)+text.length>500)return;
+        input.setRangeText(text,start,end,'end');if(caret!==null)input.setSelectionRange(caret,caret);
+    }
+    input.dispatchEvent(new Event('input',{bubbles:true}));input.focus({preventScroll:true});
+}
+const formulaKeyboardRows=[
+    [{label:'x',text:'x'},{label:'y',text:'y'},{label:'t',text:'t'},{label:'π',text:'pi'},{label:'e',text:'e'},{label:'⌫',action:'backspace',title:'앞 글자 지우기'}],
+    [{label:'x²',action:'square',title:'제곱'},{label:'xⁿ',action:'power',title:'거듭제곱 · 지수 칸 입력'},{label:'√',action:'wrap',prefix:'sqrt(',suffix:')',title:'제곱근'},{label:'a/b',action:'fraction',title:'분수 · 분자 입력 후 →로 분모 이동'},{label:'|x|',action:'wrap',prefix:'abs(',suffix:')',title:'절댓값'},{label:'( )',action:'wrap',prefix:'(',suffix:')',title:'괄호'}],
+    ['sin','cos','tan','ln','log','exp'].map(fn=>({label:fn,action:'wrap',prefix:fn+'(',suffix:')',title:fn+' 함수'})),
+    ['7','8','9','÷','(',')'].map(v=>({label:v,text:v==='÷'?'/':v})),
+    ['4','5','6','×','^',','].map(v=>({label:v,text:v==='×'?'*':v})),
+    ['1','2','3','−','+','='].map(v=>({label:v,text:v==='−'?'-':v})),
+    [{label:'0',text:'0'},{label:'.',text:'.'},{label:'←',action:'left',title:'커서 왼쪽'},{label:'→',action:'right',title:'커서 오른쪽'},{label:'지우기',action:'clear',title:'현재 수식 비우기'},{label:'그리기',action:'apply',title:'그래프 추가 또는 수정 적용'}]
+];
+for(const keys of formulaKeyboardRows){const row=document.createElement('div');row.className='math-key-row';row.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px';for(const key of keys){const button=document.createElement('button');button.type='button';button.className='math-key-btn function-key';button.textContent=key.label;button.title=key.title||key.label;button.setAttribute('aria-label',key.title||key.label);button.style.cssText='min-width:0;padding:0 2px;font-size:14px;touch-action:manipulation';if(key.action==='apply')button.setAttribute('data-shared-math-apply','');if(key.action==='apply')button.style.cssText+=';background:#2563eb;color:white;border-color:#2563eb';button.addEventListener('pointerdown',e=>{e.preventDefault();});button.addEventListener('click',()=>{if(key.action==='apply'){fq(isCoordinateKeyboardTarget(formulaKeyboardInput)?'coordinatePointApply':'formulaApply').click();return;}if(formulaKeyboardInput===fq('formulaExpressionY')&&fq('formulaMode').value!=='parametric')formulaKeyboardInput=fq('formulaExpression');formulaKeyboardEdit(formulaKeyboardInput,key);});row.appendChild(button);}formulaKeyboard.appendChild(row);}
+
+for(const id of ['formulaExpression','formulaExpressionY'])fq(id).addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();fq('formulaApply').click();}});
+function createCoordinatePoint(plane,xValue,yValue,label=''){
+    if(plane?.kind!=='coordinatePlane'||!Number.isFinite(xValue)||!Number.isFinite(yValue))throw Error('좌표평면과 좌표값을 확인하세요.');
+    const world=planePointAt(plane,xValue,yValue);if(!Number.isFinite(world.x)||!Number.isFinite(world.y))throw Error('좌표값이 너무 큽니다.');
+    const point=makePoint(world.x,world.y);point.construction='coordinatePoint';point.sourcePlaneId=plane.id;point.coordinateX=xValue;point.coordinateY=yValue;
+    if(label.trim())point.label=label.trim().slice(0,8);return point;
+}
+function syncCoordinatePoint(point){
+    const plane=getObject(point.sourcePlaneId);if(plane?.kind!=='coordinatePlane'){point.constructionInvalid=true;return;}
+    const p=planePointAt(plane,point.coordinateX,point.coordinateY);point.x=p.x;point.y=p.y;point.constructionInvalid=!Number.isFinite(p.x)||!Number.isFinite(p.y);
+}
+function moveCoordinatePoint(point,target){
+    const plane=getObject(point.sourcePlaneId);if(plane?.kind!=='coordinatePlane')return;const scale=planeUnitScale(plane);
+    point.coordinateX=(target.x-plane.originX)/scale;point.coordinateY=(plane.originY-target.y)/scale;syncCoordinatePoint(point);
+}
+const coordinatePointPanel=document.createElement('div');coordinatePointPanel.id='coordinatePointPanel';coordinatePointPanel.className='prop-group hidden';
+coordinatePointPanel.innerHTML=`<strong id="coordinatePointHeading">좌표로 점 찍기</strong><label for="coordinatePointName">점 이름 (비우면 자동)</label><input id="coordinatePointName" type="text" maxlength="8" autocomplete="off"/><label>점 좌표 (x, y)</label><div class="style-row"><input id="coordinatePointX" type="text" value="0" aria-label="점 x 좌표" autocomplete="off"/><input id="coordinatePointY" type="text" value="0" aria-label="점 y 좌표" autocomplete="off"/></div><p style="font-size:12px;color:#64748b">숫자 또는 pi/2, sqrt(2), 1/3 같은 식을 입력하세요. 만든 점은 기존 점처럼 선택·이동하거나 선분으로 연결할 수 있습니다. 좌표평면의 이동·축척 변경을 따라갑니다.</p><p id="coordinatePointError" role="status" style="color:#b91c1c"></p><button id="coordinatePointApply" type="button" class="ghost-btn">점 추가</button><button id="coordinatePointNew" type="button" class="ghost-btn hidden">이 좌표평면에 다른 점 추가</button>`;
+formulaPanel.before(coordinatePointPanel);
+let coordinatePointPlaneId=null,coordinatePointEditingId=null,coordinatePointState=null;
+function updateCoordinatePointProperties(){
+    const selected=selectedObjects(),o=selected.length===1?selected[0]:null;
+    const plane=o?.kind==='coordinatePlane'?o:(o?.kind==='formulaGraph'||o?.construction==='coordinatePoint')?getObject(o.sourcePlaneId):null;
+    coordinatePointPanel.classList.toggle('hidden',!plane);if(!plane){coordinatePointState=null;coordinatePointPlaneId=null;coordinatePointEditingId=null;return;}
+    coordinatePointPlaneId=plane.id;coordinatePointEditingId=o.construction==='coordinatePoint'?o.id:null;
+    const state=JSON.stringify([o.id,o.coordinateX,o.coordinateY,o.label]);if(coordinatePointState!==state){coordinatePointState=state;fq('coordinatePointError').textContent='';fq('coordinatePointName').value=coordinatePointEditingId?o.label:'';fq('coordinatePointX').value=coordinatePointEditingId?String(Number(o.coordinateX.toPrecision(12))):'0';fq('coordinatePointY').value=coordinatePointEditingId?String(Number(o.coordinateY.toPrecision(12))):'0';}
+    fq('coordinatePointHeading').textContent=coordinatePointEditingId?'점 좌표 수정':'좌표로 점 찍기';fq('coordinatePointApply').textContent=coordinatePointEditingId?'점 좌표 적용':'점 추가';fq('coordinatePointNew').classList.toggle('hidden',!coordinatePointEditingId);
+}
+fq('coordinatePointApply').addEventListener('click',()=>{
+    try{const plane=getObject(coordinatePointPlaneId);if(plane?.kind!=='coordinatePlane')throw Error('좌표평면을 선택하세요.');
+        const x=compileFormula(fq('coordinatePointX').value,[])({}),y=compileFormula(fq('coordinatePointY').value,[])({});if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('좌표는 유한한 숫자여야 합니다.');
+        const world=planePointAt(plane,x,y);if(!Number.isFinite(world.x)||!Number.isFinite(world.y))throw Error('좌표값이 너무 큽니다.');
+        pushHistory();let point=getObject(coordinatePointEditingId);if(point?.construction==='coordinatePoint'){point.coordinateX=x;point.coordinateY=y;const name=fq('coordinatePointName').value.trim();if(name)point.label=name;syncCoordinatePoint(point);}else point=createCoordinatePoint(plane,x,y,fq('coordinatePointName').value);
+        selectedIds=new Set([point.id]);render();updateProperties();showToast(`${point.label} (${formatAxisNumber(x)}, ${formatAxisNumber(y)})${x<plane.xMin||x>plane.xMax||y<plane.yMin||y>plane.yMax?' · 좌표평면 표시 범위 밖입니다.':' 점을 적용했습니다.'}`);
+    }catch(e){fq('coordinatePointError').textContent=e.message;}
+});
+fq('coordinatePointNew').addEventListener('click',()=>{if(!coordinatePointPlaneId)return;selectedIds=new Set([coordinatePointPlaneId]);render();updateProperties();fq('coordinatePointX').focus();});
+for(const id of ['coordinatePointX','coordinatePointY','coordinatePointName'])fq(id).addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();fq('coordinatePointApply').click();}});
+const previousUpdateCoordinatePoints=updateProperties;updateProperties=function(){previousUpdateCoordinatePoints();updateCoordinatePointProperties();};updateProperties();
+
+// A single math keyboard follows the active formula or coordinate field.
+function isCoordinateKeyboardTarget(input){return input===fq('coordinatePointX')||input===fq('coordinatePointY');}
+function selectSharedMathTarget(input){
+    if(!input||input.closest('.hidden,.ux-inactive'))return;
+    formulaKeyboardInput=input;
+    if(isCoordinateKeyboardTarget(input)){
+        
+        fq('formulaKeyboardTarget').textContent=input.id==='coordinatePointX'?'점 x 좌표 입력 중':'점 y 좌표 입력 중';
+    }else{
+        
+        fq('formulaKeyboardTarget').textContent=input.id==='formulaExpressionY'?'y(t) 입력 중':fq('formulaExpressionLabel').textContent.replace('=','')+' 입력 중';
+    }
+    formulaKeyboard.classList.remove('hidden');
+    const apply=formulaKeyboard.querySelector('[data-shared-math-apply]');if(apply){apply.textContent=isCoordinateKeyboardTarget(input)?'점 적용':'그리기';apply.title=isCoordinateKeyboardTarget(input)?'점 좌표 적용':'그래프 추가 또는 수정 적용';apply.setAttribute('aria-label',apply.title);}
+}
+function reconcileSharedMathKeyboard(){
+    const current=formulaKeyboardInput;
+    if(current&&!current.closest('.hidden,.ux-inactive')){selectSharedMathTarget(current);return;}
+    const target=!coordinatePointPanel.classList.contains('hidden')&&coordinatePointEditingId?fq('coordinatePointX'):!formulaPanel.classList.contains('hidden')?fq('formulaExpression'):!coordinatePointPanel.classList.contains('hidden')?fq('coordinatePointX'):null;
+    if(target)selectSharedMathTarget(target);else formulaKeyboard.classList.add('hidden');
+}
+for(const id of ['formulaExpression','formulaExpressionY','coordinatePointX','coordinatePointY'])fq(id).addEventListener('focus',()=>selectSharedMathTarget(fq(id)));
+const previousUpdateSharedKeyboard=updateProperties;updateProperties=function(){previousUpdateSharedKeyboard();reconcileSharedMathKeyboard();};
+fq('formulaMode').addEventListener('change',reconcileSharedMathKeyboard);
+reconcileSharedMathKeyboard();
+
+// Group related tools into a contextual inspector with one stable math keyboard.
+const uxWorkbench=document.createElement('section');uxWorkbench.className='ux-workbench';uxWorkbench.setAttribute('aria-label','좌표 작업');
+formulaPanel.before(uxWorkbench);
+const uxContext=document.createElement('p');uxContext.className='ux-context';uxWorkbench.append(uxContext);
+const uxTabs=document.createElement('div');uxTabs.className='ux-tabs';uxTabs.setAttribute('role','tablist');uxTabs.setAttribute('aria-label','좌표 작업 선택');uxWorkbench.append(uxTabs);
+uxWorkbench.append(formulaPanel,coordinatePointPanel,document.querySelector('#planeProperties'),document.querySelector('#pointProperties'));
+const uxMathDock=document.createElement('div');uxMathDock.id='uxMathDock';uxMathDock.className='ux-math-dock';
+uxMathDock.innerHTML='<div class="ux-math-head"><span class="ux-math-target" aria-live="polite">수식 입력 키보드</span><button type="button" aria-expanded="true">키보드 접기</button></div>';
+uxWorkbench.append(uxMathDock);uxMathDock.append(formulaKeyboard);
+let uxKeyboardCollapsed=false;
+uxMathDock.querySelector('button').addEventListener('click',()=>{uxKeyboardCollapsed=!uxKeyboardCollapsed;uxMathDock.classList.toggle('ux-dock-collapsed',uxKeyboardCollapsed);uxMathDock.querySelector('button').textContent=uxKeyboardCollapsed?'키보드 펼치기':'키보드 접기';uxMathDock.querySelector('button').setAttribute('aria-expanded',String(!uxKeyboardCollapsed));});
+const uxSectionIds={formula:'formulaGraphProperties',coordinate:'coordinatePointPanel',plane:'planeProperties',point:'pointProperties'};
+let uxActiveTab='formula',uxSelectedId=null,uxRequestedTab=null;const uxTabButtons={};
+for(const [key,title] of [['formula','함수'],['coordinate','좌표 점'],['plane','좌표 설정'],['point','점 모양']]){
+    const button=document.createElement('button');button.type='button';button.id='uxTab-'+key;button.textContent=title;button.setAttribute('role','tab');button.setAttribute('aria-controls',uxSectionIds[key]);
+    button.addEventListener('click',()=>{
+        const o=selectedObjects()[0];uxRequestedTab=key;
+        if((key==='plane'&&o?.kind!=='coordinatePlane')||(key==='formula'&&o?.construction==='coordinatePoint')){selectedIds=new Set([o.sourcePlaneId]);render();}
+        updateProperties();
+    });
+    button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const visible=Object.values(uxTabButtons).filter(b=>!b.classList.contains('hidden')),at=visible.indexOf(button);const next=event.key==='Home'?0:event.key==='End'?visible.length-1:(at+(event.key==='ArrowRight'?1:-1)+visible.length)%visible.length;visible[next].click();visible[next].focus();});
+    uxTabs.append(button);uxTabButtons[key]=button;
+    fq(uxSectionIds[key]).setAttribute('role','tabpanel');fq(uxSectionIds[key]).setAttribute('aria-labelledby',button.id);
+}
+function updateUXWorkbench(){
+    const list=selectedObjects(),o=list.length===1?list[0]:null,isCoordinate=o?.construction==='coordinatePoint',plane=o?.kind==='coordinatePlane'?o:(o?.kind==='formulaGraph'||isCoordinate)?getObject(o.sourcePlaneId):null;
+    const supported=!!plane||o?.kind==='point';uxWorkbench.classList.toggle('hidden',!supported);
+    // Original property visibility is authoritative; tabs only reduce what is shown.
+    Object.values(uxSectionIds).forEach(id=>fq(id).classList.remove('ux-inactive'));
+    if(!supported){uxSelectedId=null;uxMathDock.classList.add('hidden');return;}
+    if(uxRequestedTab){uxActiveTab=uxRequestedTab;uxRequestedTab=null;}else if(uxSelectedId!==o.id){uxActiveTab=isCoordinate?'coordinate':o.kind==='point'?'point':'formula';}
+    uxSelectedId=o.id;
+    const available=Object.keys(uxSectionIds).filter(key=>!fq(uxSectionIds[key]).classList.contains('hidden'));
+    // Plane settings can be opened by selecting the connected coordinate plane.
+    if(plane&&!available.includes('plane'))available.push('plane');
+    if(plane&&isCoordinate&&!available.includes('formula'))available.push('formula');
+    if(!available.includes(uxActiveTab))uxActiveTab=available[0];
+    for(const [key,id] of Object.entries(uxSectionIds)){
+        uxTabButtons[key].classList.toggle('hidden',!available.includes(key));uxTabButtons[key].setAttribute('aria-selected',String(key===uxActiveTab));uxTabButtons[key].tabIndex=key===uxActiveTab?0:-1;
+        fq(id).classList.toggle('ux-inactive',key!==uxActiveTab);
+    }
+    uxTabs.classList.toggle('hidden',available.length<=1);
+    uxContext.textContent=plane?(isCoordinate?`점 ${o.label} · 좌표평면에 연결됨`:o.kind==='formulaGraph'?'수식 그래프 편집 · 좌표평면에 연결됨':'좌표평면 · 함수와 좌표 점을 추가하세요'):`점 ${o.label} · 이름과 모양 설정`;
+    const showKeyboard=['formula','coordinate'].includes(uxActiveTab);uxMathDock.classList.toggle('hidden',!showKeyboard);
+    if(showKeyboard){const target=uxActiveTab==='coordinate'?fq('coordinatePointX'):fq('formulaExpression');if(!formulaKeyboardInput||formulaKeyboardInput.closest('.hidden,.ux-inactive'))formulaKeyboardInput=target;selectSharedMathTarget(formulaKeyboardInput);}
+    const header=document.querySelector('.panel-title');header.firstChild.textContent=list.length===1?'선택 속성':'속성';
+}
+// Stable position: focusing a field updates the target, never reparents the keyboard.
+const uxOriginalSelectSharedTarget=selectSharedMathTarget;
+selectSharedMathTarget=function(input){uxOriginalSelectSharedTarget(input);uxMathDock.querySelector('.ux-math-target').textContent=fq('formulaKeyboardTarget').textContent;};
+const uxOriginalUpdate=updateProperties;updateProperties=function(){uxOriginalUpdate();updateUXWorkbench();};
+function uxCollapseRange(parent,firstId,lastId,title){
+    const first=fq(firstId),last=fq(lastId);if(!first||!last||first.parentElement!==parent||last.parentElement!==parent)return;
+    let start=first.previousElementSibling?.tagName==='LABEL'?first.previousElementSibling:first;
+    const details=document.createElement('details');details.className='ux-details';const summary=document.createElement('summary');summary.textContent=title;const content=document.createElement('div');details.append(summary,content);parent.insertBefore(details,start);
+    while(start){const next=start.nextElementSibling;content.append(start);if(start===last)break;start=next;}
+}
+uxCollapseRange(formulaPanel,'formulaColor','formulaLineStyle','선 색상 · 굵기 · 모양');
+const formulaHelp=formulaPanel.lastElementChild;if(formulaHelp?.tagName==='P'){const details=document.createElement('details');details.className='ux-details';const summary=document.createElement('summary');summary.textContent='수식 입력 도움말';details.append(summary);formulaHelp.before(details);details.append(formulaHelp);}
+const coordinateHelp=coordinatePointPanel.querySelector('p:not([id])');if(coordinateHelp){const details=document.createElement('details');details.className='ux-details';const summary=document.createElement('summary');summary.textContent='좌표 입력 도움말';details.append(summary);coordinateHelp.before(details);details.append(coordinateHelp);}
+for(const [id,name] of [['coordinatePointX','x'],['coordinatePointY','y']]){const field=fq(id),wrap=document.createElement('div');wrap.className='ux-coordinate-field';const label=document.createElement('span');label.textContent=name;field.before(wrap);wrap.append(label,field);}
+// Explicit focus and field names for keyboard and assistive technology users.
+let uxAutoId=0;document.querySelectorAll('.prop-group label').forEach(label=>{if(label.htmlFor||label.querySelector('input'))return;const field=label.nextElementSibling;if(field?.matches('input,select,textarea')){if(!field.id)field.id='uxField-'+(++uxAutoId);label.htmlFor=field.id;}});
+for(const id of ['formulaExpression','formulaExpressionY','coordinatePointX','coordinatePointY']){fq(id).setAttribute('spellcheck','false');fq(id).setAttribute('autocapitalize','off');fq(id).setAttribute('aria-describedby',id.startsWith('coordinate')?'coordinatePointError':'formulaError');fq(id).addEventListener('input',()=>{fq(id.startsWith('coordinate')?'coordinatePointError':'formulaError').textContent='';});}
+fq('formulaExpression').placeholder='예: x^2 - 2x - 3';fq('formulaExpressionY').placeholder='예: 2*sin(t)';fq('coordinatePointName').placeholder='자동 이름';
+const titleMeta=document.createElement('small');titleMeta.id='uxSelectionMeta';document.querySelector('.panel-title').append(titleMeta);
+const uxFinalUpdate=updateProperties;updateProperties=function(){uxFinalUpdate();titleMeta.textContent=selectedIds.size?`${selectedIds.size}개 선택`:'';};
+const empty=fq('emptyProperties');empty.innerHTML='<strong style="color:#334155">그림을 시작해 보세요</strong><div class="ux-help-intro">위의 도구로 도형을 그리거나<br>좌표 메뉴에서 좌표평면을 만드세요.<br><br><strong>좌표평면 선택 후</strong><br>함수 · 좌표 점 · 좌표 설정을<br>탭으로 전환할 수 있습니다.<br><br>드래그: 여러 대상 선택<br>Ctrl+Z: 실행 취소 · Esc: 취소</div>';
+// Preserve useful guidance while keeping the canvas status compact.
+statusChip.setAttribute('role','status');statusChip.setAttribute('aria-live','polite');
+updateProperties();
+
+</script>
 </body>
 </html>
