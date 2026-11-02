@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BBBtecacher MathDraw v0.9h3c-r9</title>
+  <title>BBBtecacher MathDraw v0.9h3c-r18</title>
   <style>
 :root {
   font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
@@ -230,6 +230,21 @@ button:disabled{opacity:.45;cursor:default}
 @media(max-width:620px){.workspace-wrap{grid-template-columns:1fr;grid-template-rows:minmax(210px,1fr) minmax(220px,1fr)}.properties{padding:12px}.canvas-head{padding:0 8px}.canvas-head strong{font-size:12px}.status-chip{max-width:55%}.ux-math-dock{position:static;box-shadow:none}.panel-title{top:-12px}.command-row{min-height:42px}.toolbar{padding:6px 0}.ui-menu-body{max-width:calc(100vw - 24px)!important}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
+/* Compact workspace controls */
+.workspace-shortcut{height:34px;padding:0 10px;border:1px solid #d8e1ed;border-radius:8px;background:#fff;color:#334155;font-size:12px;font-weight:650;white-space:nowrap}
+.workspace-shortcut:hover,.workspace-shortcut[aria-expanded=true]{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+#traceInspector{margin:0 0 14px;border:1px solid #dbe4ef;border-radius:10px;background:#fbfdff}
+#traceInspector>summary{padding:11px 12px;cursor:pointer;font-size:13px;font-weight:700;color:#334155}
+#traceInspector[open]>summary{border-bottom:1px solid #e6edf5}
+#traceImagePanel{padding:12px;margin:0;border:0}
+#traceImagePanel>strong{display:none}#traceImagePanel input[type=file]{max-width:100%;font-size:11px;color:#475569}
+#traceImagePanel input[type=range]{width:100%}#traceImagePanel .check-row{display:flex;align-items:center;gap:7px}
+#traceImagePanel :disabled{opacity:.5}#traceImagePanel label{font-size:12px;color:#475569;font-weight:650}
+#traceStatus{min-height:1.4em;margin:0;color:#475569!important;line-height:1.5}
+.trace-range-value{float:right;color:#64748b;font-size:11px;font-weight:500}
+#multiPointQuick{width:100%;min-height:36px;margin-top:6px}
+@media(max-width:620px){.workspace-shortcut{padding:0 7px;font-size:11px}}
+
 </style>
 </head>
 <body>
@@ -237,7 +252,7 @@ button:disabled{opacity:.45;cursor:default}
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand">BBBtecacher MathDraw</div>
-        <div class="version">v0.9h3c-r9 · 작업별 속성창</div>
+        <div class="version">v0.9h3c-r18 · 작업별 속성창</div>
       </div>
       <div class="toolbar" id="toolbar">
         <button class="tool-btn active" data-tool="select" title="선택/이동 (V)">↖ <span>선택</span></button>
@@ -420,6 +435,8 @@ button:disabled{opacity:.45;cursor:default}
           <input id="pointLabelInput" type="text" maxlength="8" autocomplete="off" />
           <label for="pointLabelSizeInput">점 이름 글자 크기 <output id="pointLabelSizeValue" for="pointLabelSizeInput">24 px</output></label>
           <input id="pointLabelSizeInput" type="range" min="8" max="72" step="1" />
+<label for="pointLabelScaleXInput">점 이름 가로 크기 <output id="pointLabelScaleXValue">100%</output></label><input id="pointLabelScaleXInput" type="range" min="30" max="300" step="5" value="100" />
+<label for="pointLabelScaleYInput">점 이름 세로 크기 <output id="pointLabelScaleYValue">100%</output></label><input id="pointLabelScaleYInput" type="range" min="30" max="300" step="5" value="100" />
           <p class="prop-help">점 이름을 더블클릭해도 바로 수정할 수 있습니다.</p>
           <label>종속 관계</label>
           <p id="pointDependencyInfo" class="prop-help" style="margin-top:0">자유점</p>
@@ -676,6 +693,8 @@ button:disabled{opacity:.45;cursor:default}
             </div>
             <label for="multiPointLabelSizeInput">점 이름 글자 크기 일괄 변경 <output id="multiPointLabelSizeValue" for="multiPointLabelSizeInput">24 px</output></label>
             <input id="multiPointLabelSizeInput" type="range" min="8" max="72" step="1" />
+<label for="multiPointLabelScaleXInput">점 이름 가로 크기 일괄 변경 <output id="multiPointLabelScaleXValue">100%</output></label><input id="multiPointLabelScaleXInput" type="range" min="30" max="300" step="5" value="100" />
+<label for="multiPointLabelScaleYInput">점 이름 세로 크기 일괄 변경 <output id="multiPointLabelScaleYValue">100%</output></label><input id="multiPointLabelScaleYInput" type="range" min="30" max="300" step="5" value="100" />
             <label>점 크기 일괄 변경</label>
             <input id="multiPointSizeInput" type="range" min="1" max="12" step="1" />
             <label>점 모양 일괄 변경</label>
@@ -1114,6 +1133,11 @@ button:disabled{opacity:.45;cursor:default}
           <p id="textStyleHelp" class="prop-help">수식에서는 자동이 기본입니다. 변수는 이탤릭, 함수명·숫자·연산자는 로만체로 표시합니다.</p>
           <label>글자 크기</label>
           <input id="textSizeInput" type="range" min="14" max="48" step="1" />
+          <label for="textScaleXInput">가로 크기 <output id="textScaleXValue">100%</output></label>
+          <input id="textScaleXInput" type="range" min="30" max="300" step="5" value="100" />
+          <label for="textScaleYInput">세로 크기 <output id="textScaleYValue">100%</output></label>
+          <input id="textScaleYInput" type="range" min="30" max="300" step="5" value="100" />
+          <button type="button" id="textScaleReset" class="ghost-btn">가로·세로 크기 초기화</button>
         </div>
         <div class="panel-note">
           <strong>빠른 키</strong>
@@ -3717,7 +3741,7 @@ const PROJECT_MAX_BYTES = 20 * 1024 * 1024;
 let projectFilename = '';
 function serializeProject() {
     return JSON.stringify({ format:PROJECT_FORMAT, schemaVersion:PROJECT_SCHEMA_VERSION,
-        appVersion:'v0.9h3c-r9', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
+        appVersion:'v0.9h3c-r18', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
 }
 function parseProject(text) {
     const fail = message => { throw new Error(message); };
@@ -6015,7 +6039,7 @@ function snapMathCoordinate(pos, max = SNAP_DISTANCE) {
     if (snapBypassActive) return { x:pos.x, y:pos.y };
     const p = nearestPoint(pos, max);
     if (p) return { x:p.x, y:p.y, existingPoint:p };
-    return nearestMathAnchor(pos, max) ?? { x:pos.x, y:pos.y };
+    return nearestMathAnchor(pos, max) ?? nearestTraceInk(pos, max) ?? { x:pos.x, y:pos.y };
 }
 // Bezier input: existing points win, then visible curves, then axis/grid anchors.
 // Keep projection metadata pending until Enter so cancel/backspace create no objects.
@@ -6033,7 +6057,7 @@ function snapBezierCoordinate(pos, max = SNAP_DISTANCE) {
         }
     }
     if (best) return { x:best.x, y:best.y, attach:best };
-    return nearestMathAnchor(pos, max) ?? { x:pos.x, y:pos.y };
+    return nearestMathAnchor(pos, max) ?? nearestTraceInk(pos, max) ?? { x:pos.x, y:pos.y };
 }
 function nearestCircle(pos, max = SNAP_DISTANCE * 1.25) {
     if (snapBypassActive) return null;
@@ -6536,7 +6560,8 @@ function getOrCreatePoint(pos) {
             return center;
         }
     }
-    return a ? makePoint(a.x, a.y) : makePoint(pos.x, pos.y);
+    const ink = a ? null : nearestTraceInk(pos);
+    return a ? makePoint(a.x, a.y) : ink ? makePoint(ink.x,ink.y) : makePoint(pos.x, pos.y);
 }
 function svgPoint(evt) {
     return clientToSvgPoint(evt.clientX, evt.clientY);
@@ -6913,6 +6938,8 @@ function renderPoint(p) {
         const styleClass = p.labelStyle === 'roman' ? 'roman' : 'italic';
         const pointLabelSize = Math.max(8, Number(p.labelSize ?? 24));
         const textNode = el('text', { x: String(p.x + (p.labelDx ?? 10)), y: String(p.y + (p.labelDy ?? -10)), class: `math-label ${styleClass} label-drag-cursor`, fill: normalColor, 'font-size': String(pointLabelSize), style: `font-size:${pointLabelSize}px`, 'data-label-for': p.id });
+        const labelX=p.x+(p.labelDx??10),labelY=p.y+(p.labelDy??-10),sx=Number.isFinite(p.labelScaleX)?p.labelScaleX:1,sy=Number.isFinite(p.labelScaleY)?p.labelScaleY:1;
+        textNode.setAttribute('transform',`translate(${labelX} ${labelY}) scale(${sx} ${sy}) translate(${-labelX} ${-labelY})`);
         textNode.textContent = p.label;
         g.appendChild(textNode);
     }
@@ -7539,6 +7566,8 @@ function renderRightAngle(o) {
 function renderText(t) {
     const g = el('g');
     setGroupData(g, t.id, 'text');
+    const sx=Number.isFinite(t.scaleX)?t.scaleX:1, sy=Number.isFinite(t.scaleY)?t.scaleY:1;
+    g.setAttribute('transform', `translate(${t.x} ${t.y}) scale(${sx} ${sy}) translate(${-t.x} ${-t.y})`);
     if (selectedIds.has(t.id)) g.classList.add('selected');
     const mode = normalizeTextMode(t.textMode);
     let w = 12, top = -t.fontSize * 0.82, bottom = t.fontSize * 0.24;
@@ -7613,7 +7642,7 @@ function renderPreview(pos) {
     }
     if (activeTool === 'circle' && pendingCircleCenter && pos) {
         const radiusSnapPoint = nearestPoint(pos);
-        const radiusPos = radiusSnapPoint ? { x: radiusSnapPoint.x, y: radiusSnapPoint.y } : pos;
+        const radiusPos = radiusSnapPoint ? { x: radiusSnapPoint.x, y: radiusSnapPoint.y } : nearestTraceInk(pos) || pos;
         const r = dist(pendingCircleCenter, radiusPos);
         previewLayer.appendChild(el('circle', { cx: String(pendingCircleCenter.x), cy: String(pendingCircleCenter.y), r: String(r), class: 'preview' }));
         previewLayer.appendChild(el('circle', { cx: String(pendingCircleCenter.x), cy: String(pendingCircleCenter.y), r: '4', class: 'preview-point' }));
@@ -7861,7 +7890,8 @@ function objectBounds(o) {
     if (o.kind === 'text') {
         const w = Math.max(12, o.content.length * o.fontSize * 0.62);
         const h = o.fontSize * 1.1;
-        return { x1: o.x - 4, y1: o.y - h, x2: o.x + w + 4, y2: o.y + 6 };
+        const sx=Number.isFinite(o.scaleX)?o.scaleX:1,sy=Number.isFinite(o.scaleY)?o.scaleY:1;
+        return { x1: o.x - 4*sx, y1: o.y - h*sy, x2: o.x + (w + 4)*sx, y2: o.y + 6*sy };
     }
     if (o.kind === 'arc') {
         return { x1: o.cx - o.r, y1: o.cy - o.r, x2: o.cx + o.r, y2: o.cy + o.r };
@@ -8368,6 +8398,7 @@ function updateProperties() {
             const labelSizes = selected.map(o => o.labelSize ?? 24);
             const sameLabelSize = labelSizes.every(size => size === labelSizes[0]);
             multiPointLabelSizeInput.value = String(labelSizes[0]);
+            for(const axis of ['X','Y']){const values=selected.map(p=>p['labelScale'+axis]??1),v=Math.round(values[0]*100);document.getElementById('multiPointLabelScale'+axis+'Input').value=String(v);document.getElementById('multiPointLabelScale'+axis+'Value').textContent=values.every(x=>x===values[0])?v+'%':'서로 다름';}
             multiPointLabelSizeValue.textContent = sameLabelSize ? `${labelSizes[0]} px` : '서로 다름';
             const pointStyles = selected.map(o => o.pointStyle ?? 'filled');
             const samePointStyle = pointStyles.every(s => s === pointStyles[0]) ? pointStyles[0] : null;
@@ -8473,6 +8504,7 @@ function updateProperties() {
         pointColorInput.value = objectColor(o);
         pointSizeInput.value = String(o.size);
         pointLabelSizeInput.value = String(o.labelSize ?? 24);
+        for(const axis of ['X','Y']){const v=Math.round((o['labelScale'+axis]??1)*100);document.getElementById('pointLabelScale'+axis+'Input').value=String(v);document.getElementById('pointLabelScale'+axis+'Value').textContent=v+'%';}
         pointLabelSizeValue.textContent = `${o.labelSize ?? 24} px`;
         pointLabelVisible.checked = o.labelVisible;
         pointVisibilityBtn.textContent = o.visible === false ? '점 다시 표시' : '점 숨기기';
@@ -8630,6 +8662,10 @@ function updateProperties() {
         textColorInput.value = objectColor(o);
         textContentInput.value = o.content;
         textSizeInput.value = String(o.fontSize);
+        document.querySelector('#textScaleXInput').value = String(Math.round((o.scaleX ?? 1)*100));
+        document.querySelector('#textScaleYInput').value = String(Math.round((o.scaleY ?? 1)*100));
+        document.querySelector('#textScaleXValue').textContent = Math.round((o.scaleX ?? 1)*100)+'%';
+        document.querySelector('#textScaleYValue').textContent = Math.round((o.scaleY ?? 1)*100)+'%';
         const textMode = normalizeTextMode(o.textMode);
         textPlainModeBtn.classList.toggle('active', textMode === 'plain');
         textMathModeBtn.classList.toggle('active', textMode === 'math');
@@ -9233,14 +9269,15 @@ svg.addEventListener('pointerdown', (evt) => {
     if (activeTool === 'circle') {
         if (!pendingCircleCenter) {
             const snapPoint = nearestPoint(pos);
+            const centerCandidate = snapPoint ? null : nearestTraceCircleCenter(pos);
             pendingCircleCenter = snapPoint
                 ? { x: snapPoint.x, y: snapPoint.y, sourcePointId: snapPoint.id }
-                : { x: pos.x, y: pos.y, sourcePointId: null };
+                : centerCandidate ? {x:centerCandidate.x,y:centerCandidate.y,sourcePointId:null} : { x: pos.x, y: pos.y, sourcePointId: null };
             statusChip.textContent = snapPoint ? `점 ${snapPoint.label || snapPoint.id}에 중심 스냅 · 이 점에 중심이 종속됩니다` : '반지름 위치를 클릭하세요';
             renderPreview(pendingCircleCenter);
         } else {
             const radiusSnapPoint = nearestPoint(pos);
-            const radiusPos = radiusSnapPoint ? { x: radiusSnapPoint.x, y: radiusSnapPoint.y } : pos;
+            const radiusPos = radiusSnapPoint ? { x: radiusSnapPoint.x, y: radiusSnapPoint.y } : nearestTraceInk(pos) || pos;
             const r = dist(pendingCircleCenter, radiusPos);
             if (r > 8) {
                 pushHistory();
@@ -10222,6 +10259,7 @@ function pointLabelDirectionOffset(p, direction) {
     drawingLayer.appendChild(text);
     let box;
     try { box = text.getBBox(); } finally { text.remove(); }
+    box={x:box.x*(p.labelScaleX??1),y:box.y*(p.labelScaleY??1),width:box.width*(p.labelScaleX??1),height:box.height*(p.labelScaleY??1)};
     const gap = Math.max(2, Number(p.size ?? 5)) + 6;
     const left = direction.includes('w') ? -gap-box.width : direction.includes('e') ? gap : -box.width/2;
     const top = direction.includes('n') ? -gap-box.height : direction.includes('s') ? gap : -box.height/2;
@@ -10791,11 +10829,8 @@ window.addEventListener('keydown', e => {
         copySelectionInternal(true);
         return;
     }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-        e.preventDefault();
-        pasteInternalClipboard();
-        return;
-    }
+    // Allow the browser paste event to inspect clipboard images before using internal objects.
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelection();
@@ -11164,6 +11199,108 @@ const empty=fq('emptyProperties');empty.innerHTML='<strong style="color:#334155"
 // Preserve useful guidance while keeping the canvas status compact.
 statusChip.setAttribute('role','status');statusChip.setAttribute('aria-live','polite');
 updateProperties();
+
+
+// Image underlay for tracing with the existing geometry tools.
+const traceLayer=el('g',{'pointer-events':'none'});canvas.insertBefore(traceLayer,drawingLayer);
+let traceImage=null, tracePixels=null, traceCircles=[];
+function traceColorAt(img,x,y){const i=(y*img.width+x)*4,a=img.data[i+3]/255;return [img.data[i]*a+255*(1-a),img.data[i+1]*a+255*(1-a),img.data[i+2]*a+255*(1-a)];}
+function traceEdgeAt(img,x,y,step=1){const a=traceColorAt(img,x,y);for(const [dx,dy] of [[-step,0],[step,0],[0,-step],[0,step]]){const xx=Math.max(0,Math.min(img.width-1,x+dx)),yy=Math.max(0,Math.min(img.height-1,y+dy)),b=traceColorAt(img,xx,yy);if(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])>=55)return true;}return false;}
+function nearestTraceInk(pos,max=SNAP_DISTANCE){
+    if(snapBypassActive||!traceImage?.visible||!tracePixels||!document.querySelector('#traceSnap').checked)return null;
+    const {width:w,height:h,data}=tracePixels,sx=traceImage.width/w,sy=traceImage.height/h;
+    const cx=(pos.x-traceImage.x)/sx,cy=(pos.y-traceImage.y)/sy,rx=Math.min(60,Math.ceil(max/sx)),ry=Math.min(60,Math.ceil(max/sy));
+    let best=null,bestD=max*max;
+    const edgeMode=document.querySelector('#traceSnapMode').value==='edge';
+    for(let y=Math.max(0,Math.floor(cy-ry));y<=Math.min(h-1,Math.ceil(cy+ry));y++)for(let x=Math.max(0,Math.floor(cx-rx));x<=Math.min(w-1,Math.ceil(cx+rx));x++){
+        const i=(y*w+x)*4,a=data[i+3]/255,brightness=(data[i]*.299+data[i+1]*.587+data[i+2]*.114)*a+255*(1-a);if(edgeMode?!traceEdgeAt(tracePixels,x,y):brightness>135)continue;
+        const px=traceImage.x+(x+.5)*sx,py=traceImage.y+(y+.5)*sy,d=(pos.x-px)**2+(pos.y-py)**2;if(d<bestD){bestD=d;best={x:px,y:py};}
+    }return best;
+}
+function buildTracePixels(img){const c=document.createElement('canvas'),s=Math.min(1,1600/img.width,1600/img.height);c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);tracePixels=ctx.getImageData(0,0,c.width,c.height);}
+function updateTraceInputs(){if(!traceImage)return;for(const [id,value] of [['traceX',traceImage.x],['traceY',traceImage.y],['traceWidth',traceImage.width]])document.querySelector('#'+id).value=String(Math.round(value*10)/10);}
+
+const traceMenu=document.createElement('div');traceMenu.className='prop-group';traceMenu.id='traceImagePanel';traceMenu.innerHTML=`<strong>그림 밑그림</strong><p style="font-size:12px;color:#64748b;line-height:1.6">이미지를 불러오거나 Ctrl+V로 붙여넣은 뒤 점·선분·원 도구로 따라 그리세요.</p><input id="traceImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-label="밑그림 이미지 선택"><label class="check-row"><input id="traceSnap" type="checkbox" checked> 밑그림에 스냅 (Alt로 일시 해제)</label><label for="traceSnapMode">인식 방식</label><select id="traceSnapMode"><option value="edge">색 경계</option><option value="dark">검은 선</option></select><label>밑그림 위치 (x, y)</label><div class="style-row"><input type="number" id="traceX" step="1" aria-label="밑그림 x 위치"><input type="number" id="traceY" step="1" aria-label="밑그림 y 위치"></div><label for="traceWidth">밑그림 너비 (비율 유지)</label><input type="number" id="traceWidth" min="10" max="5000" step="10"><label for="traceOpacity">밑그림 불투명도</label><input id="traceOpacity" type="range" min="0" max="100" value="45"><div class="style-row"><button id="traceToggle" class="ghost-btn" type="button">밑그림 숨기기</button><button id="traceRemove" class="ghost-btn" type="button">밑그림 지우기</button></div><p id="traceStatus" role="status" style="font-size:12px;color:#64748b">불러온 밑그림 없음</p>`;
+document.querySelector('#propertiesPanel').append(traceMenu);
+function renderTrace(){traceLayer.replaceChildren();if(!traceImage||!traceImage.visible)return;traceLayer.appendChild(el('image',{href:traceImage.url,x:String(traceImage.x),y:String(traceImage.y),width:String(traceImage.width),height:String(traceImage.height),opacity:String(traceImage.opacity),'pointer-events':'none'}));
+    if(activeTool==='circle'&&!pendingCircleCenter&&tracePixels)for(const c of traceCircles){const p=traceCircleWorld(c);traceLayer.appendChild(el('circle',{cx:p.x,cy:p.y,r:'7',fill:'white',stroke:'#2563eb','stroke-width':'2'}));traceLayer.appendChild(el('path',{d:`M${p.x-4},${p.y}h8 M${p.x},${p.y-4}v8`,stroke:'#2563eb','stroke-width':'1.5'}));}
+}
+function loadTrace(file){if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const center=currentCanvasCenter();const scale=Math.min(1,700/img.width,500/img.height);traceImage={url:reader.result,x:center.x-img.width*scale/2,y:center.y-img.height*scale/2,width:img.width*scale,height:img.height*scale,opacity:Number(document.querySelector('#traceOpacity').value)/100,visible:true};buildTracePixels(img);traceCircles=[];updateTraceInputs();renderTrace();if(activeTool==='circle')scheduleCircleDetection();document.querySelector('#traceStatus').textContent='밑그림을 불러왔습니다. 도형 도구로 따라 그리세요.';document.querySelector('#traceToggle').textContent='밑그림 숨기기';};img.onerror=()=>document.querySelector('#traceStatus').textContent='이미지를 읽지 못했습니다.';img.src=reader.result;};reader.onerror=()=>document.querySelector('#traceStatus').textContent='이미지를 읽지 못했습니다.';reader.readAsDataURL(file);}
+document.querySelector('#traceImageFile').addEventListener('change',e=>{loadTrace(e.target.files[0]);e.target.value='';});
+document.addEventListener('paste',e=>{
+    if(e.target.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])'))return;
+    const data=e.clipboardData;
+    const item=[...(data?.items||[])].find(i=>i.kind==='file'&&i.type.startsWith('image/'));
+    const file=item?.getAsFile() || [...(data?.files||[])].find(f=>f.type.startsWith('image/'));
+    if(file){e.preventDefault();loadTrace(file);return;}
+    if(internalClipboard?.objects?.length){e.preventDefault();pasteInternalClipboard();}
+});
+for(const id of ['traceX','traceY','traceWidth'])document.querySelector('#'+id).addEventListener('input',e=>{if(!traceImage||e.target.value==='')return;const n=Number(e.target.value);if(!Number.isFinite(n))return;if(id==='traceWidth'){if(n<10||n>5000)return;traceImage.height*=n/traceImage.width;traceImage.width=n;}else traceImage[id==='traceX'?'x':'y']=n;renderTrace();});
+document.querySelector('#traceOpacity').addEventListener('input',e=>{if(traceImage){traceImage.opacity=Number(e.target.value)/100;renderTrace();}});
+document.querySelector('#traceToggle').addEventListener('click',e=>{if(!traceImage)return;traceImage.visible=!traceImage.visible;e.currentTarget.textContent=traceImage.visible?'밑그림 숨기기':'밑그림 보이기';renderTrace();});
+document.querySelector('#traceRemove').addEventListener('click',()=>{traceImage=null;tracePixels=null;renderTrace();document.querySelector('#traceStatus').textContent='밑그림을 지웠습니다.';});
+
+function traceCircleWorld(c){return {x:traceImage.x+c.x*traceImage.width/tracePixels.width,y:traceImage.y+c.y*traceImage.height/tracePixels.height};}
+function nearestTraceCircleCenter(pos){if(snapBypassActive||!traceImage?.visible||!document.querySelector('#traceSnap').checked)return null;let best=null,d=SNAP_DISTANCE;for(const c of traceCircles){const p=traceCircleWorld(c),n=dist(p,pos);if(n<=d){best=p;d=n;}}return best;}
+function detectTraceCircles(img){
+ const w=img.width,h=img.height,scale=Math.min(1,480/Math.max(w,h)),sw=Math.max(1,Math.round(w*scale)),sh=Math.max(1,Math.round(h*scale));const mask=new Uint8Array(sw*sh),points=[],edgeMode=document.querySelector('#traceSnapMode').value==='edge',step=Math.max(1,Math.round(1/scale));
+ for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const i=(Math.min(h-1,Math.floor(y/scale))*w+Math.min(w-1,Math.floor(x/scale)))*4,a=img.data[i+3]/255,v=(img.data[i]*.299+img.data[i+1]*.587+img.data[i+2]*.114)*a+255*(1-a);if(edgeMode?traceEdgeAt(img,Math.min(w-1,Math.floor(x/scale)),Math.min(h-1,Math.floor(y/scale)),step):v<135){mask[y*sw+x]=1;points.push([x,y]);}}
+ if(points.length<40)return [];let seed=10391;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ function ink(x,y){x=Math.round(x);y=Math.round(y);for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const xx=x+i,yy=y+j;if(xx>=0&&xx<sw&&yy>=0&&yy<sh&&mask[yy*sw+xx])return true;}return false;}
+ const candidates=[];for(let iter=0;iter<12000;iter++){const a=points[Math.floor(rand()*points.length)],b=points[Math.floor(rand()*points.length)],c=points[Math.floor(rand()*points.length)];const det=2*(a[0]*(b[1]-c[1])+b[0]*(c[1]-a[1])+c[0]*(a[1]-b[1]));if(Math.abs(det)<15)continue;
+ const aa=a[0]**2+a[1]**2,bb=b[0]**2+b[1]**2,cc=c[0]**2+c[1]**2,cx=(aa*(b[1]-c[1])+bb*(c[1]-a[1])+cc*(a[1]-b[1]))/det,cy=(aa*(c[0]-b[0])+bb*(a[0]-c[0])+cc*(b[0]-a[0]))/det,r=Math.hypot(cx-a[0],cy-a[1]);
+ if(r<12||r>Math.min(sw,sh)*.48||cx-r<0||cy-r<0||cx+r>=sw||cy+r>=sh)continue;
+ let score=0,sectors=0;for(let k=0;k<36;k++){const angle=k*Math.PI/18;if(ink(cx+r*Math.cos(angle),cy+r*Math.sin(angle))){score++;sectors|=1<<Math.floor(k/3);}}
+ let count=0;for(let k=0;k<12;k++)count+=(sectors>>k)&1;if(score<27||count<11)continue;
+ const existing=candidates.find(q=>Math.hypot(q.x-cx,q.y-cy)<Math.max(4,r*.08)&&Math.abs(q.r-r)<Math.max(4,r*.08));if(existing){if(score>existing.score)Object.assign(existing,{x:cx,y:cy,r,score});}else candidates.push({x:cx,y:cy,r,score});
+ }
+ return candidates.sort((a,b)=>b.score-a.score).slice(0,12).map(c=>({x:c.x/scale,y:c.y/scale,r:c.r/scale}));
+}
+document.querySelector('#traceSnapMode').addEventListener('change',()=>{traceCircles=[];renderTrace();if(activeTool==='circle'&&tracePixels)scheduleCircleDetection();});
+let circleDetectionTimer=null;function scheduleCircleDetection(){if(!tracePixels||!traceImage?.visible||circleDetectionTimer)return;document.querySelector('#traceStatus').textContent='밑그림에서 원을 찾는 중…';const source=tracePixels;circleDetectionTimer=setTimeout(()=>{circleDetectionTimer=null;if(source!==tracePixels)return;traceCircles=detectTraceCircles(source);renderTrace();document.querySelector('#traceStatus').textContent=traceCircles.length?`원 중심 후보 ${traceCircles.length}개 · 파란 표시 근처를 클릭하세요.`:'완전한 원을 찾지 못했습니다. 중심을 직접 클릭하세요.';},20);}
+const previousCircleTool=setTool;setTool=function(tool){previousCircleTool(tool);renderTrace();if(tool==='circle'&&traceImage?.visible&&tracePixels&&!traceCircles.length)scheduleCircleDetection();};
+
+
+for(const [axis,id] of [['scaleX','textScaleXInput'],['scaleY','textScaleYInput']]){
+    const input=document.getElementById(id),value=document.getElementById(id.replace('Input','Value'));let editing=false;
+    input.addEventListener('input',()=>{const o=selectedIds.size===1?getObject([...selectedIds][0]):null;if(o?.kind!=='text')return;const scale=Number(input.value)/100;if(!Number.isFinite(scale)||scale===(o[axis]??1))return;if(!editing){pushHistory();editing=true;}o[axis]=scale;value.textContent=input.value+'%';render();});
+    input.addEventListener('change',()=>{editing=false;});input.addEventListener('blur',()=>{editing=false;});
+}
+document.getElementById('textScaleReset').addEventListener('click',()=>mutateSelected(o=>{if(o.kind==='text'){o.scaleX=1;o.scaleY=1;}}));
+
+for(const bulk of [false,true])for(const axis of ['X','Y']){
+ const prefix=(bulk?'multiPoint':'point')+'LabelScale'+axis,field='labelScale'+axis,input=document.getElementById(prefix+'Input'),value=document.getElementById(prefix+'Value');let editing=false;
+ input.addEventListener('input',()=>{const points=selectedObjects();if(points.length!==(bulk?Math.max(2,points.length):1)||!points.every(p=>p.kind==='point'))return;const scale=Number(input.value)/100;if(!Number.isFinite(scale)||points.every(p=>(p[field]??1)===scale))return;if(!editing){pushHistory();editing=true;}for(const p of points)p[field]=scale;value.textContent=input.value+'%';render();});
+ input.addEventListener('change',()=>{editing=false;});input.addEventListener('blur',()=>{editing=false;});
+}
+
+// Select user-facing points, including points whose marker is hidden but whose label is shown.
+function selectAllUserPoints(){
+    const points=objects.filter(o=>o.kind==='point'&&(o.visible!==false||o.labelVisible===true)&&!o.constructionInvalid);
+    if(!points.length){showToast('선택할 점이 없습니다.');return;}
+    setTool('select');selectedIds=new Set(points.map(p=>p.id));selectionOrder=points.map(p=>p.id);render();updateProperties();updateEditActions();
+    showToast(`점 ${points.length}개를 선택했습니다. 오른쪽에서 서식을 일괄 변경하세요.`);
+}
+const selectAllPointsButton=document.createElement('button');selectAllPointsButton.id='selectAllPointsBtn';selectAllPointsButton.type='button';selectAllPointsButton.className='ghost-btn';selectAllPointsButton.textContent='모든 점 선택';selectAllPointsButton.title='화면에 표시된 점과 이름이 표시된 숨긴 점 선택';selectAllPointsButton.addEventListener('click',selectAllUserPoints);
+document.querySelector('#editMenu .ui-menu-body').prepend(selectAllPointsButton);
+// Keep underlay controls close to the inspector header and accessible from the toolbar.
+const traceInspector=document.createElement('details');traceInspector.id='traceInspector';const traceSummary=document.createElement('summary');traceSummary.textContent='밑그림 · 이미지 붙여넣기';traceInspector.append(traceSummary);traceMenu.before(traceInspector);traceInspector.append(traceMenu);
+const panel=document.getElementById('propertiesPanel');panel.querySelector('.panel-title').after(traceInspector);
+const shortcut=document.createElement('button');shortcut.type='button';shortcut.className='workspace-shortcut';shortcut.id='traceShortcut';shortcut.textContent='▧ 밑그림';shortcut.setAttribute('aria-controls','traceInspector');shortcut.setAttribute('aria-expanded','false');
+document.getElementById('toolbar').append(shortcut);
+shortcut.addEventListener('click',()=>{traceInspector.open=!traceInspector.open;if(traceInspector.open){traceInspector.scrollIntoView({block:'nearest'});traceSummary.focus({preventScroll:true});}});
+traceInspector.addEventListener('toggle',()=>shortcut.setAttribute('aria-expanded',String(traceInspector.open)));
+const originalLoadTrace=loadTrace;loadTrace=function(file){if(file?.type?.startsWith('image/'))traceInspector.open=true;return originalLoadTrace(file);};
+const selectQuick=document.createElement('button');selectQuick.type='button';selectQuick.className='ghost-btn';selectQuick.id='multiPointQuick';selectQuick.textContent='모든 점 선택';selectQuick.title=selectAllPointsButton.title;selectQuick.addEventListener('click',selectAllUserPoints);
+document.querySelector('#multiPointSection').prepend(selectQuick);
+const opacity=document.getElementById('traceOpacity'),opacityText=document.createElement('output');opacityText.className='trace-range-value';opacityText.setAttribute('for','traceOpacity');document.querySelector('label[for="traceOpacity"]').append(opacityText);
+function refreshTraceUX(){const active=!!traceImage;for(const id of ['traceX','traceY','traceWidth','traceToggle','traceRemove','traceSnap','traceSnapMode','traceOpacity'])document.getElementById(id).disabled=!active;opacityText.textContent=opacity.value+'%';traceSummary.textContent=active?'밑그림 · 설정 및 스냅':'밑그림 · 이미지 붙여넣기';}
+opacity.addEventListener('input',refreshTraceUX);
+new MutationObserver(refreshTraceUX).observe(document.getElementById('traceStatus'),{childList:true,characterData:true,subtree:true});
+refreshTraceUX();
+// Keep keyboard users informed about the active drawing tool.
+function syncToolAccessibility(){document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('active'))));}
+new MutationObserver(syncToolAccessibility).observe(document.getElementById('toolbar'),{subtree:true,attributes:true,attributeFilter:['class']});syncToolAccessibility();
 
 </script>
 </body>
