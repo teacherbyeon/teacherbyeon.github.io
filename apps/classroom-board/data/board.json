@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-11-02T09:00:06+09:00",
+  "generatedAt": "2026-11-02T09:30:08+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-11-02T00:00:06.612Z",
+    "updatedAt": "2026-11-02T00:30:08.055Z",
     "validFrom": "2026-11-02",
     "validTo": "2026-11-13",
     "classes": [
@@ -8348,15 +8348,25 @@
             "lessons": [
               {
                 "period": 1,
-                "subject": "기가",
-                "teacher": "신영*",
-                "changed": false
+                "subject": "국어",
+                "teacher": "송인*",
+                "changed": true,
+                "original": {
+                  "subject": "기가",
+                  "teacher": "신영*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 2,
-                "subject": "국어",
-                "teacher": "송인*",
-                "changed": false
+                "subject": "영어",
+                "teacher": "최혜*",
+                "changed": true,
+                "original": {
+                  "subject": "국어",
+                  "teacher": "송인*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 3,
@@ -8378,9 +8388,14 @@
               },
               {
                 "period": 6,
-                "subject": "영어",
-                "teacher": "최혜*",
-                "changed": false
+                "subject": "기가",
+                "teacher": "신영*",
+                "changed": true,
+                "original": {
+                  "subject": "영어",
+                  "teacher": "최혜*"
+                },
+                "note": "수업 변경"
               }
             ]
           },
