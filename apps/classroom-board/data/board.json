@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "isSample": false,
   "timezone": "Asia/Seoul",
-  "generatedAt": "2026-11-03T08:40:11+09:00",
+  "generatedAt": "2026-11-03T08:50:12+09:00",
   "school": {
     "name": "광려중학교"
   },
@@ -15,7 +15,7 @@
     "meals": 1440
   },
   "timetable": {
-    "updatedAt": "2026-11-02T23:40:11.970Z",
+    "updatedAt": "2026-11-02T23:50:12.440Z",
     "validFrom": "2026-11-02",
     "validTo": "2026-11-13",
     "classes": [
@@ -1957,15 +1957,25 @@
               },
               {
                 "period": 2,
-                "subject": "수학",
-                "teacher": "조정*",
-                "changed": false
+                "subject": "과학",
+                "teacher": "김민*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "조정*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 3,
-                "subject": "과학",
-                "teacher": "김민*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "과학",
+                  "teacher": "김민*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 4,
@@ -4857,9 +4867,14 @@
               },
               {
                 "period": 2,
-                "subject": "역사",
-                "teacher": "유정*",
-                "changed": false
+                "subject": "수학",
+                "teacher": "조정*",
+                "changed": true,
+                "original": {
+                  "subject": "역사",
+                  "teacher": "유정*"
+                },
+                "note": "수업 변경"
               },
               {
                 "period": 3,
@@ -4887,9 +4902,14 @@
               },
               {
                 "period": 7,
-                "subject": "수학",
-                "teacher": "조정*",
-                "changed": false
+                "subject": "역사",
+                "teacher": "유정*",
+                "changed": true,
+                "original": {
+                  "subject": "수학",
+                  "teacher": "조정*"
+                },
+                "note": "수업 변경"
               }
             ]
           },
