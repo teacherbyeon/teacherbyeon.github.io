@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BBBtecacher MathDraw v0.9h3c-r18</title>
+  <title>BBBtecacher MathDraw v0.9h3c-r19</title>
   <style>
 :root {
   font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
@@ -252,7 +252,7 @@ button:disabled{opacity:.45;cursor:default}
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand">BBBtecacher MathDraw</div>
-        <div class="version">v0.9h3c-r18 · 작업별 속성창</div>
+        <div class="version">v0.9h3c-r19 · 작업별 속성창</div>
       </div>
       <div class="toolbar" id="toolbar">
         <button class="tool-btn active" data-tool="select" title="선택/이동 (V)">↖ <span>선택</span></button>
@@ -518,9 +518,11 @@ button:disabled{opacity:.45;cursor:default}
           </div>
         </div>
         <div id="angleProperties" class="prop-group hidden">
-          <label>각 문자</label>
+          <label for="angleLabelMode">각 크기 표시</label>
+          <select id="angleLabelMode"><option value="manual">직접 입력</option><option value="auto">각도 자동 계산</option></select>
+          <label for="angleLabelInput">각 문자</label>
           <input id="angleLabelInput" type="text" maxlength="16" autocomplete="off" placeholder="예: x, 35°" />
-          <p class="prop-help">비워 두면 호만 표시합니다.</p>
+          <p class="prop-help">직접 입력을 비우면 호만 표시합니다. 자동 계산은 점의 위치와 작은 각·큰 각 설정을 따릅니다.</p>
           <label>색상</label>
           <input id="angleColorInput" class="color-input" type="color" />
           <label>선 모양</label>
@@ -3741,7 +3743,7 @@ const PROJECT_MAX_BYTES = 20 * 1024 * 1024;
 let projectFilename = '';
 function serializeProject() {
     return JSON.stringify({ format:PROJECT_FORMAT, schemaVersion:PROJECT_SCHEMA_VERSION,
-        appVersion:'v0.9h3c-r18', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
+        appVersion:'v0.9h3c-r19', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
 }
 function parseProject(text) {
     const fail = message => { throw new Error(message); };
@@ -7504,6 +7506,12 @@ function renderArc(o) {
     applyHiddenObjectStyle(g, o);
     drawingLayer.appendChild(g);
 }
+function calculatedAngleLabel(o,geo=angleGeometry(o)) {
+    if (!geo || Math.hypot(geo.a.x-geo.b.x,geo.a.y-geo.b.y)<1e-9 || Math.hypot(geo.c.x-geo.b.x,geo.c.y-geo.b.y)<1e-9) return '—';
+    const degrees=Math.abs(directedDelta(geo.delta,o.angleMode??'minor'))*180/Math.PI;
+    const rounded=Math.round((degrees+1e-10)*10)/10;
+    return String(rounded)+'°';
+}
 function renderAngle(o) {
     const geo = angleGeometry(o);
     if (!geo) return;
@@ -7521,7 +7529,8 @@ function renderAngle(o) {
     if (selectedIds.has(o.id)) g.classList.add('selected');
     g.appendChild(el('path', setDashAttr({ d, class: 'math-angle', stroke: drawColor(o), 'stroke-width': String(o.width ?? 2) }, o.lineStyle)));
     g.appendChild(el('path', { d, stroke: 'transparent', 'stroke-width': '16', fill: 'none' }));
-    if (o.label) {
+    const displayedLabel = o.labelMode === 'auto' ? calculatedAngleLabel(o,geo) : (o.label ?? '');
+    if (displayedLabel) {
         const mid = a1 + actualDelta / 2;
         const lr = r + 22;
         const styleClass = o.labelStyle === 'roman' ? 'roman' : 'italic';
@@ -7534,7 +7543,7 @@ function renderAngle(o) {
             'text-anchor': 'middle',
             'data-angle-label-for': o.id
         });
-        txt.textContent = o.label;
+        txt.textContent = displayedLabel;
         g.appendChild(txt);
     }
     applyHiddenObjectStyle(g, o);
@@ -8688,6 +8697,8 @@ function updateProperties() {
         angleProperties.classList.remove('hidden');
         angleColorInput.value = objectColor(o);
         angleLabelInput.value = o.label ?? '';
+        document.querySelector('#angleLabelMode').value = o.labelMode === 'auto' ? 'auto' : 'manual';
+        angleLabelInput.disabled = o.labelMode === 'auto';
         angleRadiusInput.value = String(o.radius ?? 34);
         angleFontSizeInput.value = String(o.fontSize ?? 22);
         angleMinorBtn.classList.toggle('active', (o.angleMode ?? 'minor') === 'minor');
@@ -9983,7 +9994,7 @@ svg.addEventListener('dblclick', evt => {
         if (!o || o.kind !== 'angle') return;
         selectedIds = new Set([angleId]);
         updateProperties(); render();
-        requestAnimationFrame(() => { angleLabelInput.focus(); angleLabelInput.select(); });
+        requestAnimationFrame(() => { if(angleLabelInput.disabled) document.querySelector('#angleLabelMode').focus(); else { angleLabelInput.focus(); angleLabelInput.select(); } });
         return;
     }
     const arcLabel = evt.target.closest('.arc-label');
@@ -10651,6 +10662,7 @@ textRomanBtn.addEventListener('click', () => mutateSelected(o => {
 }));
 textSizeInput.addEventListener('input', () => { const o = selectedIds.size === 1 ? getObject([...selectedIds][0]) : undefined; if (o?.kind === 'text') { o.fontSize = Number(textSizeInput.value); render(); } });
 textSizeInput.addEventListener('change', () => pushHistory());
+document.querySelector('#angleLabelMode').addEventListener('change', e => mutateSelected(o => { if(o.kind==='angle') o.labelMode=e.target.value==='auto'?'auto':'manual'; }));
 angleLabelInput.addEventListener('change', () => mutateSelected(o => { if (o.kind === 'angle') o.label = angleLabelInput.value; }));
 angleMinorBtn.addEventListener('click', () => mutateSelected(o => { if (o.kind === 'angle') o.angleMode = 'minor'; }));
 angleReflexBtn.addEventListener('click', () => mutateSelected(o => { if (o.kind === 'angle') o.angleMode = 'reflex'; }));
