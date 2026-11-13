@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BBBtecacher MathDraw v0.9h3c-r19</title>
+  <title>BBBtecacher MathDraw v0.9h3c-r20</title>
   <style>
 :root {
   font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
@@ -245,6 +245,13 @@ button:disabled{opacity:.45;cursor:default}
 #multiPointQuick{width:100%;min-height:36px;margin-top:6px}
 @media(max-width:620px){.workspace-shortcut{padding:0 7px;font-size:11px}}
 
+.ink-bar {display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #e7eaf0}
+.ink-bar .tool-btn,.ink-bar .ghost-btn {height:34px}
+.ink-bar label {display:flex; align-items:center; gap:5px; font-size:12px}
+.ink-bar input[type="color"] {width:34px; height:32px}
+.ink-bar input[type="range"] {width:76px}
+.ink-zoom {display:flex;gap:4px;margin-left:auto}
+.ink-bar button:disabled {opacity:.45; cursor:default}
 </style>
 </head>
 <body>
@@ -252,7 +259,7 @@ button:disabled{opacity:.45;cursor:default}
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand">BBBtecacher MathDraw</div>
-        <div class="version">v0.9h3c-r19 · 작업별 속성창</div>
+        <div class="version">v0.9h3c-r20 · 판서</div>
       </div>
       <div class="toolbar" id="toolbar">
         <button class="tool-btn active" data-tool="select" title="선택/이동 (V)">↖ <span>선택</span></button>
@@ -304,6 +311,20 @@ button:disabled{opacity:.45;cursor:default}
           </div>
           <div class="status-chip" id="statusChip">준비</div>
         </div>
+        <div class="ink-bar" role="group" aria-label="판서 도구">
+          <button class="tool-btn" data-tool="inkPen" type="button">펜</button>
+          <button class="tool-btn" data-tool="inkEraser" type="button">지우개</button>
+          <button class="tool-btn" data-tool="inkLasso" type="button">올가미</button>
+          <label>색상 <input id="inkColor" type="color" value="#1f2937"></label>
+          <label>굵기 <input id="inkWidth" type="range" min="1" max="16" value="3"></label>
+          <button class="ghost-btn" id="inkReflect" type="button" disabled>선대칭</button>
+          <button class="ghost-btn" id="inkRotate" type="button" disabled>회전</button>
+          <div class="ink-zoom" role="group" aria-label="화면 배율">
+            <button class="ghost-btn" id="boardZoomOut" type="button" aria-label="축소">−</button>
+            <button class="ghost-btn" id="boardZoomReset" type="button" aria-label="기본 배율">100%</button>
+            <button class="ghost-btn" id="boardZoomIn" type="button" aria-label="확대">+</button>
+          </div>
+        </div>
         <div class="canvas-scroll" id="canvasScroll">
         <svg id="canvas" viewBox="0 0 2400 1600" aria-label="수학 그림 작업 영역">
           <defs>
@@ -319,6 +340,7 @@ button:disabled{opacity:.45;cursor:default}
           <rect id="workspaceGridLayer" class="grid-layer" x="0" y="0" width="2400" height="1600" fill="url(#grid)" />
           <g id="drawingLayer"></g>
           <g id="previewLayer"></g>
+          <g id="inkPreviewLayer" pointer-events="none"></g>
         </svg>
         </div>
       </section>
@@ -1481,6 +1503,12 @@ let pendingSymmetry = null;
 let rotationSession = null;
 let pendingLineGap = null;
 let objects = [];
+let inkGesture = null;
+let boardZoom = 1;
+const boardTouches = new Map();
+let boardPinch = null;
+let inkHoldTimer;
+let dragMovedInkIds = [];
 let activeTool = 'select';
 let selectedIds = new Set();
 let selectionOrder = [];
@@ -3356,6 +3384,7 @@ function cloneObjects(items) {
 }
 function snapshot() { return { objects: cloneObjects(objects), nextPointIndex, nextId, workspaceGridVisible, showHiddenPoints }; }
 function restore(s) {
+    cancelInkGesture();
     pendingSymmetry=null;
     pendingFunctionOrigin=null;functionHandleDrag=null;
     pickingRotationCenter = false;
@@ -3589,6 +3618,10 @@ function copySelectionInternal(showMessage = true) {
     return true;
 }
 function translateCopiedObject(o, dx, dy) {
+    if (o.kind === 'ink') {
+        for (const p of o.points) { p.x += dx; p.y += dy; }
+        return;
+    }
     if(o.kind==='functionGraph'){o.h+=dx;o.k+=dy;return;}
     if (o.kind === 'point') { o.x += dx; o.y += dy; }
     else if (o.kind === 'circle') { o.cx += dx; o.cy += dy; }
@@ -3743,7 +3776,7 @@ const PROJECT_MAX_BYTES = 20 * 1024 * 1024;
 let projectFilename = '';
 function serializeProject() {
     return JSON.stringify({ format:PROJECT_FORMAT, schemaVersion:PROJECT_SCHEMA_VERSION,
-        appVersion:'v0.9h3c-r19', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
+        appVersion:'v0.9h3c-r20', savedAt:new Date().toISOString(), state:snapshot() }, null, 2);
 }
 function parseProject(text) {
     const fail = message => { throw new Error(message); };
@@ -3763,13 +3796,18 @@ function parseProject(text) {
         fail('작업 파일의 표시 설정이 올바르지 않습니다.');
     const kinds = new Set(['point','segment','line','ray','arrow','hline','vline','axis','coordinatePlane',
         'circle','arc','bezier','quadraticGraph','cubicGraph','quarticGraph','functionGraph','formulaGraph','angle','rightAngle','text','outsideFill','intersectionFill',
-        'closedRegionFill','areaIntersection','areaDifference','areaUnion']);
+        'closedRegionFill','areaIntersection','areaDifference','areaUnion','ink']);
     const ids = new Set();
     let maxId = 0;
     for (const o of s.objects) {
         if (!o || typeof o !== 'object' || Array.isArray(o) || !kinds.has(o.kind) ||
             typeof o.id !== 'string' || !/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(o.id) || ids.has(o.id))
             fail('도형 종류 또는 식별자가 올바르지 않습니다.');
+        if (o.kind === 'ink' && (!Array.isArray(o.points) || !o.points.length || o.points.length > 20000 ||
+            o.points.some(p => !p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) ||
+            !Number.isFinite(o.width) || o.width <= 0 || o.width > 100 ||
+            typeof o.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(o.color)))
+            fail('필기 데이터가 올바르지 않습니다.');
         if (o.hiddenIntervals != null && (!Array.isArray(o.hiddenIntervals) || o.hiddenIntervals.length > 1000 ||
             o.hiddenIntervals.some(p => !Array.isArray(p) || p.length !== 2 || !p.every(Number.isFinite) || p[0] > p[1])))
             fail('가린 구간 정보가 올바르지 않습니다.');
@@ -5546,8 +5584,8 @@ function makeCircleShape(cx, cy, r) {
 function currentCanvasCenter() {
     if (!canvasScroll) return { x: 1200, y: 800 };
     return {
-        x: Math.max(140, Math.min(2260, canvasScroll.scrollLeft + canvasScroll.clientWidth / 2)),
-        y: Math.max(120, Math.min(1480, canvasScroll.scrollTop + canvasScroll.clientHeight / 2))
+        x: Math.max(140, Math.min(2260, (canvasScroll.scrollLeft + canvasScroll.clientWidth / 2) / boardZoom)),
+        y: Math.max(120, Math.min(1480, (canvasScroll.scrollTop + canvasScroll.clientHeight / 2) / boardZoom))
     };
 }
 function assignGroup(ids) {
@@ -6716,6 +6754,8 @@ function render() {
             renderAngle(o);
         else if (o.kind === 'rightAngle')
             renderRightAngle(o);
+        else if (o.kind === 'ink')
+            renderInk(o);
     }
     for (const o of objects)
         if (o.kind === 'text' && !shouldSkipHiddenObject(o))
@@ -6917,6 +6957,23 @@ function renderClosedRegionFill(region) {
     applyHiddenObjectStyle(g, region);
     drawingLayer.appendChild(g);
 }
+function renderInk(o) {
+    const group = el('g');
+    setGroupData(group, o.id, o.kind);
+    group.appendChild(inkShape(o.points, drawColor(o), o.width));
+    drawingLayer.appendChild(group);
+}
+function inkShape(points, color, width) {
+    if (points.length === 1) {
+        const {x, y} = points[0];
+        return el('circle', {cx:x, cy:y, r:width/2, fill:color});
+    }
+    return el('polyline', {
+        points: points.map(p => p.x + ',' + p.y).join(' '),
+        fill:'none', stroke:color, 'stroke-width':width, 'stroke-linecap':'round', 'stroke-linejoin':'round'
+    });
+}
+
 function renderPoint(p) {
     if (p.constructionInvalid) return;
     const hiddenPoint = p.visible === false;
@@ -6956,7 +7013,7 @@ function isSymmetryExcludedPolynomialGraph(o){
         (o.kind === 'functionGraph' && o.family === 'parabola')
     );
 }
-function startSymmetry(kind){
+function startSymmetry(kind, drawAxis = false){
     cancelRotation();if(!selectedIds.size)return;
     const selected=selectedObjects();
     if(selected.some(isSymmetryExcludedPolynomialGraph)){
@@ -6966,11 +7023,15 @@ function startSymmetry(kind){
         render();updateProperties();
         return;
     }
-    const ids=[...selectedIds];setTool('select');selectedIds=new Set(ids);pendingSymmetry={kind,ids};
-    statusChip.textContent=kind==='point'?'기준 점을 클릭하세요':'기준 선을 클릭하세요';render();updateProperties();
+    const ids=[...selectedIds];setTool('select');selectedIds=new Set(ids);pendingSymmetry={kind,ids,drawAxis};
+    statusChip.textContent=drawAxis?'펜으로 대칭축을 그으세요':kind==='point'?'기준 점을 클릭하세요':'기준 선을 클릭하세요';render();updateProperties();
 }
 function applySymmetryReference(pos,evt){
     const pending=pendingSymmetry;let center,angle;
+    if (pending.drawAxis) {
+        beginInkGesture(evt, pos, 'axis');
+        return;
+    }
     if(pending.kind==='point'){
         const point=nearestPoint(pos,SNAP_DISTANCE*1.5);if(!point){showToast('기존 점 가까이를 클릭하세요.');return;}
         center={x:point.x,y:point.y};angle=Math.PI;
@@ -6981,6 +7042,9 @@ function applySymmetryReference(pos,evt){
         const geometry=line&&linearIntersectionGeometry(line);if(!geometry){showToast('기준이 될 선 가까이를 클릭하세요.');return;}
         center={...geometry.p1};angle=2*Math.atan2(geometry.p2.y-geometry.p1.y,geometry.p2.x-geometry.p1.x);
     }
+    applySymmetryTransform(pending, center, angle);
+}
+function applySymmetryTransform(pending, center, angle) {
     selectedIds=new Set(pending.ids);
     if(selectedObjects().some(isSymmetryExcludedPolynomialGraph)){
         pendingSymmetry=null;
@@ -6995,7 +7059,7 @@ function applySymmetryReference(pos,evt){
     }
     pendingSymmetry=null;
     const oldCenter=customRotationCenter;customRotationCenter=center;
-    const started=beginRotation();customRotationCenter=oldCenter;if(!started)return;
+    const started=beginRotation(pending.drawAxis);customRotationCenter=oldCenter;if(!started)return;
     rotationSession.reflection=pending.kind==='line';previewRotation(angle,rotationSession.reflection);commitRotation();
     showToast(pending.kind==='point'?'점대칭을 적용했습니다.':'선대칭을 적용했습니다.');
 }
@@ -7010,7 +7074,7 @@ function cancelRotation() {
     if(session.originalIds)selectedIds=new Set(session.originalIds);pointerDown=false;
     statusChip.textContent='준비'; render(); updateProperties();
 }
-function beginRotation() {
+function beginRotation(moveOriginal = false) {
     if (rotationSession) cancelRotation();
     if (!selectedIds.size) return false;
     const items=selectedObjects();
@@ -7039,7 +7103,7 @@ function beginRotation() {
         y:(Math.min(...coords.map(p=>p.y))+Math.max(...coords.map(p=>p.y)))/2};
     const ids=[...selectedIds]; setTool('select'); selectedIds=new Set(ids);
     const undoBase=snapshot(),originalIds=[...selectedIds];
-    const copyMode=document.querySelector('#transformMode').value==='copy';
+    const copyMode=moveOriginal !== true && document.querySelector('#transformMode').value==='copy';
     isolateTransformationSelection(copyMode);
     if(copyMode){
         const savedClipboard=internalClipboard,savedSerial=pasteSerial,savedUndo=undoStack.slice(),savedRedo=redoStack.slice();
@@ -7065,6 +7129,7 @@ function previewRotation(angle, reflection=false) {
             pair(o,'x','y');
             if(o.construction==='pointOnCircle')o.circleAngle=reflection?angle-(o.circleAngle??0):(o.circleAngle??0)+angle;
         }else if(o.kind==='text')pair(o,'x','y');
+        else if(o.kind==='ink')for(const p of o.points)pair(p,'x','y');
         else if(o.kind==='functionGraph'){
             pair(o,'h','k');const m=o.frame||[1,0,0,1],b=reflection?s:-s,d=reflection?-c:c;
             o.frame=[c*m[0]+b*m[2],c*m[1]+b*m[3],s*m[0]+d*m[2],s*m[1]+d*m[3]];
@@ -7819,6 +7884,15 @@ function objectBounds(o) {
     if(o?.kind==='formulaGraph'){const ss=getFormulaGeometry(o),pts=ss.flat();if(!pts.length)return null;let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;for(const p of pts){x1=Math.min(x1,p.x);y1=Math.min(y1,p.y);x2=Math.max(x2,p.x);y2=Math.max(y2,p.y);}return {x1,y1,x2,y2};}
     if(o?.kind==='functionGraph'){const pts=functionGraphSamples(o);if(!pts.length)return null;return {x1:Math.min(...pts.map(p=>p.x)),y1:Math.min(...pts.map(p=>p.y)),x2:Math.max(...pts.map(p=>p.x)),y2:Math.max(...pts.map(p=>p.y))};}
     if (shouldSkipHiddenObject(o)) return null;
+    if (o.kind === 'ink') {
+        let x1=Infinity, y1=Infinity, x2=-Infinity, y2=-Infinity;
+        for (const p of o.points) {
+            x1=Math.min(x1,p.x); y1=Math.min(y1,p.y);
+            x2=Math.max(x2,p.x); y2=Math.max(y2,p.y);
+        }
+        const pad=o.width/2;
+        return {x1:x1-pad,y1:y1-pad,x2:x2+pad,y2:y2+pad};
+    }
     if (o.kind === 'point') { return { x1: o.x - o.size, y1: o.y - o.size, x2: o.x + o.size, y2: o.y + o.size }; }
     if (o.kind === 'circle') return { x1: o.cx - o.r, y1: o.cy - o.r, x2: o.cx + o.r, y2: o.cy + o.r };
     if (o.kind === 'quarticGraph') {
@@ -7984,6 +8058,7 @@ function collectRegionMovables(region, pointIds, circleIds, arcIds, bezierIds, q
     }
 }
 function prepareGroupDrag() {
+    dragMovedInkIds = selectedObjects().filter(o => o.kind === 'ink').map(o => o.id);
     dragMovedFunctionIds=selectedObjects().filter(o=>o.kind==='functionGraph').map(o=>o.id);
     dragMovedCubicIds=selectedObjects().filter(o=>o.kind==='cubicGraph').map(o=>o.id);
     dragMovedQuarticIds=selectedObjects().filter(o=>o.kind==='quarticGraph').map(o=>o.id);
@@ -8049,6 +8124,10 @@ function prepareGroupDrag() {
 }
 function moveSelectedBy(dx, dy) {
     // Ordinary dragging preserves construction references; isolation is for explicit transforms only.
+    for (const id of dragMovedInkIds) {
+        const o = getObject(id);
+        if (o?.kind === 'ink') translateCopiedObject(o, dx, dy);
+    }
     for(const id of dragMovedFunctionIds){const o=getObject(id);if(o){o.h+=dx;o.k+=dy;}}
     for(const id of dragMovedCubicIds){const o=getObject(id);if(o?.kind==='cubicGraph')for(const p of (o.controlPoints||[])){p.x+=dx;p.y+=dy;}}
     for(const id of dragMovedQuarticIds){const o=getObject(id);if(o?.kind==='quarticGraph')for(const p of (o.controlPoints||[])){p.x+=dx;p.y+=dy;}}
@@ -8168,6 +8247,7 @@ function moveSelectedBy(dx, dy) {
     }
 }
 function setTool(tool) {
+    cancelInkGesture();
     pendingSymmetry=null;
     pendingFunctionOrigin=null;functionHandleDrag=null;
     pickingRotationCenter = false;
@@ -8215,6 +8295,9 @@ function setTool(tool) {
     circleHandleDragging = null;
     document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
     const info = {
+        inkPen: ['펜', '자유롭게 쓰세요. 선을 긋고 잠시 멈추면 선분으로 보정합니다.'],
+        inkEraser: ['지우개', '지울 필기 위를 쓸어 주세요.'],
+        inkLasso: ['올가미', '필기와 도형을 둘러 선택하세요.'],
         select: ['선택', '도형을 클릭하거나 빈 곳을 드래그해 여러 대상을 선택하세요. Ctrl+클릭하면 겹친 대상을 차례로 선택합니다.'],
         point: ['점', '선분·직선·반직선·원·호·베지어 곡선·이차함수 그래프 위를 클릭하면 종속점이 생깁니다. 종속점은 드래그해도 원래 도형 위에서만 움직입니다. 교점은 별도의 교점 도구로 만듭니다.'],
         intersection: ['교점', '교점을 만들 두 대상을 차례로 클릭하세요. 선·원·원호 사이의 실제 교점을 종속된 점으로 만듭니다.'],
@@ -8309,6 +8392,8 @@ function swapCurrentFillablePairOrder() {
     showToast('첫째와 둘째 순서를 바꿨습니다.');
 }
 function updateProperties() {
+    document.querySelector('#inkReflect').disabled = selectedIds.size === 0;
+    document.querySelector('#inkRotate').disabled = selectedIds.size === 0;
     updateFunctionProperties();
     document.querySelector('#rotationCenterInfo').textContent = pickingRotationCenter ? '캔버스에서 중심을 클릭하세요. 기존 점·축·격자에 스냅합니다. Esc로 취소합니다.'
         : customRotationCenter ? `직접 지정한 중심 (${customRotationCenter.x.toFixed(1)}, ${customRotationCenter.y.toFixed(1)})을 고정해 사용합니다.`
@@ -8856,7 +8941,11 @@ window.addEventListener('keyup', evt => {
 window.addEventListener('blur', () => { snapBypassActive = false; });
 
 svg.addEventListener('pointerdown', (evt) => {
-    if (evt.button !== 0) return;
+    if (evt.button !== 0 || inkGesture || boardTouches.has(evt.pointerId)) return;
+    if (['inkPen','inkEraser','inkLasso'].includes(activeTool)) {
+        beginInkGesture(evt, svgPoint(evt), activeTool);
+        return;
+    }
     snapBypassActive = !!evt.altKey;
     pointerDown = true;
     const pos = svgPoint(evt);
@@ -9662,6 +9751,11 @@ svg.addEventListener('pointerdown', (evt) => {
     }
 });
 svg.addEventListener('pointermove', evt => {
+    if (boardTouches.has(evt.pointerId)) return;
+    if (inkGesture) {
+        if (evt.pointerId === inkGesture.id) advanceInkGesture(svgPoint(evt));
+        return;
+    }
     snapBypassActive = !!evt.altKey;
     const pos = svgPoint(evt);
     if(functionHandleDrag){const o=getObject(functionHandleDrag.id),p=snapMathCoordinate(pos);if(o){
@@ -9924,6 +10018,11 @@ svg.addEventListener('pointermove', evt => {
     }
 });
 svg.addEventListener('pointerup', evt => {
+    if (boardTouches.has(evt.pointerId)) return;
+    if (inkGesture) {
+        if (evt.pointerId === inkGesture.id) finishInkGesture(evt);
+        return;
+    }
     if(functionHandleDrag){functionHandleDrag=null;pointerDown=false;updateProperties();return;}
     if(rotationSession && rotationSession.startAngle!=null){commitRotation();return;}
     snapBypassActive = !!evt.altKey;
@@ -10906,6 +11005,7 @@ window.addEventListener('keydown', e => {
     else if (key === 't')
         setTool('text');
     else if (key === 'escape') {
+        cancelInkGesture();
         if (activeTool === 'polygon' && pendingPolygonPointIds.length) cancelPendingPolygon(true);
         pendingSegmentStart = null;
         pendingIntersectionObjectId = null;
@@ -10995,6 +11095,191 @@ function initializeCompactUI(){
     document.querySelectorAll('.ui-menu').forEach(d=>d.addEventListener('click',()=>setTimeout(updateCategory,0)));
 }
 initializeCompactUI();
+document.querySelector('#inkReflect').addEventListener('click', () => startSymmetry('line', true));
+document.querySelector('#inkRotate').addEventListener('click', beginRotation);
+document.querySelector('#boardZoomOut').onclick = () => zoomBoard(boardZoom / 1.25);
+document.querySelector('#boardZoomIn').onclick = () => zoomBoard(boardZoom * 1.25);
+document.querySelector('#boardZoomReset').onclick = () => zoomBoard(1);
+
+function zoomBoard(next, client, anchor) {
+    if (inkGesture || pointerDown || rotationSession) return;
+    if (!client) {
+        const bounds = canvasScroll.getBoundingClientRect();
+        client = { x:bounds.left + canvasScroll.clientWidth / 2, y:bounds.top + canvasScroll.clientHeight / 2 };
+    }
+    anchor ??= clientToSvgPoint(client.x,client.y);
+    boardZoom=Math.max(.4,Math.min(3,next));
+    svg.style.width=(svg.viewBox.baseVal.width*boardZoom)+'px';
+    svg.style.height=(svg.viewBox.baseVal.height*boardZoom)+'px';
+    const bounds=svg.getBoundingClientRect();
+    canvasScroll.scrollLeft+=bounds.left+anchor.x*boardZoom-client.x;
+    canvasScroll.scrollTop+=bounds.top+anchor.y*boardZoom-client.y;
+    document.querySelector('#boardZoomReset').textContent=Math.round(boardZoom*100)+'%';
+}
+function pinchPosition() {
+    const [a,b]=boardTouches.values();
+    return { client:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}, span:dist(a,b) };
+}
+canvasScroll.addEventListener('pointerdown', evt => {
+    if (evt.pointerType !== 'touch' || inkGesture || boardTouches.size >= 2 ||
+        !(activeTool.startsWith('ink') || pendingSymmetry?.drawAxis)) return;
+    boardTouches.set(evt.pointerId,{x:evt.clientX,y:evt.clientY});
+    canvasScroll.setPointerCapture(evt.pointerId);
+    if (boardTouches.size === 2) {
+        const {client,span}=pinchPosition();
+        boardPinch={zoom:boardZoom,span:Math.max(1,span),anchor:clientToSvgPoint(client.x,client.y)};
+    }
+}, true);
+canvasScroll.addEventListener('pointermove', evt => {
+    const old=boardTouches.get(evt.pointerId);
+    if (!old) return;
+    const current={x:evt.clientX,y:evt.clientY};
+    boardTouches.set(evt.pointerId,current);
+    if (inkGesture) return;
+    if (boardPinch) {
+        const {client,span}=pinchPosition();
+        zoomBoard(boardPinch.zoom*span/boardPinch.span,client,boardPinch.anchor);
+    } else {
+        canvasScroll.scrollLeft+=old.x-current.x;
+        canvasScroll.scrollTop+=old.y-current.y;
+    }
+});
+for (const type of ['pointerup','pointercancel','lostpointercapture']) {
+    canvasScroll.addEventListener(type, evt => {
+        if (boardTouches.delete(evt.pointerId)) boardPinch=null;
+    });
+}
+for (const type of ['pointercancel','lostpointercapture']) {
+    svg.addEventListener(type, evt => {
+        if (inkGesture?.id === evt.pointerId) cancelInkGesture();
+    });
+}
+
+function cancelInkGesture() {
+    clearTimeout(inkHoldTimer);
+    if (!inkGesture) return;
+    inkGesture = null;
+    document.querySelector('#inkPreviewLayer').replaceChildren();
+}
+
+function beginInkGesture(evt, pos, kind) {
+    if (evt.pointerType === 'touch') return;
+    pointerDown = false;
+    const width = Number(document.querySelector('#inkWidth').value);
+    const color = document.querySelector('#inkColor').value;
+    inkGesture = { id:evt.pointerId, kind, points:[pos], width, color, erased:new Set() };
+    boardTouches.clear();
+    boardPinch=null;
+    svg.setPointerCapture(evt.pointerId);
+    if (kind === 'inkEraser') collectErasedInk(pos, pos);
+    paintInkPreview();
+}
+
+function inkSegmentDistance(p, a, b) {
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy || 1)));
+    return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);
+}
+
+function collectErasedInk(a, b) {
+    for (const o of objects) {
+        if (o.kind !== 'ink' || shouldSkipHiddenObject(o) || inkGesture.erased.has(o.id)) continue;
+        const margin = 8 + o.width / 2;
+        const hit = o.points.some((p,i) => {
+            if (inkSegmentDistance(p,a,b) <= margin) return true;
+            if (!i) return false;
+            const q=o.points[i-1];
+            if (inkSegmentDistance(a,q,p) <= margin || inkSegmentDistance(b,q,p) <= margin) return true;
+            const side=(u,v,w)=>(v.x-u.x)*(w.y-u.y)-(v.y-u.y)*(w.x-u.x);
+            return side(a,b,q)*side(a,b,p)<0 && side(q,p,a)*side(q,p,b)<0;
+        });
+        if (hit) inkGesture.erased.add(o.id);
+    }
+}
+
+function paintInkPreview() {
+    const layer = document.querySelector('#inkPreviewLayer');
+    const { kind, points, width, color, erased } = inkGesture;
+    layer.replaceChildren();
+    if (kind === 'inkEraser') {
+        for (const o of objects) if (erased.has(o.id)) layer.appendChild(inkShape(o.points, '#94a3b8', o.width));
+        return;
+    }
+    if (kind === 'inkPen') layer.appendChild(inkShape(points,color,width));
+    else if (kind === 'axis') layer.appendChild(el('line', {
+        x1:points[0].x,y1:points[0].y,x2:points.at(-1).x,y2:points.at(-1).y,class:'preview'
+    }));
+    else layer.appendChild(el('polygon', { points:points.map(p=>p.x+','+p.y).join(' '), class:'marquee' }));
+}
+
+function advanceInkGesture(pos) {
+    const gesture = inkGesture;
+    const { points, kind } = gesture;
+    const last = points.at(-1);
+    if (dist(last,pos) < .5) return;
+    if (kind === 'inkEraser') collectErasedInk(last,pos);
+    if (kind === 'axis' || gesture.straight) points[1]=pos;
+    else if (kind === 'inkEraser') points[0]=pos;
+    else if (points.length < 20000) points.push(pos);
+    if (kind === 'inkPen' && !gesture.straight && (!gesture.holdPoint || dist(gesture.holdPoint,pos)>2.5)) {
+        gesture.holdPoint=pos;
+        clearTimeout(inkHoldTimer);
+        inkHoldTimer=setTimeout(() => {
+            const start=points[0], end=points.at(-1), chord=dist(start,end);
+            if (chord < 18) return;
+            let length=0;
+            for (let i=1;i<points.length;i++) length+=dist(points[i-1],points[i]);
+            if (length > chord*1.35 || points.some(p=>inkSegmentDistance(p,start,end)>Math.max(7,chord*.14))) return;
+            gesture.straight=true;
+            points.splice(1,points.length-1,end);
+            paintInkPreview();
+        },470);
+    }
+    paintInkPreview();
+}
+
+function inkInside(point, polygon) {
+    let inside=false;
+    for (let i=0,j=polygon.length-1;i<polygon.length;j=i++) {
+        const a=polygon[i], b=polygon[j];
+        if ((a.y>point.y)!==(b.y>point.y) && point.x<(b.x-a.x)*(point.y-a.y)/(b.y-a.y)+a.x) inside=!inside;
+    }
+    return inside;
+}
+
+function finishInkGesture(evt) {
+    advanceInkGesture(svgPoint(evt));
+    const { kind, points, color, width, erased } = inkGesture;
+    cancelInkGesture();
+    if (kind === 'axis') {
+        const [a,b] = points;
+        if (b && dist(a,b) >= 12) applySymmetryTransform(pendingSymmetry,a,2*Math.atan2(b.y-a.y,b.x-a.x));
+        else showToast('대칭축을 조금 더 길게 그으세요.');
+        return;
+    }
+    if (kind === 'inkPen') {
+        pushHistory();
+        objects.push({ id:newId('ink'), kind:'ink', points, color, width });
+    } else if (kind === 'inkEraser' && erased.size) {
+        pushHistory();
+        objects=objects.filter(o=>!erased.has(o.id));
+        for (const id of erased) selectedIds.delete(id);
+    } else if (kind === 'inkLasso') {
+        const ids = evt.shiftKey ? new Set(selectedIds) : new Set();
+        if (points.length > 3) for (const o of objects) {
+            const box=objectBounds(o);
+            if (!box) continue;
+            const samples=o.kind==='ink' ? o.points : o.kind==='point' ? [o] : [
+                {x:box.x1,y:box.y1},{x:box.x1,y:box.y2},{x:box.x2,y:box.y1},{x:box.x2,y:box.y2}
+            ];
+            if (samples.every(p=>inkInside(p,points))) ids.add(o.id);
+        }
+        setTool('select');
+        selectedIds=expandIdsToGroups(ids);
+    }
+    render();
+    updateProperties();
+}
 
   const formulaPanel=document.createElement('div');formulaPanel.id='formulaGraphProperties';formulaPanel.className='prop-group hidden';
 formulaPanel.innerHTML=`<strong id="formulaHeading">함수 추가</strong>
@@ -11312,7 +11597,11 @@ new MutationObserver(refreshTraceUX).observe(document.getElementById('traceStatu
 refreshTraceUX();
 // Keep keyboard users informed about the active drawing tool.
 function syncToolAccessibility(){document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('active'))));}
-new MutationObserver(syncToolAccessibility).observe(document.getElementById('toolbar'),{subtree:true,attributes:true,attributeFilter:['class']});syncToolAccessibility();
+const toolAccessibilityObserver = new MutationObserver(syncToolAccessibility);
+for (const toolbar of document.querySelectorAll('#toolbar,.ink-bar')) {
+    toolAccessibilityObserver.observe(toolbar,{subtree:true,attributes:true,attributeFilter:['class']});
+}
+syncToolAccessibility();
 
 </script>
 </body>
